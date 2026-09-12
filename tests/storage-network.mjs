@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {tickStorageTransfer,rerouteStorageAfterDemolition} from '../src/storage.js';
+import {parseSave} from '../src/savegames.js';
+const buildings=[{type:'storehouse',x:20,y:20,progress:1},{type:'warehouse',x:22,y:20,progress:1,stored:{grain:7},storageRules:{grain:'collect'},storageTargets:{grain:3},storageSource:2},{type:'warehouse',x:24,y:20,progress:1,stored:{grain:0},storageRules:{grain:'collect'},storageTargets:{grain:6},storageSource:1}],resources={grain:0},w={id:1,x:24.5,y:21.5,phase:'idle'},workers=[w];
+const entrance=b=>({x:b.x+.5,y:b.y+1.5}),routeTo=(w,p)=>[p],tick=()=>tickStorageTransfer(w,2,buildings,resources,entrance,routeTo,()=>true,workers);
+for(let i=0;i<40;i++)tick();assert.equal(buildings[1].stored.grain,3);assert.equal(buildings[2].stored.grain,4);assert.equal(resources.grain,0,'direct route bypasses main stock');assert.equal(w.phase,'idle','reciprocal sources do not oscillate');
+buildings[1].storageTargets.grain=1;for(let i=0;i<40;i++)tick();assert.equal(buildings[2].stored.grain,6);assert.equal(buildings[1].stored.grain,1);
+const save={version:6,resources,buildings,workers,roads:[]};assert.equal(parseSave(JSON.stringify(save),['storehouse','warehouse']).buildings[2].storageSource,1);
+buildings[2].storageTargets.grain=-1;assert.throws(()=>parseSave(JSON.stringify(save),['storehouse','warehouse']));buildings[2].storageTargets.grain=999;buildings[2].storageSource=2;assert.throws(()=>parseSave(JSON.stringify(save),['storehouse','warehouse']));buildings[2].storageSource=1;
+buildings.splice(1,1);rerouteStorageAfterDemolition(workers,1,buildings,entrance,routeTo);assert.equal(buildings[1].storageSource,0,'deleted source resets to main stock');assert.ok(parseSave(JSON.stringify(save),['storehouse','warehouse']));
+buildings[1].storageTargets.grain=0;resources.grain=50;assert.equal(tick(),false,'zero target issues no pickup');
+console.log('PASS: direct depot routes, arbitrary targets, reciprocal-route stability, exact conservation, source demolition and save validation');

@@ -25,5 +25,9 @@ export function parseSave(text,types,width=50,height=50){
   for(const w of s.workers||[])if(w.patrol&&(!Array.isArray(w.patrol.points)||w.patrol.points.length!==2||w.patrol.points.some(p=>!point(p)||!Number.isInteger(p.x)||!Number.isInteger(p.y))||![0,1].includes(w.patrol.next)))throw new Error('Ungültige Patrouille.');
   if(s.scenario&&(!['sandbox','economy','conquest'].includes(s.scenario.mode)||!['active','victory','defeat'].includes(s.scenario.status)||typeof s.scenario.acknowledged!=='boolean'||s.scenario.finishedAt!==undefined&&(!Number.isFinite(s.scenario.finishedAt)||s.scenario.finishedAt<0)))throw new Error('Ungültiges Spielziel.');
   for(const b of s.buildings)if(b.storageRules!==undefined&&(!b.storageRules||typeof b.storageRules!=='object'||Array.isArray(b.storageRules)||Object.entries(b.storageRules).some(([key,mode])=>!depotGoods.includes(key)||!storageModes.includes(mode))))throw new Error('Ungültige Lagerregel.');
+  for(const [index,b] of s.buildings.entries()){
+    if(b.storageTargets!==undefined&&(!b.storageTargets||typeof b.storageTargets!=='object'||Array.isArray(b.storageTargets)||Object.entries(b.storageTargets).some(([key,n])=>!depotGoods.includes(key)||!Number.isInteger(n)||n<0||n>999)))throw new Error('Ungültige Lagerzielmenge.');
+    if(b.storageSource!==undefined&&(!Number.isInteger(b.storageSource)||b.storageSource<0||b.storageSource>=s.buildings.length||b.storageSource===index||b.storageSource!==0&&(s.buildings[b.storageSource].type!=='warehouse'||(s.buildings[b.storageSource].owner||1)!==1)))throw new Error('Ungültige Lagerquelle.');
+  }
   return s;
 }

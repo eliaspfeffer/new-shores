@@ -4,10 +4,12 @@ Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPD
 
 ## Lagerregeln und Umlagerung
 
-- Direkt im Lagerhaus je Produktionsware: Annehmen, Vorrat auffüllen (10), nicht annehmen oder ins Hauptlager räumen. Alte Spielstände ohne Regeln nehmen weiterhin alle bisherigen Produktionswaren an.
+**Erweitert:** Zielvorräte lassen sich nun pro Ware von 0 bis 999 einstellen (alte Spielstände: 10). Jedes Lager kann das Hauptlager oder ein anderes eigenes Lager als Auffüllquelle verwenden. Ein Quelllager gibt für Umlagerungen nur Überschüsse über seinen eigenen aktiven Zielvorrat frei; das verhindert Pendeltransporte zwischen gegenseitigen Auffüllquellen. Verbrauch durch Produktionsbetriebe bleibt davon unabhängig. Wird die Quelle abgerissen, werden künftige Aufträge auf das Hauptlager zurückgesetzt; bestehende Transportmengen bleiben erhalten. Quellen und Mengen werden gespeichert und validiert. Bedienung und echte Lieferungen zwischen zwei Lagern mit Änderung der Zielmenge im Browser getestet; 19 Testsuiten und Build bestanden. Die schmale Darstellung der Quellen-/Zielmengenbeschriftung wurde bei der visuellen Prüfung korrigiert.
+
+- Direkt im Lagerhaus je Produktionsware: Annehmen, Vorrat auffüllen (einstellbar; Standard 10), nicht annehmen oder ins Hauptlager räumen. Alte Spielstände ohne Regeln nehmen weiterhin alle bisherigen Produktionswaren an.
 - Auffüllen und Räumen sind reale Trägerwege mit Abholung und Lieferung. Bereits reservierte/in Bewegung befindliche Einheiten zählen zum Auffüllziel; Regeln ändern keine schon zugesagten Transporte. Produktionsanlieferungen können den Zielvorrat überschreiten, zehn ist kein Kapazitätslimit.
 - Anhalten verhindert neue Lageraufträge; unterwegs befindliche Waren werden noch geliefert. Abriss erstattet nur unreservierte Bestände; Transporte zu einem abgerissenen Ziel kehren zum Hauptlager zurück. Regeln, Mengen und laufende Wege werden gespeichert und geprüft.
-- Die Auffüllmenge zehn ist eine eigene feste Vorgabe, keine verifizierte Originaleinstellung. Frei wählbare Zielmengen, beliebige Lager-zu-Lager-Routen, Esel und vollständige Verteilungsregeln fehlen weiterhin.
+- Die Standard-Auffüllmenge zehn und die Obergrenze 999 sind eigene Vorgaben, keine verifizierten Originaleinstellungen. Mehrere Quellen je Lager, priorisierte Handelsrouten, Esel und vollständige Original-Verteilungsregeln fehlen weiterhin.
 - Prüfung: 18 Testsuiten, Simulation-/Strategietests und Build bestanden. Browserprüfungen in separatem Kontext; keine persönlichen Spielstände verändert.
 
 ## Gebäudegebundene Bedienung
@@ -88,7 +90,7 @@ Datei-Import/-Export und reale mobile Hardwaregesten sind implementiert, aber ni
 - Höhen/Gebirge, Planierung, verschiedene Gebäudegrundflächen und weitere Landschaftstypen.
 - Sichtbare Tierzucht, Wildtiere/Jagd; originalgetreue Darstellung/Balance der inzwischen funktionalen Feldphasen.
 - Werkzeuge für noch fehlende Berufe; komplette Arbeits-/Trage-/Kampf-/Sterbeanimationen.
-- Frei wählbare Zielmengen/Lager-zu-Lager-Routen, frei liegende Waren, Handel, Esel und vollständige Verteilungs-/Stau-/Wegeregeln; eigene Lagerbaustufen.
+- Mehrere Quellen/priorisierte Handelsrouten, frei liegende Waren, Handel, Esel und vollständige Verteilungs-/Stau-/Wegeregeln; eigene Lagerbaustufen.
 - Weitere Originalproduktionen, originale Abbauwahrscheinlichkeiten und Schwefelverwendung.
 - Weitere Soldaten, Hauptmänner, Sanitäter, vollständige Garnisons-/Turm-/Burg-/Kampfkraftregeln, originalgetreue Geschossregeln, Heilung und Formationen.
 - Wirtschaftlich aufbauende Gegner-KI, Angriffsplanung, Diplomatie/Bündnisse.
