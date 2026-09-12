@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {createExploration} from '../src/exploration.js';
+import {hasVisibleCargo,cargoPose,goodsOrder} from '../src/goods.js';
+const fog=createExploration(50,50),scout={x:35.5,y:20.5,unit:'geologist',owner:1};
+fog.update([{type:'storehouse',x:25,y:25}],[]);
+assert.ok(fog.sees(25,25));assert.ok(!fog.seen(49,0));assert.ok(!fog.sees(-1,0));
+fog.update([], [scout]);assert.ok(fog.seen(25,25));assert.ok(!fog.sees(25,25));assert.ok(fog.sees(35,20));
+const saved=fog.save(),loaded=createExploration(50,50);loaded.restore([...saved,-2,99999,'bad']);loaded.update([],[]);assert.ok(loaded.seen(35,20));assert.ok(!loaded.sees(35,20));
+fog.update([], [{...scout,owner:2}]);assert.ok(!fog.sees(35,20),'enemy grants no vision');
+fog.update([], [{...scout,dead:true}]);assert.ok(!fog.sees(35,20));
+assert.ok(!hasVisibleCargo({phase:'supply',carry:'wood',routeIndex:1,pickupEnd:3}));
+assert.ok(hasVisibleCargo({phase:'supply',carry:'wood',routeIndex:3,pickupEnd:3}));
+assert.ok(hasVisibleCargo({phase:'inbound',carry:'wood',routeIndex:0,pickupEnd:99}));
+assert.equal(cargoPose({direction:6}).behind,true);assert.equal(goodsOrder.length,24);
+console.log('PASS: exploration, persistent discovery, enemy/dead-unit visibility, cargo pickup and directional pose');

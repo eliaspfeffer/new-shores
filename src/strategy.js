@@ -1,0 +1,144 @@
+// Playable strategy layer. Balance values are prototype values, not original S4 constants.
+export const recipes = {
+  sawmill:{inputs:{wood:1},output:'planks',amount:2,cycle:8},
+  waterworks:{inputs:{},output:'water',amount:3,cycle:8},
+  farm:{inputs:{},output:'grain',amount:2,cycle:35},
+  mill:{inputs:{grain:1},output:'flour',amount:2,cycle:10},
+  bakery:{inputs:{flour:1,water:1},output:'bread',amount:2,cycle:12},
+  fisher:{inputs:{},output:'fish',amount:2,cycle:12,coastal:true},
+  pigfarm:{inputs:{grain:1,water:1},output:'pigs',amount:1,cycle:20},
+  butcher:{inputs:{pigs:1},output:'meat',amount:2,cycle:10},
+  coalmine:{inputs:{bread:1},output:'coal',amount:2,cycle:12,deposit:'coal'},
+  ironmine:{inputs:{meat:1},output:'ironOre',amount:2,cycle:14,deposit:'ironOre'},
+  goldmine:{inputs:{fish:1},output:'goldOre',amount:2,cycle:16,deposit:'goldOre'},
+  sulfurmine:{inputs:{bread:1},output:'sulfur',amount:2,cycle:16,deposit:'sulfur'},
+  smelter:{inputs:{coal:1,ironOre:1},output:'iron',amount:1,cycle:12},
+  goldsmelter:{inputs:{coal:1,goldOre:1},output:'gold',amount:1,cycle:14},
+  toolsmith:{inputs:{coal:1,iron:1},output:'tools',amount:1,cycle:12},
+  weaponsmith:{inputs:{coal:1,iron:1},output:'swords',amount:1,cycle:14},
+  bowmaker:{inputs:{planks:2},output:'bows',amount:1,cycle:14},
+};
+export const extraBuildings = {
+  waterworks:['Waterworks','water'],pigfarm:['Pig farm','pigs'],butcher:['Butcher','meat'],
+  coalmine:['Coal mine','coal'],ironmine:['Iron mine','ironOre'],goldmine:['Gold mine','goldOre'],sulfurmine:['Sulfur mine','sulfur'],
+  smelter:['Iron smelter','iron'],goldsmelter:['Gold smelter','gold'],toolsmith:['Toolsmith','tools'],
+  weaponsmith:['Weaponsmith','swords'],bowmaker:['Bow maker','bows'],barracks:['Barracks',null],
+};
+export function facing8(dx,dy){return (Math.round(Math.atan2((dx+dy)*.5,dx-dy)/(Math.PI/4))+8)%8;}
+export function createStrategy(api){
+  const {workers,buildings,terrain,trees,rocks,routeTo,entrance,followRoute,toast}=api;
+  const state={version:1,claims:[],deposits:[],initialized:false};
+  let owners=[],clock=0;
+  const stock=()=>api.resources();
+  const own=b=>(b.owner||1)===1;
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  const isMilitary=w=>['swordsman','archer'].includes(w.unit);
+  const alive=w=>!w.dead;
+  function init(){
+    if(state.initialized)return;state.initialized=true;
+    for(const k of ['water','bread','fish','pigs','meat','coal','ironOre','goldOre','sulfur','iron','gold','tools','swords','bows'])stock()[k]??=0;
+    // Finite deposits near the initial settlement, discovered by geologists.
+    state.deposits=[{x:18,y:22,type:'coal',amount:120},{x:31,y:26,type:'ironOre',amount:100},{x:30,y:18,type:'goldOre',amount:80},{x:18,y:31,type:'sulfur',amount:80}];
+    const site={x:37,y:14};
+    for(const list of [trees,rocks])for(let i=list.length-1;i>=0;i--)if(dist(list[i],site)<3)list.splice(i,1);
+    buildings.push({...site,type:'tower',name:'Red outpost',owner:2,progress:1,completed:true,hp:100,garrison:1});
+    workers.push({id:nextId(),x:38.5,y:14.5,unit:'swordsman',owner:2,hp:55,phase:'guard',t:0});
+    recalculate();
+  }
+  function nextId(){return Math.max(-1,...workers.map(w=>w.id))+1;}
+  function recalculate(){
+    owners=terrain.map(row=>row.map(()=>0));const strengths=terrain.map(row=>row.map(()=>-Infinity));
+    const sources=[...buildings.filter(b=>b.progress>=1&&!b.destroyed&&(b.type==='storehouse'||b.type==='tower'&&b.garrison>0)).map(b=>({...b,r:b.type==='storehouse'?12:9})),...state.claims.map(c=>({...c,r:2.5,owner:1}))];
+    for(const b of sources)for(let y=Math.max(0,Math.floor(b.y-b.r));y<Math.min(terrain.length,b.y+b.r+1);y++)for(let x=Math.max(0,Math.floor(b.x-b.r));x<Math.min(terrain[y].length,b.x+b.r+1);x++){const power=b.r-dist(b,{x,y});if(power>=0&&power>strengths[y][x]){strengths[y][x]=power;owners[y][x]=b.owner||1;}}
+  }
+  function ownerAt(x,y){return owners[y]?.[x]||0;}
+  function recruit(type,rank=1){
+    if(!['pioneer','geologist','swordsman','archer'].includes(type))return false;
+    rank=Math.max(1,Math.min(3,Math.floor(Number(rank)||1)));
+    const military=['swordsman','archer'].includes(type),resource=military?(type==='archer'?'bows':'swords'):'tools';
+    if(military&&!buildings.some(b=>own(b)&&b.type==='barracks'&&b.progress>=1&&!b.stopped))return toast('Build an active barracks first');
+    const w=workers.find(w=>!w.unit&&!w.carry&&w.phase==='idle');
+    if(!w)return toast('No idle carrier available');
+    if((stock()[resource]||0)<1)return toast('Need 1 '+resource);
+    const gold=military?rank-1:0;if((stock().gold||0)<gold)return toast('Benötigt '+gold+' Gold für Rang '+rank);
+    stock()[resource]--;if(gold)stock().gold-=gold;const maxHp=military?55+(rank-1)*20:30;Object.assign(w,{unit:type,rank:military?rank:1,maxHp,owner:1,role:type,hp:maxHp,phase:'guard',task:null,route:null});
+    api.selected.clear();api.selected.add(w.id);api.hud();toast(type+' ready — select a destination');return w;
+  }
+  function command(g){
+    const chosen=workers.filter(w=>api.selected.has(w.id)&&own(w)&&alive(w));if(!chosen.length)return false;
+    const b=buildings.find(b=>b.x===g.x&&b.y===g.y&&(own(b)||!api.isVisible||api.isVisible(b.x,b.y)));
+    let issued=0;
+    chosen.forEach((w,i)=>{
+      let target=b?entrance(b):{x:g.x+.5+(i%3)*.15,y:g.y+.5+Math.floor(i/3)*.15};
+      if(!target)return;const route=routeTo(w,target);if(!route)return;
+      if(!w.unit){if(w.phase==='manual'){w.phase='idle';w.route=null;}w.manualTarget=target;issued++;return;}
+      if(w.garrisonIndex!==undefined){const old=buildings[w.garrisonIndex];if(old)old.garrison=Math.max(0,(old.garrison||0)-1);delete w.garrisonIndex;}
+      Object.assign(w,{route,routeIndex:0,phase:'command',order:{x:g.x,y:g.y,building:b?buildings.indexOf(b):-1},wait:0});issued++;
+    });recalculate();toast(issued?`${issued} units ordered`:'Destination is unreachable');return true;
+  }
+  function stop(){for(const w of workers)if(api.selected.has(w.id)){delete w.manualTarget;if(w.unit){w.route=null;w.order=null;w.phase='guard';}else if(w.phase==='manual'){w.route=null;w.phase='idle';}}}
+  function depositFor(b){return state.deposits.find(d=>d.discovered&&d.type===recipes[b.type]?.deposit&&d.amount>0&&dist(b,d)<=2);}
+  function placement(g,type){if(ownerAt(g.x,g.y)!==1)return 'Build inside your territory; use a pioneer to expand';if(recipes[type]?.deposit&&!depositFor({...g,type}))return 'Geologist must discover the matching deposit nearby';return '';}
+  function tickWorker(w,dt){
+    if(w.dead||w.garrisonIndex!==undefined)return true;
+    if(!w.unit&&w.manualTarget&&w.phase==='idle'){const route=routeTo(w,w.manualTarget);delete w.manualTarget;if(route){w.route=route;w.routeIndex=0;w.phase='manual';}else toast('Queued destination is now blocked');}
+    if(w.phase==='manual'){w.t=(w.t||0)+dt;if(followRoute(w,dt)){w.route=null;w.phase='idle';}return true;}
+    if(w.unit){
+      w.t=(w.t||0)+dt;w.cooldown=Math.max(0,(w.cooldown||0)-dt);
+      const enemy=isMilitary(w)?workers.find(o=>alive(o)&&isMilitary(o)&&(o.owner||1)!==(w.owner||1)&&o.garrisonIndex===undefined&&dist(w,o)<(w.unit==='archer'?4:1.4)):null;
+      if(enemy){if(!w.cooldown){enemy.hp-=(w.unit==='archer'?7:10)*(1+((w.rank||1)-1)*.4);w.cooldown=1.2;w.direction=facing8(enemy.x-w.x,enemy.y-w.y);if(enemy.hp<=0){enemy.dead=true;api.selected.delete(enemy.id);if(own(enemy))stock().people=Math.max(0,stock().people-1);}}return true;}
+      if(w.phase==='command'&&followRoute(w,dt)){w.phase='action';w.wait=0;}
+      if(w.phase==='action'){
+        w.wait+=dt;const b=buildings[w.order?.building];
+        if(w.unit==='swordsman'&&b?.type==='tower'){
+          if(!own(b)){if(w.wait>=1.2){b.hp=(b.hp??100)-12;w.wait=0;if(b.hp<=0){b.owner=1;b.hp=100;b.garrison=0;toast('Outpost captured');recalculate();}}}
+          else {b.garrison=(b.garrison||0)+1;w.garrisonIndex=buildings.indexOf(b);w.phase='garrison';recalculate();}
+        }else if(w.unit==='geologist'&&w.wait>=4){let found=0;for(const d of state.deposits)if(dist(w,d)<6){d.discovered=true;found++;}toast(found?'Survey: '+state.deposits.filter(d=>dist(w,d)<6).map(d=>d.type).join(', '):'Survey found no minerals');w.phase='guard';}
+        else if(w.unit==='pioneer'&&w.wait>=4){const g=w.order;if(ownerAt(g.x,g.y)===0&&state.claims.length<150&&[-2,-1,0,1,2].some(dx=>[-2,-1,0,1,2].some(dy=>ownerAt(g.x+dx,g.y+dy)===1))){state.claims.push({x:g.x,y:g.y});recalculate();toast('Frontier expanded');}else toast('Pioneers expand neutral land beside your frontier');w.phase='guard';}
+        else if(!['geologist','pioneer'].includes(w.unit)&&w.wait>1)w.phase='guard';
+      }return true;
+    }
+    // Input logistics are actual journeys, with goods reserved only after a route exists.
+    if(w.phase==='supply'){
+      w.t=(w.t||0)+dt;
+      if(followRoute(w,dt)){const b=buildings[w.supplyIndex];if(b&&own(b)){b.buffer??={};b.buffer[w.carry]=(b.buffer[w.carry]||0)+1;}else stock()[w.carry]=(stock()[w.carry]||0)+1;w.carry=null;w.phase='idle';w.supplyIndex=null;w.route=null;}return true;
+    }
+    if(w.phase==='idle'&&!w.carry){
+      w.supplyRetry=(w.supplyRetry||0)-dt;if(w.supplyRetry>0)return false;w.supplyRetry=2;
+      const home=entrance(buildings[0]);
+      const indices=buildings.map((_,i)=>i).sort((a,b)=>(buildings[b].priority?1:0)-(buildings[a].priority?1:0));
+      const rank=k=>{const n=api.priority?.().indexOf(k)??-1;return n<0?999:n;};
+      for(const i of indices){const b=buildings[i],construction=b.progress<1,r=construction&&b.materials?{inputs:b.materials}:recipes[b.type];if(!r||construction&&!b.materials||b.stopped||!own(b))continue;
+        for(const [item,amount] of Object.entries(r.inputs).sort(([a],[b])=>rank(a)-rank(b))){
+          const pending=workers.filter(o=>o.phase==='supply'&&o.supplyIndex===i&&o.carry===item).length;
+          const source=construction?b.reserved:stock();
+          if((b.buffer?.[item]||0)+pending>=amount*(construction?1:2))continue;
+          const dest=entrance(b);if(!dest)continue;
+          const candidates=[];if(home&&source?.[item]>0)candidates.push({point:home,source});
+          if(!construction&&api.directSupply)for(const producer of buildings)if(producer!==b&&own(producer)&&producer.progress>=1&&producer.ready===item&&!workers.some(o=>o.task===producer)){const p=entrance(producer);if(p)candidates.push({point:p,producer});}
+          const routes=candidates.map(c=>({...c,pickup:routeTo(w,c.point),delivery:routeTo(c.point,dest)})).filter(c=>c.pickup&&c.delivery).sort((a,b)=>(a.pickup.length+a.delivery.length)-(b.pickup.length+b.delivery.length));
+          const chosen=routes[0];if(!chosen)continue;const {pickup,delivery}=chosen;
+          // Reserve stock now; cargo is not rendered until reaching storage.
+          if(chosen.producer){const p=chosen.producer;p.outputAmount=(p.outputAmount||2)-1;if(p.outputAmount===0)p.ready=null;}else chosen.source[item]--;
+          Object.assign(w,{phase:'supply',role:'carrier',carry:item,supplyIndex:i,pickupEnd:pickup.length,route:[...pickup,...delivery],routeIndex:0});api.hud();return true;
+        }
+      }
+    }return false;
+  }
+  function produce(b,dt){
+    const r=recipes[b.type];if(!r)return false;
+    if(api.hasStaff&&!api.hasStaff(b))return true;
+    if(!own(b)||b.stopped||b.progress<1||b.ready||r.coastal&&!api.hasWater(b))return true;
+    const d=r.deposit?depositFor(b):null;if(r.deposit&&!d)return true;
+    if(Object.entries(r.inputs).some(([k,n])=>(b.buffer?.[k]||0)<n))return true;
+    b.work=(b.work||0)+dt;if(b.work<r.cycle)return true;b.work=0;
+    for(const [k,n] of Object.entries(r.inputs))b.buffer[k]-=n;
+    if(d)d.amount--;b.ready=r.output;b.outputAmount=r.amount;return true;
+  }
+  function tick(dt){clock+=dt;if(clock<1)return;clock=0;recalculate();api.hud();}
+  function restore(s){if(s)Object.assign(state,s);else {state.initialized=false;init();}recalculate();}
+  function release(b){if(!b||!own(b))return toast('Select your occupied tower first');const index=buildings.indexOf(b),p=entrance(b);if(!p)return toast('Tower entrance blocked');for(const w of workers)if(w.garrisonIndex===index){delete w.garrisonIndex;Object.assign(w,{x:p.x,y:p.y,phase:'guard',order:null});}b.garrison=0;recalculate();}
+  function readyToBuild(b){return !b.materials||b.materialsSpent||Object.entries(b.materials).every(([k,n])=>(b.buffer?.[k]||0)>=n);}
+  function returnSpecialists(){let n=0;for(const w of workers)if(api.selected.has(w.id)&&own(w)&&alive(w)&&['pioneer','geologist'].includes(w.unit)){delete w.unit;delete w.order;delete w.rank;w.role='carrier';w.phase='idle';w.route=null;stock().tools=(stock().tools||0)+1;n++;}api.hud();toast(n+' Spezialisten sind wieder Träger');return n;}
+  return {state,init,restore,tick,tickWorker,produce,recruit,command,stop,release,ownerAt,placement,recalculate,isMilitary,readyToBuild,returnSpecialists};
+}

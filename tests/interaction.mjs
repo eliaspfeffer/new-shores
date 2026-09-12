@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {wheelAction,demolitionRefund} from '../src/interaction.js';
+assert.deepEqual(wheelAction({deltaX:25,deltaY:-40,deltaMode:0}),{x:-25,y:40});
+assert.deepEqual(wheelAction({deltaX:1,deltaY:2,deltaMode:1}),{x:-16,y:-32});
+assert.ok(wheelAction({deltaX:0,deltaY:-10,ctrlKey:true}).zoom>1);
+assert.ok(wheelAction({deltaX:0,deltaY:10,altKey:true}).zoom<1);
+const completed={progress:1,materials:{planks:5,stone:3},materialsSpent:true,buffer:{wood:2},ready:'planks',outputAmount:2};
+assert.deepEqual(demolitionRefund(completed,{},[],1),{planks:4,stone:1,wood:2});
+const site={progress:.02,materials:{planks:5,stone:2},reserved:{planks:3,stone:1},buffer:{planks:1,stone:1}};
+assert.deepEqual(demolitionRefund(site,{},[{phase:'supply',supplyIndex:2,carry:'planks'}],2),{planks:5,stone:2});
+assert.deepEqual(demolitionRefund({progress:1},{wood:3,stone:1},[],1),{wood:1});
+console.log('PASS: trackpad pan/pinch/modifiers; completed, unspent and legacy demolition refunds');

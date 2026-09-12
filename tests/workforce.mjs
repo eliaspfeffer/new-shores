@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {createWorkforce} from '../src/workforce.js';
+const workers=Array.from({length:4},(_,id)=>({id,x:0,y:0,phase:'idle'})),buildings=[{type:'mill',owner:1,progress:1},{type:'bakery',progress:1}],stock={tools:3};
+const wf=createWorkforce({workers,buildings,recipes:{mill:{},bakery:{}},resources:()=>stock,entrance:b=>({x:1,y:1}),routeTo:()=>[{x:1,y:1}],followRoute:()=>true});
+wf.update(2);assert.equal(stock.tools,1);assert.equal(workers.filter(w=>w.employerIndex!==undefined).length,2);assert.ok(!wf.hasStaff(buildings[0]));
+wf.update(.1);assert.ok(wf.hasStaff(buildings[0]));assert.ok(wf.hasStaff(buildings[1]));
+workers[0].manualTarget={x:4,y:4};wf.update(.1);assert.equal(workers[0].phase,'idle');assert.equal(workers[0].employerIndex,undefined);assert.equal(stock.tools,2);
+wf.beforeDemolish(0);assert.equal(workers[1].employerIndex,0,'remaining staff remapped after demolition');
+buildings.splice(0,1);buildings[0].stopped=true;wf.update(.1);assert.equal(stock.tools,3);assert.equal(workers[1].employerIndex,undefined);
+console.log('PASS: real workshop staffing, tool checkout/return, carrier reserve, manual reassignment and demolition indices');

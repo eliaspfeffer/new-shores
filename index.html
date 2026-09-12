@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#203c25" />
+  <title>New Shores — A Settlers Homage</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <main id="app">
+    <section id="title-screen" class="screen active">
+      <div class="title-scrim"></div>
+      <div class="title-card">
+        <p class="eyebrow">EINE EIGENSTÄNDIGE HOMMAGE AN KLASSISCHE AUFBAUSPIELE</p>
+        <h1>New<br><span>Shores</span></h1>
+        <p class="subtitle">Eine kleine Welt wartet darauf, wieder lebendig zu werden.</p>
+        <button id="new-game" class="wood-button">SIEDLUNG GRÜNDEN</button>
+        <button id="continue-game" class="text-button">Spielstand fortsetzen</button>
+      </div>
+      <p class="title-note">Für die Freude am Siedeln</p>
+    </section>
+
+    <section id="game-screen" class="screen">
+      <canvas id="world" aria-label="Isometric settlement map"></canvas>
+      <header class="resource-bar">
+        <button id="pause-button" class="round-button" aria-label="Pause">Ⅱ</button>
+        <div class="resource"><span class="res-icon wood">▰</span><strong id="wood-count">14</strong><small>wood</small></div>
+        <div class="resource"><span class="res-icon planks">▰</span><strong id="planks-count">0</strong><small>Bretter</small></div>
+        <div class="resource"><span class="res-icon stone">◆</span><strong id="stone-count">10</strong><small>stone</small></div>
+        <div class="resource"><span class="res-icon food">●</span><strong id="rations-count">0</strong><small>rations</small></div>
+        <div class="resource"><span class="res-icon people">♟</span><strong id="people-count">8</strong><small>settlers</small></div>
+        <div class="resource"><span class="res-icon beds">⌂</span><strong id="beds-count">12</strong><small>housing</small></div>
+        <button id="speed-button" class="round-button speed" aria-label="Game speed">▶</button>
+      </header>
+
+      <aside id="quest-panel" class="quest-panel">
+        <div class="portrait">M</div>
+        <div><small>BOTE MARCUS</small><p id="quest-text">Wir brauchen Holz. Baue einen Holzfäller am Wald.</p></div>
+        <button id="dismiss-quest" aria-label="Nachricht schließen">×</button>
+      </aside>
+
+      <aside id="info-panel" class="info-panel hidden">
+        <button id="close-info">×</button>
+        <div id="info-icon" class="building-badge">⌂</div>
+        <div><small id="info-type">BUILDING</small><h2 id="info-title">Storehouse</h2><p id="info-copy">The heart of your settlement.</p><div id="building-actions"><button id="production-toggle">Stop</button><button id="priority-toggle">Priority: normal</button><button id="area-toggle">Arbeitsgebiet</button><button id="demolish-building">Demolish</button></div></div>
+      </aside>
+
+      <nav class="tool-dock" aria-label="Build tools">
+        <button class="tool active" data-tool="inspect"><span>⌖</span><small>Inspect</small></button>
+        <button class="tool" data-tool="road"><span>⌁</span><small>Road</small></button>
+        <button class="tool" data-tool="woodcutter"><span>♜</span><small>Woodcutter</small><em>4</em></button>
+        <button class="tool" data-tool="quarry"><span>▥</span><small>Quarry</small><em>5</em></button>
+        <button class="tool locked" data-tool="farm"><span>♨</span><small>Farm</small><em>8</em></button>
+      </nav>
+      <div id="toast" class="toast hidden"></div>
+      <div id="build-site-hint" class="build-site-hint hidden" role="status" aria-live="polite"></div>
+      <details class="units-panel"><summary>Units &amp; economy</summary>
+        <p>Spezialisten benötigen einen freien Träger und ein Werkzeug. Soldaten benötigen eine aktive Kaserne und eine Waffe.</p>
+        <label>Soldatenrang <select id="soldier-rank"><option value="1">I · 1 Waffe</option><option value="2">II · 1 Waffe + 1 Gold</option><option value="3">III · 1 Waffe + 2 Gold</option></select></label>
+        <div class="unit-buttons"><button data-recruit="pioneer">Pionier</button><button data-recruit="geologist">Geologe</button><button data-recruit="swordsman">Schwertkämpfer</button><button data-recruit="archer">Bogenschütze</button><button id="move-units">Ziel zuweisen</button><button id="halt-units">Anhalten</button><button id="release-garrison">Besatzung heraus</button><button id="return-specialists">Spezialist → Träger</button></div>
+        <p>Einheit anklicken oder Rahmen ziehen, dann Ziel anklicken. Schwertkämpfer besetzen Türme, Pioniere erweitern die Grenze, Geologen erkunden Rohstoffe. Ctrl/Cmd + 1–9 speichert Gruppen; die Ziffer ruft sie ab.</p>
+        <div id="strategy-stocks"></div>
+        <label>Transport bevorzugen <select id="transport-focus" aria-label="Transport priority"></select></label>
+      </details>
+      <button id="help-button" class="help-button">?</button>
+      <label class="zoom-control">Zoom <input id="zoom-slider" aria-label="Map zoom" type="range" min="0.5" max="1.45" step="0.01" value="0.76"></label>
+      <button id="clear-selection" class="clear-selection" aria-label="Clear selection">✋</button>
+      <aside class="inventory-panel" aria-label="Settlement inventory">
+        <strong>Transport priority</strong>
+        <button data-priority="food"><b id="food-priority">1</b> food <i id="food-stock">18</i></button>
+        <button data-priority="wood"><b id="wood-priority">2</b> timber <i id="wood-stock">14</i></button>
+        <button data-priority="stone"><b id="stone-priority">3</b> stone <i id="stone-stock">10</i></button>
+        <button data-priority="planks"><b id="planks-priority">4</b> planks <i id="planks-stock">0</i></button>
+        <button data-priority="grain"><b id="grain-priority">5</b> grain <i id="grain-stock">0</i></button>
+        <button data-priority="flour"><b id="flour-priority">6</b> flour <i id="flour-stock">0</i></button>
+      </aside>
+      <div id="status-strip" class="status-strip"><strong id="status-title">Storehouse</strong><span id="status-copy">Carriers are distributing supplies.</span></div>
+      <canvas id="minimap" class="minimap" width="132" height="132" aria-label="Settlement minimap"></canvas>
+
+      <div id="pause-modal" class="modal hidden">
+        <div class="modal-card">
+          <p class="eyebrow">DIE WELT RUHT</p><h2>Spiel pausiert</h2>
+          <button id="resume-button" class="wood-button">WEITERSIEDELN</button>
+          <button id="power-button" class="text-button">Eco render: on</button>
+          <button id="save-button" class="text-button">Siedlung speichern</button>
+          <div id="save-slots" aria-label="Spielstände"></div>
+          <button id="restore-backup" class="text-button">Sicherheitskopie wiederherstellen</button>
+          <button id="export-save" class="text-button">Spielstand als Datei exportieren</button>
+          <label class="import-label">Spielstand importieren <input id="import-save" type="file" accept=".json,application/json"></label>
+          <button id="restart-button" class="text-button">Neu beginnen</button>
+        </div>
+      </div>
+      <div id="demolition-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="demolition-title"><div class="modal-card"><h2 id="demolition-title">Gebäude abreißen?</h2><p id="demolition-copy"></p><button id="confirm-demolition" class="wood-button">ABREISSEN</button><button id="cancel-demolition" class="text-button">Abbrechen — Gebäude behalten</button></div></div>
+      <div id="help-modal" class="modal hidden">
+        <div class="modal-card help-copy">
+          <button id="close-help" class="modal-close">×</button>
+          <p class="eyebrow">HANDBUCH</p><h2>So wächst deine Siedlung</h2>
+          <p>Wähle ein Gebäude und einen markierten Bauplatz. Wiederholte Trägerwege bilden Trampelpfade und später befestigte Wege. Auf stark benutzten Wegen wachsen keine Bäume.</p>
+          <p>Rote Punkte markieren dein Territorium, bernsteinfarbene ein anderes Gebiet. Türkise Punkte zeigen geeignete Bauplätze. Schwarzer Nebel verdeckt unbekanntes Land; erkundetes Land bleibt bekannt. Gegner siehst du nur im aktuellen Sichtbereich.</p>
+          <p>Touch: Mit einem Finger verschiebst du die Karte. Zwei Finger bilden einen Auswahlrahmen; der Regler rechts zoomt. Die Hand hebt die Auswahl auf.</p>
+          <p>Touchpad: Zwei Finger scrollen die Karte, Pinch oder Ctrl/Alt + Scrollen zoomt. Klickziehen markiert, Shift ergänzt. Rechtsziehen oder Pfeiltasten verschieben die Karte. Siedler anklicken, dann ein Ziel wählen. Träger liefern zuerst fertig. Ctrl/Cmd + 1–9 speichert eine Gruppe, die Ziffer ruft sie ab.</p>
+          <p>Gebäude anklicken: Betrieb anhalten, Priorität ändern, Arbeitsgebiet setzen oder Abrissrückgabe ansehen. Leertaste pausiert, Escape beendet den aktuellen Auswahlmodus.</p>
+          <p>Holzfäller brauchen ausgewachsene Bäume, Steinmetze Felsen. Förster pflanzen junge Bäume. Werkstätten benötigen einen Facharbeiter mit Werkzeug; zwei Zivilisten bleiben für den Transport verfügbar.</p>
+          <p>Betriebe nehmen Waren am Eingang entgegen. Träger können direkt zwischen Betrieben liefern. Die Warenübersicht zeigt Lagerbestände; die Betriebsübersicht zeigt fehlende Vorräte und Personal. Speichere im Pausenmenü in drei Plätzen oder exportiere eine Datei.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
