@@ -2,6 +2,13 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Mobile Querformat-Oberfläche und Offline-Spiel
+
+- Eigene mobile Ansicht unter `/?mobile=1`, automatisch auf primären Touchgeräten: untere große Befehlsleiste, ausklappbare Menüs, Ressourcen oben, Minikarte und Zoom rechts. Referenz der iPhone-Fassung visuell angesehen, eigene CSS-Bedienelemente statt kopierter Originalgrafiken. Desktop bleibt erhalten.
+- Einfinger-Kartenbewegung, Zweifinger-Pinch und separater Einfinger-Auswahlrahmen. Ziel-/Halt-Befehle, Gebäudemenüs und Arbeitsgebiet bleiben funktional. Hochformat zeigt Drehhinweis und hält die Simulation an.
+- Produktionsbuild mit Manifest, Offline-Dateicache und automatischem lokalem Save/Load; privater Tailscale-HTTPS-Endpunkt eingerichtet. Ca. 28 MB Erstdownload. Keine automatische geräteübergreifende Spielstand-Synchronisierung, Export/Import verwenden.
+- Browserprüfung für mobile Gesten und Offline-Neustart bestanden; 22 Testsuiten, Simulation/Strategie und Build ebenfalls. Reales iPhone/Safari und Installation vom Home-Bildschirm noch nicht auf Hardware geprüft. Details, Quellen, Installations- und Updatehinweise: [MOBILE.md](MOBILE.md).
+
 ## Lazarett mit Heiler und Vollheilung
 
 - Prüfung: 22 Testsuiten, separate Simulation/Strategie, Produktionsbuild und Diff-Prüfung bestanden. Isolierter Browserlauf prüft Platzierung/Kosten, echte Baustofflieferung und Bau, Heileranreise, Patientenruf, serielle Heilung, Betriebspause, Save/Reload bis Vollheilung und Abriss ohne Browserfehler. Drei Baustufen visuell geprüft; persönliche Spielstände unverändert.

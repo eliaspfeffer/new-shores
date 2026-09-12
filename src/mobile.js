@@ -1,0 +1,33 @@
+import './mobile.css';
+export const mobile={enabled:new URLSearchParams(location.search).get('mobile')==='1'||matchMedia('(pointer:coarse)').matches,select:false};
+document.documentElement.classList.toggle('mobile',mobile.enabled);
+export function initMobile({panel,reset,zoom,save}){
+  if(!mobile.enabled)return;
+  const game=document.querySelector('#game-screen'),sidebar=document.querySelector('#command-sidebar');
+  const bar=document.createElement('nav');bar.id='mobile-controls';bar.setAttribute('aria-label','Touch-Befehle');
+  bar.innerHTML='<button data-panel="build"><span>⌂</span>Bauen</button><button data-panel="units"><span>♟</span>Siedler</button><button id="touch-select" aria-pressed="false"><span>⌗</span>Markieren</button><button id="touch-move"><span>➜</span>Ziel</button><button id="touch-stop"><span>■</span>Halt</button><button data-panel="goods"><span>▰</span>Waren</button><button data-panel="economy"><span>⚒</span>Betriebe</button>';
+  game.append(bar);
+  const close=document.createElement('button');close.id='mobile-close';close.textContent='Zur Karte ×';sidebar.prepend(close);
+  const hide=()=>document.documentElement.classList.remove('mobile-panel');close.onclick=hide;
+  bar.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>{panel(b.dataset.panel);document.documentElement.classList.add('mobile-panel');});
+  document.querySelector('#touch-select').onclick=()=>{mobile.select=!mobile.select;reset();hide();document.querySelector('#touch-select').setAttribute('aria-pressed',String(mobile.select));};
+  document.querySelector('#touch-move').onclick=()=>{mobile.select=false;document.querySelector('#touch-select').setAttribute('aria-pressed','false');document.querySelector('#move-units').click();hide();};
+  document.querySelector('#touch-stop').onclick=()=>document.querySelector('#halt-units').click();
+  const clearMode=()=>{mobile.select=false;document.querySelector('#touch-select').setAttribute('aria-pressed','false');};
+  document.querySelector('#clear-selection').addEventListener('click',clearMode);
+  sidebar.addEventListener('click',e=>{if(e.target.closest('.building-card,#area-toggle,#move-units,#patrol-units,#extend-patrol')){clearMode();hide();}});
+  const top=document.createElement('div');top.id='mobile-resources';top.append(document.querySelector('.resource-bar'));game.append(top);
+  const mapButton=document.createElement('button');mapButton.id='mobile-map';mapButton.textContent='⌖';mapButton.setAttribute('aria-label','Minikarte anzeigen');mapButton.onclick=()=>document.documentElement.classList.toggle('mobile-map-open');game.append(mapButton);
+  game.append(document.querySelector('.sidebar-map'));
+  const zoomButtons=document.createElement('div');zoomButtons.id='mobile-zoom';zoomButtons.innerHTML='<button aria-label="Vergrößern">+</button><button aria-label="Verkleinern">−</button>';game.append(zoomButtons);zoomButtons.children[0].onclick=()=>zoom(1.15);zoomButtons.children[1].onclick=()=>zoom(1/1.15);
+  const rotate=document.createElement('aside');rotate.id='rotate-device';rotate.innerHTML='<span>↻</span><h2>Bitte iPhone drehen</h2><p>New Shores wird im Querformat gespielt.<br>Falls nötig, die Ausrichtungssperre ausschalten.</p>';document.body.append(rotate);
+  const orientation=()=>{const portrait=innerHeight>innerWidth;document.documentElement.classList.toggle('mobile-portrait',portrait);if(portrait)save();};addEventListener('resize',orientation);orientation();
+  const help=document.createElement('p');help.textContent='Mobil: Ein Finger verschiebt die Karte, zwei Finger zoomen. „Markieren“ schaltet auf Auswahlrahmen per Ziehen um. Einheit antippen, dann „Ziel“ und das Ziel antippen. Gebäude antippen öffnet seine Einstellungen. Menüs mit „Zur Karte“ schließen.';const oldHelp=[...document.querySelectorAll('.help-copy p')].find(p=>p.textContent.startsWith('Touch:'));if(oldHelp)oldHelp.replaceWith(help);else document.querySelector('.help-copy').append(help);
+}
+export async function initOffline(){
+  const status=document.createElement('p');status.id='offline-status';status.setAttribute('role','status');document.querySelector('#save-button').after(status);
+  const install=document.createElement('p');install.textContent='iPhone: Safari → Teilen → Zum Home-Bildschirm. Einmal online warten, bis „Offline bereit“ erscheint. Spielstände bleiben auf diesem Gerät; Export für Sicherung oder Übertragung verwenden.';status.after(install);
+  if(!import.meta.env.PROD||!('serviceWorker' in navigator)||!isSecureContext){status.textContent='Offline-Modus benötigt den HTTPS-Spiel-Link (Produktionsbuild).';return;}
+  status.textContent='Offline-Dateien werden gespeichert …';
+  try{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;status.textContent='Offline bereit · Spiel und Grafiken auf diesem Gerät gespeichert';navigator.storage?.persist?.().catch(()=>{});}catch{status.textContent='Offline-Download fehlgeschlagen. Online neu laden und erneut versuchen.';}
+}

@@ -1,0 +1,32 @@
+#mobile-controls,#mobile-close,#mobile-map,#mobile-zoom,#rotate-device{display:none}
+.mobile {--safe-left:max(10px,env(safe-area-inset-left));--safe-right:max(10px,env(safe-area-inset-right));--safe-bottom:max(8px,env(safe-area-inset-bottom));}
+.mobile button,.mobile select{touch-action:manipulation;min-height:44px}
+.mobile button:active{filter:brightness(1.2);transform:translateY(1px)}
+.mobile #command-sidebar{display:none;left:var(--safe-left);top:54px;bottom:calc(76px + var(--safe-bottom));width:min(380px,calc(100vw - 110px));padding:6px;grid-template-rows:44px minmax(0,1fr);border:3px ridge #c5af70;background:#343b28f5}
+.mobile.mobile-panel #command-sidebar{display:grid}
+.mobile #mobile-close{display:block;background:#665333;border:1px solid #bdab76;text-align:right;padding:0 12px}
+.mobile #command-sidebar .sidebar-resources{display:none}
+.mobile .command-tabs,.mobile #command-sidebar .inspect-tool{display:none}
+.mobile #command-sidebar .building-catalog{grid-template-columns:repeat(3,1fr)}
+.mobile #command-sidebar .building-preview{width:70px;height:62px}
+.mobile #command-sidebar .building-card strong{font-size:11px}.mobile #command-sidebar .building-cost{font-size:11px}
+.mobile #command-sidebar .building-card{min-height:108px}.mobile .category-buttons button{min-height:44px}
+.mobile #catalog-detail{font-size:12px;min-height:0;max-height:60px;overflow:auto;padding:5px}
+.mobile #command-sidebar #build-section{overflow:auto}.mobile #command-sidebar .tool-dock{flex:none}.mobile #command-sidebar .building-catalog{overflow:visible}
+.mobile #mobile-controls{display:flex;position:absolute;z-index:12;bottom:var(--safe-bottom);left:50%;transform:translateX(-50%);gap:7px;padding:5px 9px;border:2px ridge #c5af70;border-radius:30px 30px 9px 9px;background:#383e28ec}
+.mobile #mobile-controls button{width:56px;min-height:56px;padding:3px 0;border:2px outset #d2bd82;border-radius:50% 50% 8px 8px;background:radial-gradient(at 35% 20%,#bbae76,#626642 65%,#343e28);font-size:10px;color:#fff3c9;text-shadow:0 1px #292a1a}
+.mobile #mobile-controls button span{display:block;font-size:24px;line-height:27px}.mobile #mobile-controls [aria-pressed=true]{outline:3px solid #f4d36d;background:#818948}
+.mobile #mobile-resources{position:absolute;left:var(--safe-left);right:var(--safe-right);top:env(safe-area-inset-top,0px);z-index:11}
+.mobile #mobile-resources .resource-bar{position:static;transform:none;display:flex;justify-content:space-between;gap:8px;width:100%;max-width:none;height:48px;padding:2px 5px;background:#303b25ed;border:2px ridge #c5af70;border-radius:0}
+.mobile #mobile-resources .resource{min-width:0;gap:3px}.mobile #mobile-resources .resource small{display:none}.mobile #mobile-resources .resource strong{font-size:14px}.mobile #mobile-resources .round-button{width:44px;height:44px;flex-shrink:0;font-size:20px}.mobile .res-icon{font-size:20px}
+.mobile #mobile-map,.mobile #mobile-zoom button,.mobile #clear-selection,.mobile #help-button{background:radial-gradient(at 35% 20%,#c3b67f,#71724a 65%,#37432c);border:3px outset #b9aa70;border-radius:50%;width:48px;height:48px;font-size:23px}
+.mobile #mobile-map{display:block;position:absolute;z-index:12;right:var(--safe-right);top:60px}
+.mobile #game-screen>.sidebar-map{display:none;position:absolute;right:calc(var(--safe-right) + 56px);top:58px;width:145px;height:120px;z-index:13;margin:0}.mobile.mobile-map-open #game-screen>.sidebar-map{display:block}.mobile .sidebar-map .minimap{position:static;width:100%;height:100%}
+.mobile #mobile-zoom{display:grid;position:absolute;right:var(--safe-right);top:118px;gap:6px;z-index:12}
+.mobile .zoom-control{display:none}.mobile #clear-selection{left:var(--safe-left);right:auto;bottom:var(--safe-bottom)}.mobile #help-button{right:var(--safe-right);bottom:var(--safe-bottom)}
+.mobile .quest-panel{left:var(--safe-left);top:58px;width:min(310px,60vw);max-height:110px;overflow:auto;padding:8px}.mobile .quest-panel .portrait{display:none}
+.mobile #building-map-card{display:none!important}.mobile .build-site-hint,.mobile .toast{left:50%;transform:translateX(-50%);bottom:calc(86px + var(--safe-bottom));max-width:65vw;font-size:12px}
+.mobile .modal-card{max-height:calc(100dvh - 24px);overflow:auto;padding:18px;width:min(520px,85vw)}.mobile .modal-card p{font-size:13px}.mobile .modal-card h2{margin:5px 0 12px}
+.mobile #building-actions button,.mobile .unit-buttons button:not(.unit-card){min-height:44px;font-size:12px}.mobile select,.mobile input{font-size:16px}
+.mobile .title-card{top:50%;left:8%;transform:translateY(-50%);width:75%;max-height:95dvh;overflow:auto}.mobile .title-card h1{font-size:48px;line-height:.9;margin:5px 0}.mobile .title-card .eyebrow,.mobile .subtitle,.mobile .title-note{display:none}.mobile .title-card .wood-button{padding:10px 18px;font-size:14px}.mobile #scenario-description{margin:4px 0;font-size:12px}
+.mobile.mobile-portrait #rotate-device{display:flex;position:fixed;inset:0;z-index:100;align-items:center;justify-content:center;flex-direction:column;background:#283823;color:#eed9a5;text-align:center;padding:30px}.mobile #rotate-device span{font-size:72px}.mobile #rotate-device p{line-height:1.6}

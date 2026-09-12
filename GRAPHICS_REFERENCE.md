@@ -52,6 +52,8 @@ Prompts: `assets/ART_PROMPTS.md`, Abschnitt „Referenzabgleich Landschaft“. D
 
 ## Arbeitsweise für weitere Grafikgruppen
 
+Mobile UI vom 12. September 2026: iPhone-Militäransicht von The Settlers visuell geprüft; runde untere Befehle, freie Kartenmitte, Pause oben und Zoom rechts als Anordnungsreferenz. Eigenständige CSS-Umsetzung, keine neue Rastergrafikfamilie und keine kopierten Originalbuttons. [Quelle, Bedienungsunterschiede und Prüfung](MOBILE.md).
+
 Lazarett-Update vom 12. September 2026: Römisches Originalgebäude vorab visuell geprüft; eigene transparente Dreistufenserie mit blauem Dach, Steinsäulen und Eingangsvorbau. [Quelle, Generierungsprompt und Grenzen](assets/HOSPITAL_PROMPT.md). Fundament, Rohbau und Fertigzustand im laufenden Spiel geprüft. Keine Originalsprites übernommen; eigene Heiler-Sprites und vollständige Behandlungsanimation bleiben offen.
 
 Baustufen-Update vom 12. September 2026: [Quellen, neu generierte Bildpaare, Prüfung und Grenzen](AUTONOMIE_BAUPHASEN.md). Eigenständige Fundament-/Rohbau-Assets für 23 Gebäudetypen, nicht aus Originalgrafiken ausgeschnitten.
