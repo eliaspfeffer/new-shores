@@ -12,7 +12,7 @@ import {scenarios,createScenario,objectives,advanceScenario} from '../src/scenar
 import {productionInputs,minePreferences,meals} from '../src/nutrition.js';
 import {toolTypes,professionTools,checkoutTool,returnTool} from '../src/tools.js';
 import {createOutdoor} from '../src/outdoor.js';
-import {chooseStorage,rerouteStorageAfterDemolition} from '../src/storage.js';
+import {chooseStorage,rerouteStorageAfterDemolition,depotGoods,tickStorageTransfer} from '../src/storage.js';
 import {constructionStage,workActivity} from '../src/activity.js';
 import {constructionLayers} from '../src/construction.js';
 import {goodsOrder,goodsNames,buildingNames,hasVisibleCargo,cargoPose} from '../src/goods.js';
@@ -33,7 +33,7 @@ Object.assign(context,{toolTypes,professionTools,checkoutTool,returnTool});
 context.createOutdoor=createOutdoor;
 context.buildingContext=buildingContext;
 Object.assign(context,{scenarios,createScenario,objectives,advanceScenario});
-Object.assign(context,{chooseStorage,rerouteStorageAfterDemolition});
+Object.assign(context,{chooseStorage,rerouteStorageAfterDemolition,depotGoods,tickStorageTransfer});
 context.sessionStorage={getItem:()=>null};
 vm.createContext(context);
 const source=fs.readFileSync(new URL('../src/main.js',import.meta.url),'utf8').replace(/^import .*\n/gm,'').replaceAll('import.meta.env.DEV','false').replace(/new URL\([^\n]+?import.meta.url\).href/g,"'test-image.png'");

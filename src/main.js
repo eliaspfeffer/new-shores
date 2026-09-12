@@ -4,7 +4,7 @@ import {scenarios,createScenario,objectives,advanceScenario} from './scenarios.j
 let scenario=createScenario(),scenarioClock=0;
 import {productionInputs,minePreferences,meals} from './nutrition.js';
 import {toolTypes,professionTools,checkoutTool,returnTool} from './tools.js';
-import {chooseStorage,rerouteStorageAfterDemolition} from './storage.js';
+import {chooseStorage,rerouteStorageAfterDemolition,depotGoods,tickStorageTransfer} from './storage.js';
 import {createOutdoor} from './outdoor.js';
 import {createConstructionArt,constructionLayers} from './construction.js';
 import {constructionStage,workActivity} from './activity.js';
@@ -218,6 +218,7 @@ function updateWorkers(dt){
     if(w.employerIndex!==undefined)continue;
     if(w.phase==='recoverCargo'){w.t=(w.t||0)+dt;if(!w.route){const home=entrance(buildings[0]);w.route=home&&routeTo(w,home);w.routeIndex=0;}if(w.route&&followRoute(w,dt)){resources[w.carry]=(resources[w.carry]||0)+(w.carryAmount||2);delete w.carryAmount;delete w.storageIndex;returnTool(resources,w.jobTool);delete w.jobTool;w.task=null;w.carry=null;w.route=null;w.phase='idle';updateHud();}continue;}
     if(strategy.tickWorker(w,dt))continue;
+    if(tickStorageTransfer(w,dt,buildings,resources,entrance,routeTo,followRoute,workers))continue;
     w.t+=dt;
     if(w.phase==='relocating'){w.phase='idle';w.route=null;}
     if(w.phase==='idle'){
@@ -462,6 +463,8 @@ function updateWorkSounds(){for(const w of workers){const kind=workActivity(w,bu
 function unitMenuArt(type){const special=['archer','pioneer','geologist'].includes(type),row=type==='geologist'?3:type==='pioneer'||type==='swordsman'?2:0;return `background-image:url("${(special?specialistAtlas:directionAtlas).src}");background-size:800% 400%;background-position:${2/7*100}% ${row/3*100}%`;}
 function updateUnitStatus(){const status=document.querySelector('#unit-status');if(!status)return;const selected=workers.filter(w=>selectedWorkers.has(w.id)&&!w.dead);status.textContent=selected.length?selected.map(w=>`${unitNames[w.unit]||buildingNames[w.profession]||unitNames[w.role]||'Siedler'}: ${['geologist','pioneer'].includes(w.unit)?(w.surveyStatus||'Wartet auf Suchauftrag')+(w.unit==='geologist'?' · '+(w.surveyDone||0)+' Proben':' · '+(w.claimsMade||0)+' Grenzflächen'):w.phase==='guard'||w.phase==='idle'?'wartet':w.phase==='staffWork'?'am Arbeitsplatz':'im Einsatz'}`).join(' · '):'Siedler auswählen oder einen Spezialisten ausbilden.';document.querySelectorAll('[data-recruit]').forEach(b=>{const count=workers.filter(w=>w.unit===b.dataset.recruit&&!w.dead&&(w.owner||1)===1).length;const el=b.querySelector('.unit-count');if(el)el.textContent=count+' vorhanden';});}
 function initDetails(){
+  const rules=document.createElement('section');rules.id='warehouse-rules';rules.hidden=true;rules.innerHTML='<h3>Warenannahme</h3><p>Auffüllen: Träger holen bis zu 10 Einheiten aus dem Hauptlager. Räumen bringt vorhandene Waren zurück. Zugesagte Lieferungen kommen noch an. Anhalten pausiert neue Aufträge.</p>'+depotGoods.map(k=>'<label>'+goodIcon(k)+'<span>'+goodsNames[k]+'</span><select data-storage-good="'+k+'" aria-label="Lagerregel '+goodsNames[k]+'"><option value="accept">Annehmen</option><option value="collect">Vorrat auffüllen (10)</option><option value="reject">Nicht annehmen</option><option value="evacuate">Ins Hauptlager räumen</option></select></label>').join('');document.querySelector('#building-actions').after(rules);
+  rules.addEventListener('change',e=>{const key=e.target.dataset.storageGood,b=inspectedBuilding;if(b?.type!=='warehouse'||!depotGoods.includes(key))return;b.storageRules??={};b.storageRules[key]=e.target.value;save();refreshBuildingContext();});
   const context=document.createElement('section');context.id='building-live';context.setAttribute('aria-label','Aktueller Gebäudestatus');document.querySelector('#building-actions').before(context);
   const recruitment=document.createElement('section');recruitment.id='barracks-recruitment';recruitment.className='hidden';recruitment.innerHTML='<h3>Soldaten ausbilden</h3><div class="unit-buttons"></div>';document.querySelector('#building-actions').after(recruitment);
   recruitment.prepend(document.querySelector('#soldier-rank').parentElement);
@@ -481,6 +484,7 @@ function initDetails(){
 }
 function showCommandPanel(name){document.querySelectorAll('[data-command-panel]').forEach(el=>el.classList.toggle('hidden',el.dataset.commandPanel!==name));document.querySelectorAll('[data-command-tab]').forEach(el=>{el.classList.toggle('active',el.dataset.commandTab===name);el.setAttribute('aria-pressed',String(el.dataset.commandTab===name));});}
 function configureContextControls(b){
+  const rules=document.querySelector('#warehouse-rules');if(rules){rules.hidden=b.type!=='warehouse';rules.querySelectorAll('select').forEach(el=>{el.value=b.storageRules?.[el.dataset.storageGood]||'accept';el.disabled=b.progress<1;});}
   const ready=b.progress>=1,productive=Boolean(recipes[b.type])||['woodcutter','quarry','forester','barracks','warehouse'].includes(b.type);
   document.querySelector('#production-toggle').hidden=ready&&!productive;
   document.querySelector('#priority-toggle').hidden=ready&&!productive;
@@ -489,6 +493,7 @@ function configureContextControls(b){
 }
 function refreshBuildingContext(){
   const b=inspectedBuilding,live=document.querySelector('#building-live'),card=document.querySelector('#building-map-card');if(!live||!card||!b||!buildings.includes(b))return;
+  if(b.type!=='storehouse')document.querySelector('#demolish-building').textContent='Abreißen · Rückgabe '+refundText(demolitionRefund(b,buildDefs[b.type],workers,buildings.indexOf(b)));
   configureContextControls(b);const data=buildingContext(b,resources,workers.some(w=>!w.dead&&w.task===b)?'Siedler im Einsatz':['woodcutter','quarry'].includes(b.type)?'Wartet auf Arbeitsauftrag':workforce.status(b)),goods=items=>items.map(o=>'<span>'+goodAmount(o.key,o.value)+(o.target!==undefined?' / '+o.target:'')+(o.output?' ↑':'')+'</span>').join('');
   const html='<strong>'+data.status+'</strong>'+(data.progress!==null?'<progress max="100" value="'+data.progress+'" aria-label="Fortschritt"></progress>':'')+'<div class="context-goods">'+goods(data.items)+'</div>'+(recipes[b.type]?.deposit?'<p>Verbleibende Förderungen: '+(b.miningEnergy||0)+'</p>':'');if(live.innerHTML!==html)live.innerHTML=html;
   card.querySelector('strong').textContent=buildingNames[b.type]||b.name;card.querySelector('p').textContent=data.status;const compact=goods(data.items.slice(0,4));if(card.querySelector('.context-goods').innerHTML!==compact)card.querySelector('.context-goods').innerHTML=compact;
