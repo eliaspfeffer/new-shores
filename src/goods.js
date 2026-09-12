@@ -4,7 +4,7 @@ export const buildingNames={storehouse:'Hauptlager',woodcutter:'Holzfäller',qua
 export const goodsNames={wood:'Holz',planks:'Bretter',stone:'Stein',grain:'Getreide',flour:'Mehl',bread:'Brot',fish:'Fisch',water:'Wasser',pigs:'Schweine',meat:'Fleisch',coal:'Kohle',ironOre:'Eisenerz',goldOre:'Golderz',sulfur:'Schwefel',iron:'Eisen',gold:'Gold',tools:'Werkzeuge',swords:'Schwerter',bows:'Bögen',food:'Altbestand Nahrung',axe:'Axt',hammer:'Hammer',shovel:'Schaufel',sickle:'Sichel'};
 export function hasVisibleCargo(w){return Boolean(w.carry)&&(!['supply','relocateStock'].includes(w.phase)||w.pickupEnd===undefined||w.routeIndex>=w.pickupEnd);}
 Object.assign(goodsNames,{tools:'Werkzeugkisten (Altbestand)',pickaxe:'Spitzhacke',saw:'Säge',rod:'Angel',sickle:'Sense'});
-buildingNames.warehouse='Lagerhaus';
+buildingNames.warehouse='Lagerhaus';buildingNames.hospital='Lazarett';
 export function cargoPose(w){const d=w.direction??2;return {x:[6,4,0,-4,-6,-4,0,4][d],y:[-19,-17,-17,-17,-19,-23,-24,-23][d],behind:d>=5};}
 // Color-key import, once at load. The source remains untouched on disk.
 export function createGoodsArt(url,onReady,toolsUrl){

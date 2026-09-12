@@ -16,6 +16,7 @@ export function createWorkforce(api){
       w.t=(w.t||0)+dt;
       if(w.phase==='staffTravel'&&followRoute(w,dt)){w.phase=api.moveInside?'staffWait':'staffWork';w.route=null;}
       else if(!['staffWork','staffTravel','staffWait','staffEnter','staffExit'].includes(w.phase)&&!w.phase.startsWith('field')){release(w);continue;}
+      if(b.type==='hospital'){if(w.phase==='staffWait')w.phase='staffWork';continue;}
       if(api.outdoor?.update(w,b,dt))continue;
       if(!api.moveInside)continue;
       const recipe=recipes[b.type],inputs=productionInputs(b,recipe),available=!b.ready&&(!api.canWork||api.canWork(b))&&Object.entries(inputs).every(([k,n])=>(b.buffer?.[k]||0)>=n);
@@ -26,7 +27,7 @@ export function createWorkforce(api){
       if(w.phase==='staffExit'&&door&&api.moveInside(w,door,dt)){w.phase='staffWait';w.workCarry=null;w.inside=false;b.outputInTransit=false;}
     }
     recruitmentClock+=dt;if(recruitmentClock<2)return;recruitmentClock=0;
-    for(let i=0;i<buildings.length;i++){const b=buildings[i];if(!valid(b)||(!recipes[b.type]&&b.type!=='forester')||workers.some(w=>!w.dead&&w.employerIndex===i))continue;
+    for(let i=0;i<buildings.length;i++){const b=buildings[i];if(!valid(b)||(!recipes[b.type]&&!['forester','hospital'].includes(b.type))||workers.some(w=>!w.dead&&w.employerIndex===i))continue;
       if(workers.filter(w=>!w.dead&&!w.unit&&w.employerIndex===undefined).length<=2)break;
       const w=workers.find(w=>!w.dead&&!w.unit&&w.employerIndex===undefined&&w.phase==='idle'&&!w.carry&&!w.manualTarget);if(!w)break;
       const p=entrance(b),route=p&&routeTo(w,p);if(!route)continue;

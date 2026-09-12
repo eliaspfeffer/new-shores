@@ -52,6 +52,8 @@ Prompts: `assets/ART_PROMPTS.md`, Abschnitt „Referenzabgleich Landschaft“. D
 
 ## Arbeitsweise für weitere Grafikgruppen
 
+Lazarett-Update vom 12. September 2026: Römisches Originalgebäude vorab visuell geprüft; eigene transparente Dreistufenserie mit blauem Dach, Steinsäulen und Eingangsvorbau. [Quelle, Generierungsprompt und Grenzen](assets/HOSPITAL_PROMPT.md). Fundament, Rohbau und Fertigzustand im laufenden Spiel geprüft. Keine Originalsprites übernommen; eigene Heiler-Sprites und vollständige Behandlungsanimation bleiben offen.
+
 Baustufen-Update vom 12. September 2026: [Quellen, neu generierte Bildpaare, Prüfung und Grenzen](AUTONOMIE_BAUPHASEN.md). Eigenständige Fundament-/Rohbau-Assets für 23 Gebäudetypen, nicht aus Originalgrafiken ausgeschnitten.
 
 1. Originalversion und Volk des gewünschten Assets benennen.

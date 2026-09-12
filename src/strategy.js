@@ -153,7 +153,9 @@ export function createStrategy(api){
       if(w.phase==='command'&&followRoute(w,dt)){w.phase='action';w.wait=0;}
       if(w.phase==='action'){
         w.wait+=dt;const b=buildings[w.order?.building];
-        if(w.unit==='swordsman'&&b?.type==='tower'){
+        if(isMilitary(w)&&b?.type==='hospital'&&own(b)){
+          if(w.hp>=maxHealth(w)){w.phase='guard';w.order=null;toast('Soldat vollständig genesen');}return true;
+        }else if(w.unit==='swordsman'&&b?.type==='tower'){
           if(!own(b)){if(w.combatStance==='march'){w.phase='guard';w.order=null;return true;}if(w.wait>=1.2){b.hp=(b.hp??100)-12;w.wait=0;if(b.hp<=0){b.owner=1;b.hp=100;b.garrison=0;toast('Outpost captured');recalculate();}}}
           else {b.garrison=(b.garrison||0)+1;w.garrisonIndex=buildings.indexOf(b);w.phase='garrison';recalculate();}
         }else if(w.unit==='geologist'){
@@ -207,6 +209,12 @@ export function createStrategy(api){
   }
   function damageUnit(target,damage){if(target.dead)return;target.hp-=damage;if(target.hp<=0){target.hp=0;target.dead=true;api.selected.delete(target.id);if(own(target))stock().people=Math.max(0,(stock().people||0)-1);}}
   function tick(dt){
+    for(const [index,b] of buildings.entries())if(b.type==='hospital'){
+      b.healingActive=false;if(!own(b)||b.progress<1||b.stopped||!api.hasStaff?.(b))continue;
+      const eligible=w=>alive(w)&&own(w)&&isMilitary(w)&&w.phase==='action'&&w.order?.building===index&&w.hp>0&&w.hp<maxHealth(w)&&dist(w,entrance(b)||b)<1.6;
+      const w=workers.find(w=>w.id===b.patientId&&eligible(w))||workers.find(eligible);
+      if(w){b.patientId=w.id;w.hp=Math.min(maxHealth(w),w.hp+dt*2);b.healingActive=true;}else delete b.patientId;
+    }
     state.projectiles??=[];
     for(let i=state.projectiles.length-1;i>=0;i--){const p=state.projectiles[i],target=workers.find(w=>w.id===p.targetId&&!w.dead&&w.garrisonIndex===undefined);p.age+=dt;if(!target||p.age>5){state.projectiles.splice(i,1);continue;}const dx=target.x-p.x,dy=target.y-p.y,d=Math.hypot(dx,dy),step=dt*7;if(d<=step){damageUnit(target,p.damage);state.projectiles.splice(i,1);}else{p.x+=dx/d*step;p.y+=dy/d*step;}}
     clock+=dt;if(clock<1)return;clock=0;recalculate();api.hud();
@@ -214,6 +222,13 @@ export function createStrategy(api){
   function restore(s){if(s)Object.assign(state,s);else {state.initialized=false;init();}for(const w of workers)if(['geologist','pioneer'].includes(w.unit)&&w.autoWork===undefined&&w.order){w.autoWork=true;w.workArea={x:w.order.x,y:w.order.y,radius:10};w.surveyVisited??=[];w.workRetry=0;}recalculate();}
   function release(b){if(!b||!own(b))return toast('Select your occupied tower first');const index=buildings.indexOf(b),p=entrance(b);if(!p)return toast('Tower entrance blocked');for(const w of workers)if(w.garrisonIndex===index){delete w.garrisonIndex;Object.assign(w,{x:p.x,y:p.y,phase:'guard',order:null});}b.garrison=0;recalculate();}
   function readyToBuild(b){return !b.materials||b.materialsSpent||Object.entries(b.materials).every(([k,n])=>(b.buffer?.[k]||0)>=n);}
+  function sendWounded(b){
+    if(!buildings.includes(b)||b.type!=='hospital'||!own(b)||b.progress<1||b.stopped)return false;
+    const p=entrance(b),targets=workers.filter(w=>alive(w)&&own(w)&&isMilitary(w)&&w.garrisonIndex===undefined&&w.hp>0&&w.hp<maxHealth(w)&&dist(w,b)<=12&&p&&routeTo(w,p));
+    if(!targets.length){toast('Keine erreichbaren Verwundeten im Umkreis von 12 Feldern');return false;}
+    for(const w of targets){delete w.patrol;w.waypoints=[];}
+    return command(b,false,targets);
+  }
   function clearAutonomy(w){w.autoWork=false;w.waypoints=[];delete w.workArea;delete w.workSite;delete w.surveyQueue;delete w.surveyVisited;delete w.surveyStatus;w.workRetry=0;}
   function returnSpecialists(){let n=0;for(const w of workers)if(api.selected.has(w.id)&&own(w)&&alive(w)&&['pioneer','geologist'].includes(w.unit)){clearAutonomy(w);delete w.unit;delete w.order;delete w.rank;w.role='carrier';w.phase='idle';w.route=null;returnTool(stock(),w.specialTool||'tools');delete w.specialTool;n++;}api.hud();toast(n+' Spezialisten sind wieder Träger');return n;}
   function patrol(g,append=false){
@@ -235,5 +250,5 @@ export function createStrategy(api){
     toast(count?count+(append?' Patrouillen um einen Punkt erweitert':' Soldaten auf Patrouille'):append?'Bestehende Patrouille wählen: maximal 8 unterschiedliche, erreichbare Punkte':'Erreichbares Ziel und freie Soldaten auswählen');api.hud();return count>0;
   }
   function setCombatStance(stance){if(!['defend','march'].includes(stance))return false;let n=0;for(const w of workers)if(api.selected.has(w.id)&&own(w)&&alive(w)&&isMilitary(w)){w.combatStance=stance;n++;}toast(n+' Soldaten: '+(stance==='march'?'nur marschieren, kein Gegenangriff':'Gegner in Reichweite bekämpfen'));api.hud();return n>0;}
-  return {state,init,restore,tick,tickWorker,produce,recruit,command,patrol,stop,release,ownerAt,placement,recalculate,isMilitary,readyToBuild,returnSpecialists,depositFor,isRocky,surveyNearest,setCombatStance,selectWounded};
+  return {state,init,restore,tick,tickWorker,produce,recruit,command,patrol,stop,release,ownerAt,placement,recalculate,isMilitary,readyToBuild,returnSpecialists,depositFor,isRocky,surveyNearest,setCombatStance,selectWounded,sendWounded};
 }

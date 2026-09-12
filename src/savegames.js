@@ -34,5 +34,6 @@ export function parseSave(text,types,width=50,height=50){
     if(w.healTargetId!==undefined&&!Number.isInteger(w.healTargetId))throw new Error('Ungültiger Heilungsauftrag.');
     for(const key of ['healPulse','healRetry'])if(w[key]!==undefined&&(typeof w[key]!=='number'||w[key]<0||w[key]>2))throw new Error('Ungültiger Heilungsfortschritt.');
   }
+  for(const b of s.buildings)if(b.patientId!==undefined&&!Number.isInteger(b.patientId))throw new Error('Ungültige Patientenkennung.');
   return s;
 }

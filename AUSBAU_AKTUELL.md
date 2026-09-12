@@ -2,6 +2,17 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Lazarett mit Heiler und Vollheilung
+
+- Prüfung: 22 Testsuiten, separate Simulation/Strategie, Produktionsbuild und Diff-Prüfung bestanden. Isolierter Browserlauf prüft Platzierung/Kosten, echte Baustofflieferung und Bau, Heileranreise, Patientenruf, serielle Heilung, Betriebspause, Save/Reload bis Vollheilung und Abriss ohne Browserfehler. Drei Baustufen visuell geprüft; persönliche Spielstände unverändert.
+- Als 25. baubares Gebäude im Militärmenü: 3 Bretter und 3 Stein. Reguläre Baustofflieferung und Bauarbeiter errichten das Gebäude; eigene Fundament-, Rohbau- und Fertiggrafik mit Aufbau von unten nach oben. Keine Gebäude- oder Warenattrappe.
+- Ein freier Siedler übernimmt den Beruf Heiler ohne Werkzeug und läuft zum Lazarett. Die bestehende Reserve von zwei freien Logistikarbeitern gilt weiterhin. Heiler wartet am Eingang, arbeitet nur bei tatsächlicher Behandlung und wird bei Stilllegung oder Abriss wieder freier Träger.
+- Ausgewählte Soldaten per Marschbefehl zum Gebäude schicken, oder im angeklickten Lazarett „Verwundete rufen“ verwenden. Letzteres holt erreichbare eigene verwundete Soldaten im Umkreis von 12 Feldern und ersetzt ihre bisherigen Laufaufträge. Keine Feinde, Toten oder Turmbesatzungen. Patienten müssen tatsächlich ankommen; stationäre Behandlung heilt nur einen Patienten gleichzeitig bis zur vollen Gesundheit.
+- Ein begonnener Patient wird durch später Eintreffende nicht verdrängt. Neue Befehle/Anhalten können seinen Aufenthalt beenden. Betriebspause und fehlender Heiler stoppen die Heilung; Patienten dürfen weiterhin von Feinden getroffen werden. Bei Abriss werden Heiler und Gebäudeaufträge freigegeben. Auftrag, Heilungsstand und aktueller Patient bleiben gespeichert.
+- Live-Gebäudekarte zeigt Heilerbereitschaft, Anzahl beauftragter Patienten und Trefferpunkte der aktuellen Behandlung. Heiler verwendet noch die vorhandene Siedlergrafik mit einfacher, nur bei Behandlung aktiver Handbewegung. Eine vollständige Innenraum-/Liege-/Behandlungsanimation und eigene Heiler-Sprites bleiben offen; Behandlung erfolgt derzeit sichtbar am Eingang.
+- Eigene Balance: 2 Trefferpunkte je Simulationssekunde, ein Behandlungsplatz, 12 Felder für den Rufbutton. Das sind keine verifizierten Originalwerte. [Originalhandbuch](https://www.mogelpower.de/manuals/Die_Siedler_IV_Handbuch.pdf), Militärgebäude und Tabellen: römische Baukosten 3 Holz/3 Stein und Heiler ohne Werkzeug. [Gebäudeübersicht](https://www.siedlercommunity.de/siedler4/gebaeude/) beschreibt langsame Heilung bis 100 %.
+- Bildquelle vor der Erzeugung visuell geprüft: römisches Lazarett mit blauem gestuftem Dach, Säulen und Eingangsvorbau. Eigene neue Bildserie: `assets/hospital-stages-v1.png`; Quelle, genauer Prompt und Grenzen in `assets/HOSPITAL_PROMPT.md`. Originalbaustufen nicht einzeln rekonstruiert. Keine Originalsprites übernommen.
+
 ## Mehrteilige Patrouillen
 
 - Rundrouten aus 2 bis 8 Punkten einschließlich Start für freie Schwertkämpfer, Bogenschützen und Sanitäter. Die Soldaten laufen die Punkte zyklisch ab; alte Zweipunkt-Saves pendeln unverändert. Kampf unterbricht die Bewegung, danach wird die Strecke fortgesetzt.
@@ -19,13 +30,13 @@ Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPD
 - Quelle: [Originalhandbuch, Militär, gedruckte Seiten 48–49 und Einheitentabelle](https://www.mogelpower.de/manuals/Die_Siedler_IV_Handbuch.pdf). Die 75-%-Grenze, schwacher Nahkampf, Schwert und drei Ränge sind dort belegt. Reichweiten, 3/4/5 Heilpunkte je 1,2 Sekunden und die vorhandenen 55/75/95 Trefferpunkte sind eigene Balance, keine verifizierten Originalwerte.
 - Darstellung bewusst noch unvollständig: vorhandene richtungsabhängige Soldatengrafik mit „S“-Kennzeichnung und kurzem Versorgungspuls. Kein eigener Sanitäter-Sprite oder vollständige Behandlungsanimation; dafür ist noch ein passender visueller Einzelabgleich nötig. Keine Originalgrafiken übernommen oder neue Rastergrafiken erzeugt.
 - Prüfung: 21 Testsuiten, Simulation, Strategie und Build bestanden. Isolierter Browserlauf: Kaserne anklicken, Rang-II-Sanitäter rekrutieren, Schwert/Gold abbuchen, Verwundeten tatsächlich erreichen, während der Heilung speichern/neuladen, bis 75 % weiterheilen und Verwundetenauswahl bedienen. Screenshot visuell geprüft; keine Browserfehler, keine persönlichen Saves verändert.
-- Noch offen: Lazarett mit Heiler und Vollheilung, eigene Sanitätergrafiken/Animationen, Hauptmänner und die übrigen unten aufgeführten Systeme. Der Gesamtauftrag bleibt unvollständig.
+- Lazarett mit Heiler und Vollheilung ist inzwischen ergänzt, siehe oben. Eigene Sanitätergrafiken/Animationen, Hauptmänner und die übrigen unten aufgeführten Systeme bleiben offen. Der Gesamtauftrag bleibt unvollständig.
 
 ## Militärbefehle: Rückzug und verteilte Marschziele
 
 - Ausgewählte Soldaten können zwischen „Gegner bekämpfen“ und „Nur marschieren“ wechseln. Im Marschmodus unterbricht Gegnerkontakt den Lauf nicht; eigene Angriffe und Angriffe auf feindliche Türme unterbleiben. Feindlicher Schaden und bereits abgefeuerte Geschosse bleiben wirksam. Der Modus bleibt gespeichert; ältere Spielstände behalten das bisherige Kampfverhalten.
 - Kompakte Marschziele, Reihe oder Block im Siedlermenü. Reihe/Block vergeben unterschiedliche erreichbare Zielplätze an Schwertkämpfer und Bogenschützen. Bei Wasser, Hindernissen oder Kartenrand werden nahe Ersatzplätze gesucht; ohne erreichbaren Platz bleibt die betreffende Einheit zurück. Das sind Zielaufstellungen, keine starren Formationen während des Laufens. Gebäudebefehle, Patrouillen und angehängte Shift-Wegpunkte behalten ihre bisherigen Regeln.
-- Eigene vereinfachte Bedienung, keine vollständig nachgebildeten Original-Kampfregeln. Hauptmänner, Lazarett, weitere Soldatentypen und koordinierte Original-Formationen bleiben offen. Sanitäter/Feldheilung sind inzwischen ergänzt, siehe oben.
+- Eigene vereinfachte Bedienung, keine vollständig nachgebildeten Original-Kampfregeln. Hauptmänner, weitere Soldatentypen und koordinierte Original-Formationen bleiben offen. Sanitäter/Feldheilung und Lazarett sind inzwischen ergänzt, siehe oben.
 - Prüfung: 20 Testsuiten, Simulation-/Strategietests und Build bestanden. Isolierter Browserlauf für Moduswahl, drei unterschiedliche Zielplätze, Rückzug an einem Gegner vorbei ohne Gegenangriff und Speicherung; keine persönlichen Spielstände verändert.
 
 ## Lagerregeln und Umlagerung
@@ -118,7 +129,7 @@ Datei-Import/-Export und reale mobile Hardwaregesten sind implementiert, aber ni
 - Werkzeuge für noch fehlende Berufe; komplette Arbeits-/Trage-/Kampf-/Sterbeanimationen.
 - Mehrere Quellen/priorisierte Handelsrouten, frei liegende Waren, Handel, Esel und vollständige Verteilungs-/Stau-/Wegeregeln; eigene Lagerbaustufen.
 - Weitere Originalproduktionen, originale Abbauwahrscheinlichkeiten und Schwefelverwendung.
-- Weitere Soldaten, Hauptmänner, Lazarett/Vollheilung, eigene Sanitätergrafiken, vollständige Garnisons-/Turm-/Burg-/Kampfkraftregeln, originalgetreue Geschossregeln und Formationen. Mobile Feldheilung bis 75 % ist implementiert, siehe oben.
+- Weitere Soldaten, Hauptmänner, eigene Heiler-/Sanitätergrafiken und vollständige Behandlungsanimationen, vollständige Garnisons-/Turm-/Burg-/Kampfkraftregeln, originalgetreue Geschossregeln und Formationen. Mobile Feldheilung bis 75 % und Lazarett/Vollheilung sind implementiert, siehe oben.
 - Wirtschaftlich aufbauende Gegner-KI, Angriffsplanung, Diplomatie/Bündnisse.
 - Völker mit eigenen Gebäuden, Berufen, Waren und Fähigkeiten; zusätzliche Spezialisten.
 - Religion, Alkoholketten, Tempel, Opfer, Mana und Wunder.

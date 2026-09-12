@@ -11,6 +11,7 @@ export function workActivity(w, buildings, recipes, depositFor, canPlant=()=>tru
   if (w.phase === 'working' && !w.task?.stopped) return w.gather?.type === 'woodcutter' ? 'chop' : w.gather ? 'quarry' : w.task?.progress < 1 ? 'build' : null;
   if (w.phase !== 'staffWork') return null;
   const b = buildings[w.employerIndex], r = b && recipes[b.type];
+  if(b?.type==='hospital')return !b.stopped&&b.healingActive?'heal':null;
   if (!b || b.stopped || b.progress < 1 || b.ready || (r?.deposit && !depositFor(b)) || Object.entries(productionInputs(b,r)).some(([k,n]) => (b.buffer?.[k] || 0) < n)) return null;
   if(b.type==='forester'&&!canPlant(b))return null;
   return b.type === 'forester' ? 'dig' : b.type === 'farm' ? 'harvest' : b.type === 'fisher' ? 'fish' : 'craft';

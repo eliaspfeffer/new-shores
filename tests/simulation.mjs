@@ -40,7 +40,7 @@ const source=fs.readFileSync(new URL('../src/main.js',import.meta.url),'utf8').r
 vm.runInContext(source+`;globalThis.qa={workforce,exploration,growTree,nearby,workers,buildings,trees,rocks,traffic,trailEdges,terrain,updateWorkers,save,load,runProduction,strategy,selectedWorkers,placementReason,getBuildSites,hitBuilding,iso,setWorkingArea,demolishBuilding,getResources:()=>resources};`,context);
 const q=context.qa;
 const catalog=elements.get('.tool-dock').innerHTML;
-assert.equal((catalog.match(/class="building-preview"/g)||[]).length,24,'every buildable building has its in-game preview');
+assert.equal((catalog.match(/class="building-preview"/g)||[]).length,25,'every buildable building has its in-game preview');
 assert.ok(!catalog.includes('undefined'),'all buildings have names, art and descriptions');
 assert.ok(catalog.includes('1 Mehl + 1 Wasser → 2 Brot.'),'menu describes actual strategy recipe, not obsolete flavor text');
 assert.ok(catalog.includes('Bergbau & Metall')&&catalog.includes('Baukategorie'));
