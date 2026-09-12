@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {chooseStorage,rerouteStorageAfterDemolition} from '../src/storage.js';
+import {createStrategy} from '../src/strategy.js';
+import {demolitionRefund} from '../src/interaction.js';
+import {parseSave} from '../src/savegames.js';
+const buildings=[{type:'storehouse',x:25,y:25,progress:1},{type:'warehouse',x:30,y:25,progress:1,stored:{wood:3}},{type:'sawmill',x:32,y:25,progress:1}],workers=[],stock={wood:0};
+const entrance=b=>({x:b.x+.5,y:b.y+1.5}),routeTo=(w,p)=>Array.from({length:Math.max(1,Math.ceil(Math.abs(w.x-p.x)+Math.abs(w.y-p.y)))},()=>p);
+assert.equal(chooseStorage({x:32,y:25},'wood',buildings,entrance,routeTo).index,1);
+assert.equal(chooseStorage({x:32,y:25},'planks',buildings,entrance,routeTo).index,0,'construction payments remain available centrally');
+buildings[1].stopped=true;assert.equal(chooseStorage({x:32,y:25},'wood',buildings,entrance,routeTo).index,0);delete buildings[1].stopped;
+const s=createStrategy({terrain:Array.from({length:50},()=>Array(50).fill('grass')),buildings,workers,trees:[],rocks:[],resources:()=>stock,selected:new Set(),entrance,routeTo,followRoute:()=>true,toast(){},hud(){}});s.init();
+workers.length=0;workers.push({id:1,x:30,y:26,phase:'idle'});s.tickWorker(workers[0],2);assert.equal(workers[0].carry,'wood');assert.equal(buildings[1].stored.wood,2);s.tickWorker(workers[0],2);assert.equal(buildings[2].buffer.wood,1);assert.equal(stock.wood,0,'depot to workshop without central teleport');
+workers.push({id:2,x:30,y:26,phase:'inbound',carry:'wood',carryAmount:1,storageIndex:1},{id:3,x:30,y:26,storageIndex:2});
+buildings.splice(1,1);rerouteStorageAfterDemolition(workers,1,buildings,entrance,routeTo);assert.equal(workers[1].storageIndex,0);assert.ok(workers[1].route.length);assert.equal(workers[2].storageIndex,1);
+assert.equal(demolitionRefund({type:'warehouse',progress:1,stored:{wood:3}},null,[],1).wood,3);
+const save={version:6,resources:stock,buildings,workers,roads:[]};assert.ok(parseSave(JSON.stringify(save),['storehouse','warehouse','sawmill','tower']));
+buildings[1].stored={wood:-1};assert.throws(()=>parseSave(JSON.stringify(save),['storehouse','warehouse','sawmill','tower']));
+console.log('PASS: nearest reachable depot, central-only construction goods, stopped depot, physical supply, demolition rerouting/refund and save validation');

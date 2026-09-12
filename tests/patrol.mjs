@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {createStrategy} from '../src/strategy.js';
+const workers=[{id:1,unit:'swordsman',owner:1,x:25.5,y:24.5,hp:55,phase:'guard'}],visited=[],selected=new Set([1]);let blocked=false;
+const s=createStrategy({terrain:Array.from({length:50},()=>Array(50).fill('grass')),buildings:[{x:25,y:25,type:'storehouse',progress:1}],workers,trees:[],rocks:[],resources:()=>({}),selected,toast(){},hud(){},entrance:b=>({x:b.x+.5,y:b.y+1.5}),routeTo:(w,p)=>blocked?null:[p],followRoute(w){Object.assign(w,w.route.at(-1));visited.push([w.x,w.y]);return true;}});
+assert.equal(s.patrol({x:27,y:24}),true);Object.assign(workers[0],JSON.parse(JSON.stringify(workers[0])));for(let i=0;i<4;i++)s.tickWorker(workers[0],1);
+assert.deepEqual(visited,[[27.5,24.5],[25.5,24.5],[27.5,24.5],[25.5,24.5]]);
+workers.push({id:2,unit:'swordsman',owner:2,x:25.6,y:24.5,hp:5,phase:'guard'});s.tickWorker(workers[0],1);assert.ok(workers[1].dead,'patrol engages nearby enemy');assert.equal(visited.length,4);s.tickWorker(workers[0],1);assert.equal(visited.length,5,'resumes after combat');
+s.stop();assert.equal(workers[0].patrol,undefined);s.patrol({x:26,y:24});s.command({x:28,y:24});assert.equal(workers[0].patrol,undefined);s.patrol({x:26,y:24});blocked=true;s.tickWorker(workers[0],1);assert.equal(workers[0].patrol,undefined);assert.equal(workers[0].phase,'guard');
+workers[0].unit='pioneer';assert.equal(s.patrol({x:27,y:24}),false);assert.equal(s.patrol({x:-1,y:24}),false);
+console.log('PASS: repeat patrol, saved endpoints, combat/resumption, halt/new-order cancellation and blocked route');

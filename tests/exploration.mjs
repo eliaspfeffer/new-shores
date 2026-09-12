@@ -11,5 +11,5 @@ fog.update([], [{...scout,dead:true}]);assert.ok(!fog.sees(35,20));
 assert.ok(!hasVisibleCargo({phase:'supply',carry:'wood',routeIndex:1,pickupEnd:3}));
 assert.ok(hasVisibleCargo({phase:'supply',carry:'wood',routeIndex:3,pickupEnd:3}));
 assert.ok(hasVisibleCargo({phase:'inbound',carry:'wood',routeIndex:0,pickupEnd:99}));
-assert.equal(cargoPose({direction:6}).behind,true);assert.equal(goodsOrder.length,24);
+assert.equal(cargoPose({direction:6}).behind,true);assert.equal(goodsOrder.length,27);
 console.log('PASS: exploration, persistent discovery, enemy/dead-unit visibility, cargo pickup and directional pose');

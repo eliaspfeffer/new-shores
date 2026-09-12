@@ -40,7 +40,7 @@ smelter.stopped=true;for(let i=0;i<700;i++)s.tickWorker(carrier,.1);
 assert.equal(s.readyToBuild(site),true,'construction waits for delivered materials');
 assert.equal(site.reserved.planks,0);assert.equal(site.buffer.stone,1);
 assert.equal(new Set([[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]].map(([x,y])=>facing8(x,y))).size,8);
-for(const [type,r] of Object.entries(recipes)){const b={type,x:18,y:22,progress:1,buffer:{...r.inputs}};if(r.deposit){s.state.deposits.push({x:18,y:22,type:r.deposit,discovered:true,amount:2});}s.produce(b,r.cycle);assert.equal(b.ready,r.output,type+' produces its output');for(const n of Object.values(b.buffer))assert.equal(n,0,type+' consumes inputs');}
+for(const [type,r] of Object.entries(recipes)){const b={type,x:18,y:22,progress:1,buffer:{...r.inputs},toolChoice:'hammer'};if(r.deposit){s.state.deposits.push({x:18,y:22,type:r.deposit,discovered:true,amount:2});}s.produce(b,r.cycle);assert.equal(b.ready,type==='toolsmith'?'hammer':r.output,type+' produces its output');for(const n of Object.values(b.buffer))assert.equal(n,0,type+' consumes inputs');}
 const snapshot=JSON.parse(JSON.stringify(s.state));s.state.claims=[];s.restore(snapshot);assert.ok(s.state.claims.length,'territory state restores');
 console.log('PASS: territory, surveying, recruitment, commands, tower capture/garrison, combat, physical inputs, building supplies, all recipes, eight directions, strategy restore');
 const walker={id:150,x:25.5,y:26.5,phase:'idle',t:0};workers.push(walker);selected.clear();selected.add(walker.id);

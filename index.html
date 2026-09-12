@@ -15,6 +15,8 @@
         <p class="eyebrow">EINE EIGENSTÄNDIGE HOMMAGE AN KLASSISCHE AUFBAUSPIELE</p>
         <h1>New<br><span>Shores</span></h1>
         <p class="subtitle">Eine kleine Welt wartet darauf, wieder lebendig zu werden.</p>
+        <label class="scenario-picker">Spielziel <select id="scenario-select"><option value="sandbox">Freies Siedeln</option><option value="economy">Eine blühende Siedlung</option><option value="conquest">Der rote Außenposten</option></select></label>
+        <p id="scenario-description">Ohne Siegbedingung oder Zeitlimit.</p>
         <button id="new-game" class="wood-button">SIEDLUNG GRÜNDEN</button>
         <button id="continue-game" class="text-button">Spielstand fortsetzen</button>
       </div>
@@ -58,8 +60,8 @@
       <details class="units-panel"><summary>Units &amp; economy</summary>
         <p>Spezialisten benötigen einen freien Träger und ein Werkzeug. Soldaten benötigen eine aktive Kaserne und eine Waffe.</p>
         <label>Soldatenrang <select id="soldier-rank"><option value="1">I · 1 Waffe</option><option value="2">II · 1 Waffe + 1 Gold</option><option value="3">III · 1 Waffe + 2 Gold</option></select></label>
-        <div class="unit-buttons"><button data-recruit="pioneer">Pionier</button><button data-recruit="geologist">Geologe</button><button data-recruit="swordsman">Schwertkämpfer</button><button data-recruit="archer">Bogenschütze</button><button id="move-units">Ziel zuweisen</button><button id="halt-units">Anhalten</button><button id="release-garrison">Besatzung heraus</button><button id="return-specialists">Spezialist → Träger</button></div>
-        <p>Einheit anklicken oder Rahmen ziehen, dann Ziel anklicken. Shift + Rechtsklick hängt weitere Marschziele an (bis zu 32). „Anhalten“ löscht die Kette. Schwertkämpfer besetzen Türme, Pioniere erweitern die Grenze, Geologen erkunden Rohstoffe. Ctrl/Cmd + 1–9 speichert Gruppen; die Ziffer ruft sie ab.</p>
+        <div class="unit-buttons"><button data-recruit="pioneer">Pionier</button><button data-recruit="geologist">Geologe</button><button data-recruit="swordsman">Schwertkämpfer</button><button data-recruit="archer">Bogenschütze</button><button id="move-units">Ziel zuweisen</button><button id="patrol-units">Patrouille</button><button id="halt-units">Anhalten</button><button id="release-garrison">Besatzung heraus</button><button id="return-specialists">Spezialist → Träger</button></div>
+        <p>Einheit anklicken oder Rahmen ziehen, dann Ziel anklicken. Shift + Rechtsklick hängt weitere Marschziele an (bis zu 32). Ctrl/Cmd + Rechtsklick oder „Patrouille“: Soldaten laufen zwischen Start und Ziel. „Anhalten“ löscht alle Laufaufträge. Schwertkämpfer besetzen Türme, Pioniere erweitern die Grenze, Geologen erkunden Rohstoffe. Ctrl/Cmd + 1–9 speichert Gruppen; die Ziffer ruft sie ab.</p>
         <div id="strategy-stocks"></div>
         <label>Transport bevorzugen <select id="transport-focus" aria-label="Transport priority"></select></label>
       </details>
@@ -81,6 +83,7 @@
       <div id="pause-modal" class="modal hidden">
         <div class="modal-card">
           <p class="eyebrow">DIE WELT RUHT</p><h2>Spiel pausiert</h2>
+          <section id="scenario-progress" aria-label="Missionsfortschritt"></section>
           <button id="resume-button" class="wood-button">WEITERSIEDELN</button>
           <button id="power-button" class="text-button">Eco render: on</button>
           <button id="save-button" class="text-button">Siedlung speichern</button>
@@ -92,6 +95,7 @@
         </div>
       </div>
       <div id="demolition-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="demolition-title"><div class="modal-card"><h2 id="demolition-title">Gebäude abreißen?</h2><p id="demolition-copy"></p><button id="confirm-demolition" class="wood-button">ABREISSEN</button><button id="cancel-demolition" class="text-button">Abbrechen — Gebäude behalten</button></div></div>
+      <div id="scenario-result" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="scenario-result-title"><div class="modal-card"><p class="eyebrow">SPIELZIEL</p><h2 id="scenario-result-title"></h2><p id="scenario-result-copy"></p><button id="scenario-continue" class="wood-button">FREI WEITERSIEDELN</button></div></div>
       <div id="help-modal" class="modal hidden">
         <div class="modal-card help-copy">
           <button id="close-help" class="modal-close">×</button>

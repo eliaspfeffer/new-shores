@@ -1,0 +1,9 @@
+# Spezialisierte Werkzeuge
+
+Datei: `tools-specialized-v1.png`. Erzeugt mit dem eingebauten Bildgenerierungswerkzeug (Imagegen-Skill), keine CLI. Vorher angesehen: https://www.lunikon.net/files/2010-09-15-ui-inspiration/puui/siedler4.jpeg — Original-Spielansicht, kompakte Waren-/Gebäudeanzeige. Sie belegt nicht die exakten Silhouetten aller Werkzeuge. Werkzeugtypen/Berufe stammen aus dem Originalhandbuch, Seiten 62–64: https://www.mogelpower.de/manuals/Die_Siedler_IV_Handbuch.pdf.
+
+Prompt:
+
+Use case: stylized-concept. Asset type: original isometric settlement strategy game tool inventory sprite sheet. Create ONE square atlas with exactly four columns and two rows of equal square cells, generous 18% padding inside every cell, no visible grid lines. Upper row left to right: single iron chopping axe with wooden handle; single work hammer; single shovel; single long curved farming scythe. Lower row: single two-ended pickaxe; single wooden frame saw; single simple fishing rod with line and float; last cell completely empty. Warm detailed hand-painted early-2000s strategy-game look, readable miniature silhouettes, aged honey wood and cool gray iron, upper-left lighting. Each tool fully contained in its cell, isolated on absolutely flat solid pure magenta RGB255,0,255 background for runtime color-key import. No ground patches, no shadows outside objects, no text, labels, interface, border, checkerboard, watermarks or extra objects. These are new original sprites for a homage, not copied original game files.
+
+Ergebnis: Das Werkzeug lieferte bereits freigestellte Objekte statt des angefragten Farbhintergrunds. Die gelieferte Transparenz wird unverändert verwendet; die bestehende Warenfamilie bleibt erhalten. Kleinteilige Randsäume und vereinfachte Miniaturdarstellung sind nicht als pixelgenaue Originalgrafik zu verstehen.

@@ -8,9 +8,10 @@ export function demolitionRefund(building,definition,workers,index){
   const refund={};const add=(k,n)=>{if(n>0)refund[k]=(refund[k]||0)+n;};
   const cost=building.materials||building.paidCost||{wood:definition?.wood||0,stone:definition?.stone||0};
   if(building.progress>=1||building.materialsSpent||!building.materials)for(const [k,n] of Object.entries(cost))add(k,Math.floor(n/2));
-  for(const bag of [building.reserved,building.buffer])for(const [k,n] of Object.entries(bag||{}))add(k,n);
+  for(const bag of [building.reserved,building.buffer,building.stored])for(const [k,n] of Object.entries(bag||{}))add(k,n);
   if(building.ready)add(building.ready,building.outputAmount||2);
-  for(const w of workers)if(w.employerIndex===index&&w.workTool)add('tools',1);
-  for(const w of workers){if(w.phase==='supply'&&w.supplyIndex===index&&w.carry)add(w.carry,1);else if(w.task===building&&w.carry)add(w.carry,building.outputAmount||2);}
+  for(const w of workers)if(w.employerIndex===index&&w.workTool)add(typeof w.workTool==='string'?w.workTool:'tools',1);
+  for(const w of workers)if(w.task===building&&w.jobTool)add(typeof w.jobTool==='string'?w.jobTool:'tools',1);
+  for(const w of workers){if(w.phase==='supply'&&w.supplyIndex===index&&w.carry)add(w.carry,1);else if(w.task===building&&w.carry)add(w.carry,w.carryAmount||building.outputAmount||2);}
   return refund;
 }

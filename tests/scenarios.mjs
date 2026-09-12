@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {createScenario,advanceScenario,objectives} from '../src/scenarios.js';
+import {parseSave} from '../src/savegames.js';
+const buildings=[{type:'storehouse',x:25,y:25,progress:1}],workers=[{id:1,x:25,y:26}],resources={bread:0,planks:12};
+let state=createScenario('economy');assert.equal(advanceScenario(state,buildings,workers,resources,1),false);
+for(const type of ['farm','mill','bakery','waterworks','house','house'])buildings.push({type,progress:1,owner:1});
+buildings.push({type:'warehouse',progress:1,stored:{bread:8}});assert.ok(objectives(state,buildings,workers,resources).every(g=>g.current===g.target));assert.equal(advanceScenario(state,buildings,workers,resources,50),true);assert.equal(state.status,'victory');assert.equal(state.finishedAt,50);assert.equal(advanceScenario(state,buildings,workers,resources,51),false,'terminal result only once');
+state=createScenario('conquest');buildings.push({type:'tower',owner:2,progress:1});assert.equal(advanceScenario(state,buildings,workers,resources,1),false);buildings.at(-1).owner=1;workers.push({id:2,owner:2,unit:'swordsman'});assert.equal(advanceScenario(state,buildings,workers,resources,1),false);workers.at(-1).dead=true;assert.ok(advanceScenario(state,buildings,workers,resources,2));
+state=createScenario('economy');workers[0].dead=true;assert.ok(advanceScenario(state,buildings,workers,resources,3));assert.equal(state.status,'defeat','loss takes precedence');assert.equal(advanceScenario(createScenario(),buildings,workers,resources,1),false,'legacy/free play never ends');
+const save={version:6,resources:{},buildings:[buildings[0]],roads:[],scenario:state};assert.ok(parseSave(JSON.stringify(save),['storehouse']));save.scenario={mode:'bogus'};assert.throws(()=>parseSave(JSON.stringify(save),['storehouse']));
+console.log('PASS: economic objectives, depot accounting, conquest blockers, terminal latching, defeat priority, sandbox compatibility and validation');

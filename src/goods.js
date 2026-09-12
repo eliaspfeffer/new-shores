@@ -1,10 +1,14 @@
-export const goodsOrder=['wood','planks','stone','grain','flour','bread','fish','water','pigs','meat','coal','ironOre','goldOre','sulfur','iron','gold','tools','swords','bows','food','axe','hammer','shovel','sickle'];
+import {toolTypes} from './tools.js';
+export const goodsOrder=['wood','planks','stone','grain','flour','bread','fish','water','pigs','meat','coal','ironOre','goldOre','sulfur','iron','gold','tools','swords','bows','food','axe','hammer','shovel','sickle','pickaxe','saw','rod'];
 export const buildingNames={storehouse:'Hauptlager',woodcutter:'Holzfäller',quarry:'Steinmetz',forester:'Förster',sawmill:'Sägewerk',waterworks:'Wasserwerk',farm:'Getreidehof',mill:'Windmühle',bakery:'Bäckerei',fisher:'Fischerhütte',pigfarm:'Schweinehof',butcher:'Metzgerei',coalmine:'Kohlemine',ironmine:'Eisenmine',goldmine:'Goldmine',sulfurmine:'Schwefelmine',smelter:'Eisenschmelze',goldsmelter:'Goldschmelze',toolsmith:'Werkzeugschmiede',tower:'Wachturm',barracks:'Kaserne',weaponsmith:'Waffenschmiede',bowmaker:'Bogenwerkstatt',house:'Wohnhaus'};
 export const goodsNames={wood:'Holz',planks:'Bretter',stone:'Stein',grain:'Getreide',flour:'Mehl',bread:'Brot',fish:'Fisch',water:'Wasser',pigs:'Schweine',meat:'Fleisch',coal:'Kohle',ironOre:'Eisenerz',goldOre:'Golderz',sulfur:'Schwefel',iron:'Eisen',gold:'Gold',tools:'Werkzeuge',swords:'Schwerter',bows:'Bögen',food:'Altbestand Nahrung',axe:'Axt',hammer:'Hammer',shovel:'Schaufel',sickle:'Sichel'};
 export function hasVisibleCargo(w){return Boolean(w.carry)&&(w.phase!=='supply'||w.pickupEnd===undefined||w.routeIndex>=w.pickupEnd);}
+Object.assign(goodsNames,{tools:'Werkzeugkisten (Altbestand)',pickaxe:'Spitzhacke',saw:'Säge',rod:'Angel',sickle:'Sense'});
+buildingNames.warehouse='Lagerhaus';
 export function cargoPose(w){const d=w.direction??2;return {x:[6,4,0,-4,-6,-4,0,4][d],y:[-19,-17,-17,-17,-19,-23,-24,-23][d],behind:d>=5};}
 // Color-key import, once at load. The source remains untouched on disk.
-export function createGoodsArt(url,onReady){
+export function createGoodsArt(url,onReady,toolsUrl){
+  const toolImage=new Image();if(toolsUrl)toolImage.src=toolsUrl;
   const source=new Image(),atlas=document.createElement('canvas');atlas.width=384;atlas.height=256;
   let ready=false;
   source.onload=()=>{
@@ -19,5 +23,5 @@ export function createGoodsArt(url,onReady){
     ready=true;onReady?.(atlas.toDataURL());
   };
   source.src=url;
-  return {draw(ctx,item,x,y,size,mirror=false){const i=goodsOrder.indexOf(item);if(!ready||i<0)return;ctx.save();ctx.translate(x,y);if(mirror)ctx.scale(-1,1);ctx.drawImage(atlas,i%6*64,Math.floor(i/6)*64,64,64,-size/2,-size/2,size,size);ctx.restore();},get ready(){return ready;}};
+  return {draw(ctx,item,x,y,size,mirror=false){const i=goodsOrder.indexOf(item),ti=toolTypes.indexOf(item);if(ti>=0&&toolImage.complete&&toolImage.naturalWidth){const sw=toolImage.naturalWidth/4,sh=toolImage.naturalHeight/2;ctx.save();ctx.translate(x,y);if(mirror)ctx.scale(-1,1);ctx.drawImage(toolImage,ti%4*sw,Math.floor(ti/4)*sh,sw,sh,-size/2,-size/2,size,size);ctx.restore();return;}if(!ready||i<0||i>=24)return;ctx.save();ctx.translate(x,y);if(mirror)ctx.scale(-1,1);ctx.drawImage(atlas,i%6*64,Math.floor(i/6)*64,64,64,-size/2,-size/2,size,size);ctx.restore();},get ready(){return ready;}};
 }

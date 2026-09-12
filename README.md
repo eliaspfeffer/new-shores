@@ -55,7 +55,7 @@ Der Mac muss dabei eingeschaltet bleiben und den Server ausführen. Das ist ein 
 
 ## Was bereits funktioniert
 
-- 23 baubare Gebäudetypen mit Bildvorschauen, Baukosten und Produktionsbeschreibungen.
+- 24 baubare Gebäudetypen mit Bildvorschauen, Baukosten und Produktionsbeschreibungen, darunter zusätzliche Lager mit tatsächlichem Warentransport.
 - Holz, Stein, Nahrung, Erz, Metall, Werkzeuge und Waffen als spielbare Produktionsketten.
 - Materiallieferungen zu Baustellen, lokale Eingangsvorräte und direkte Transporte zwischen Betrieben.
 - Sichtbare Waren an Trägern und Gebäuden; Facharbeiterzuweisung mit Werkzeugbedarf.
