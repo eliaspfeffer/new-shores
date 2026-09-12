@@ -1,6 +1,8 @@
 import {mobile,initMobile,initOffline} from './mobile.js';
 import {initBuildingSettings} from './building-settings.js';
 let buildingSettings=null;
+import {initRouteControls,drawPatrolRoutes} from './route-controls.js';
+let routeControls=null;
 import {parseSave} from './savegames.js';
 import {buildingContext} from './building-context.js';
 import {scenarios,createScenario,objectives,advanceScenario} from './scenarios.js';
@@ -349,7 +351,7 @@ function render(){renderWorld();drawFields();drawProjectiles();drawWorkingArea()
     ctx.fillStyle=marker.owner===1?'#ff6556':'#ffe08b';ctx.beginPath();ctx.ellipse(p.x-r*.2,p.y-1-r*.35,r*.55,r*.32,0,0,Math.PI*2);ctx.fill();
   }
   for(const d of strategy.state.deposits){if(!d.discovered||!exploration.seen(d.x,d.y))continue;const p=iso(d.x+.5,d.y+.5),z=camera.zoom;ctx.fillStyle='#735333';ctx.fillRect(p.x-2*z,p.y-20*z,3*z,22*z);ctx.fillStyle='#e5cd8c';ctx.fillRect(p.x-13*z,p.y-37*z,26*z,22*z);goodsArt.draw(ctx,d.type,p.x,p.y-27*z,22*z);ctx.fillStyle='#231e13';ctx.font='bold '+Math.max(9,11*z)+'px sans-serif';ctx.textAlign='center';ctx.fillText(String(d.amount),p.x,p.y-40*z);ctx.textAlign='start';}
-  drawSpecialistArea();drawFog();
+  drawSpecialistArea();drawPatrolRoutes(ctx,workers,selectedWorkers,iso);drawFog();
 }
 function selectBox(box,add=false){const hits=workers.filter(w=>!w.dead&&(w.owner||1)===1&&w.garrisonIndex===undefined).filter(w=>{const p=iso(w.x,w.y);return p.x>=Math.min(box.a.x,box.b.x)&&p.x<=Math.max(box.a.x,box.b.x)&&p.y>=Math.min(box.a.y,box.b.y)&&p.y<=Math.max(box.a.y,box.b.y);});const preferred=hits.find(w=>strategy.isMilitary(w))?.unit||hits.find(w=>w.unit)?.unit;if(!add)selectedWorkers.clear();for(const w of hits)if(preferred?w.unit===preferred:!w.unit)selectedWorkers.add(w.id);toast(`${selectedWorkers.size} ${preferred||'workers'} selected`);}
 function drawSpecialistArea(){for(const w of workers){if(!selectedWorkers.has(w.id)||!w.autoWork||!w.workArea)continue;const a=w.workArea,p=iso(a.x+.5,a.y+.5),z=camera.zoom;ctx.save();ctx.strokeStyle=w.unit==='pioneer'?'#f4c75e99':'#a0d4e899';ctx.lineWidth=1.5;ctx.setLineDash([5,5]);ctx.beginPath();ctx.ellipse(p.x,p.y,a.radius*TILE_W*.707*z,a.radius*TILE_H*.707*z,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);if(w.workSite){const t=iso(w.workSite.x+.5,w.workSite.y+.5);ctx.beginPath();ctx.ellipse(t.x,t.y,9*z,4*z,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}}
@@ -444,6 +446,7 @@ document.querySelector('#restart-button').onclick=()=>{if(!confirm('Neue Siedlun
 document.querySelector('#help-button').onclick=()=>document.querySelector('#help-modal').classList.remove('hidden');
 document.querySelector('#close-help').onclick=()=>document.querySelector('#help-modal').classList.add('hidden');
 addEventListener('resize',resize);initWorld();strategy.init();exploration.update(buildings,workers);makeTools();initCommandSidebar();initSaveSlots();initDetails();updateHud();requestAnimationFrame(loop);
+routeControls=initRouteControls({workers,selected:selectedWorkers,buildings,getBuilding:()=>inspectedBuilding,strategy,save,toast});
 initMobile({panel:showCommandPanel,reset:()=>{selectedTool='inspect';commandMode=false;settingArea=false;},zoom:factor=>zoomAt({x:innerWidth/2,y:innerHeight/2},factor),save:()=>{if(active)save();}});initOffline();
 if(import.meta.env.DEV)globalThis.__newShores={constructionArt,constructionLayers,workforce,particles,getBuildSites,strategy,selectedWorkers,constructionStage,workActivity,terrain,buildings,roads,trees,rocks,details,workers,get resources(){return resources},get camera(){return camera}};
 addEventListener('keydown',e=>{if(!active)return;if(scenario.status!=='active'&&!scenario.acknowledged)return;if(demolitionTarget&&e.key!=='Escape')return;if(['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))return;if(/^[1-9]$/.test(e.key)&&(e.ctrlKey||e.metaKey)){e.preventDefault();controlGroups[e.key]=[...selectedWorkers];toast('Gruppe '+e.key+' gespeichert');return;}if(/^[1-9]$/.test(e.key)&&controlGroups[e.key]?.length){selectedWorkers.clear();for(const w of workers)if(controlGroups[e.key].includes(w.id)&&!w.dead&&(w.owner||1)===1)selectedWorkers.add(w.id);selectedTool='inspect';toast('Gruppe '+e.key+' ausgewählt');return;}if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();camera.x+=e.key==='ArrowLeft'?40:e.key==='ArrowRight'?-40:0;camera.y+=e.key==='ArrowUp'?40:e.key==='ArrowDown'?-40:0;return;}if(e.key==='Backspace'){e.preventDefault();strategy.selectWounded();return;}if(e.code==='Space'){e.preventDefault();renderScenarioProgress();paused=!paused;document.querySelector('#pause-modal').classList.toggle('hidden',!paused);return}if(e.key==='Escape'){commandMode=false;cancelDemolition();selectedWorkers.clear();inspectedWorker=null;settingArea=false;selectedTool='inspect';document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('active',x.dataset.tool==='inspect'));document.querySelector('#info-panel').classList.add('hidden');return}const keys=['inspect','woodcutter','quarry','house','tower','forester'];const tool=keys[Number(e.key)-1];if(tool){commandMode=false;settingArea=false;selectedWorkers.clear();selectedTool=tool;document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('active',x.dataset.tool===tool))}});
@@ -506,6 +509,7 @@ function configureContextControls(b){const call=document.querySelector('#hospita
   const recruitment=document.querySelector('#barracks-recruitment');if(recruitment){recruitment.classList.toggle('hidden',b.type!=='barracks');recruitment.querySelectorAll('button,select').forEach(el=>el.disabled=!ready||b.stopped);}
 }
 function refreshBuildingContext(){
+  routeControls?.refresh();
   const b=inspectedBuilding,live=document.querySelector('#building-live'),card=document.querySelector('#building-map-card');if(!live||!card||!b||!buildings.includes(b))return;
   if(b.type!=='storehouse')document.querySelector('#demolish-building').textContent='Abreißen · Rückgabe '+refundText(demolitionRefund(b,buildDefs[b.type],workers,buildings.indexOf(b)));
   configureContextControls(b);const data=buildingContext(b,resources,workers.some(w=>!w.dead&&w.task===b)?'Siedler im Einsatz':['woodcutter','quarry'].includes(b.type)?'Wartet auf Arbeitsauftrag':workforce.status(b)),goods=items=>items.map(o=>'<span>'+goodAmount(o.key,o.value)+(o.target!==undefined?' / '+o.target:'')+(o.output?' ↑':'')+'</span>').join('');

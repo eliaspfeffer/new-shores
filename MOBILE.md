@@ -20,6 +20,8 @@ Spielstände sind pro Gerät und Webadresse gespeichert, nicht über Tailscale s
 - Ein Gebäude antippen öffnet seine regulären Einstellungen. Arbeitsgebiet/Befehlswahl gibt die Karte wieder frei. „Zur Karte“ schließt das Menü ohne die Simulation zurückzusetzen.
 - „Gebäudeeinstellungen öffnen“ zeigt zusätzlich ein eigenes, scrollbar bedienbares Fenster. Schließen oder Escape kehrt zur Übersicht zurück; Arbeitsgebiet und Abriss verlassen das Fenster für den nächsten Schritt. Das Hauptlager hat keinen solchen Knopf, weil es automatisch arbeitet und geschützt ist. Betrieb/Priorität bestätigen Änderungen und melden auch Speicherfehler.
 - Minikarte rechts oben einblenden; daneben große Zoomknöpfe. Hauptbefehle mindestens 44 CSS-Pixel, Berücksichtigung der iPhone-Sicherheitsränder.
+- Patrouillierenden Soldaten auswählen → Siedler → Rundroute bearbeiten: Punkte entfernen, auf/ab verschieben oder die Route umkehren. Bei mehreren ausgewählten Soldaten zunächst die Kennung im Editor wählen. Nummerierte Kartenverbindungen zeigen ihre Befehlspunkte, nicht den exakten Laufweg.
+- Lager → Gebäudeeinstellungen → Quellen nach Priorität: bis zu acht Quellen hinzufügen, entfernen oder auf/ab sortieren. Die erste lieferfähige, erreichbare Quelle wird verwendet. „Einzelquelle“ ersetzt die ganze Liste; ohne Quellen bleibt das Auffüllen ausgesetzt. Bestehende Zusagen werden weiterhin ausgeliefert.
 
 ## Referenz und Grenzen
 

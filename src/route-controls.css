@@ -1,0 +1,9 @@
+#patrol-editor,#storage-sources-editor{margin:12px 0;padding:8px 0;border-block:1px solid #b8a36b66;font:12px/1.5 system-ui}
+#patrol-editor h3,#storage-sources-editor h3{font:600 14px Georgia;margin:4px 0 8px}
+#patrol-editor ol,#storage-sources-editor ol{list-style:none;margin:8px 0;padding:0}
+#patrol-editor li,#storage-sources-editor li{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,44px);align-items:center;gap:3px;margin:5px 0}
+#patrol-editor button,#storage-sources-editor button{min-height:44px;padding:5px;background:#5b5636;border:1px solid #baa56a;color:#fff0bd;font-size:13px}
+#patrol-editor button:disabled,#storage-sources-editor button:disabled{opacity:.4}
+#patrol-editor select,#storage-sources-editor select{width:100%;min-height:44px;font-size:16px}
+#building-settings-dialog #storage-sources-editor>label{display:block}
+#patrol-editor button:focus-visible,#storage-sources-editor button:focus-visible{outline:2px solid #ffda76;outline-offset:1px}

@@ -2,6 +2,21 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Sechs ergänzte Routen- und Lagerfunktionen
+
+1. Einzelne Patrouillenpunkte entfernen, solange mindestens zwei übrig bleiben.
+2. Punkte mit Auf-/Ab-Knöpfen umsortieren.
+3. Rundroute umkehren. Diese drei Änderungen gelten für den im Siedlermenü gewählten eigenen Soldaten; sein Standort bleibt unverändert. Ein noch vorhandenes aktuelles Ziel bleibt das nächste Ziel. Wird es gelöscht, folgt der nächste verbleibende Punkt. Alle neu entstehenden Wegabschnitte einschließlich Rückweg und Anreise werden vor Übernahme auf Erreichbarkeit geprüft; ungültige Änderungen bleiben ohne Wirkung.
+4. Ausgewählte Patrouillen zeigen nummerierte Punkte und gestrichelte Verbindungen auf der Karte. Gleiche Routen werden zusammengefasst; höchstens 16 unterschiedliche ausgewählte Routen werden gleichzeitig gezeichnet, unter dem Nebel. Verbindungen sind Befehlsfolgen, keine Behauptung des genauen Laufpfads.
+5. Lager können bis zu acht eigene Bezugsquellen enthalten. Hinzufügen und Entfernen im Gebäude-/Einstellungsmenü. Eine leere Liste pausiert das Auffüllen ohne stillen Rückgriff aufs Hauptlager. Die bestehende Einzelquellenwahl bleibt als ausdrücklich beschrifteter Listen-Ersatz verfügbar.
+6. Quellen sind per Auf-/Ab-Knopf priorisierbar. Träger prüfen diese Reihenfolge und weichen bei erschöpfter, gesperrter, unfertiger oder unerreichbarer Quelle aus. Zielvorräte der Quelle und bereits zugesagte Mengen bleiben berücksichtigt. Waren werden weiterhin körperlich abgeholt und geliefert, nicht sofort eingebucht.
+
+Geänderte Aufträge/Listen werden gespeichert. Alte Saves mit einer einzelnen `storageSource` bleiben lesbar; neue Listen werden auf Grenzen, Duplikate, Eigentum und Referenzen geprüft. Abriss entfernt die Quelle und korrigiert verschobene Gebäudeindizes; laufende Lieferungen behalten die bisherigen Rückleitungsregeln.
+
+Eigene Komfort-/Logistikerweiterungen, keine verifizierte originalidentische Bedienung oder Handelsmechanik. Keine Rastergrafiken geändert. Handel zwischen Spielern, Esel und starre Formationspatrouillen bleiben offen.
+
+Prüfung: 23 Testsuiten, separate Simulation/Strategie und Produktionsbuild bestanden. Neue Prüfungen decken abgewiesene/unmögliche Routenedits, tatsächliche umgekehrte Umläufe, Quellenpriorität, leere/angehaltene/blockierte Quellen, geschützte Vorräte, Warenbilanz, Abrissreferenzen und alte/ungültige Saves ab. Desktop- und 667×375-Touch-Browserläufe prüfen alle neuen Bedienelemente, echte Lieferungen aus zwei Quellen und Wiederherstellung nach Reload. Bestehende Gebäude-/Mobile-/Offline-Browserprüfungen ebenfalls bestanden; Darstellung visuell geprüft, keine Browserfehler. Persönliche Spielstände unverändert; reale iPhone-Hardware bleibt ungeprüft.
+
 ## Fünf ergänzte Punkte der Gebäudebedienung
 
 1. „Gebäudeeinstellungen“ öffnet ein deutlich abgegrenztes natives Dialogfenster mit Gebäudename, eigener Grafik, Live-Status und den tatsächlichen bestehenden Steuerelementen. Keine duplizierten Attrappen oder separaten Zustände.
@@ -38,7 +53,7 @@ Prüfung: 22 Testsuiten, separate Simulation und Strategie, Produktionsbuild, ne
 - Ctrl/Cmd + Rechtsklick oder „Patrouille“ startet die Route. Shift + Ctrl/Cmd + Rechtsklick oder „Patrouillenpunkt hinzufügen“ plus Kartentipp erweitert eine bestehende Route ohne laufende Strecke zurückzusetzen. Die Seitenleiste zeigt die nummerierte Punktfolge der ausgewählten Patrouillen.
 - Neue Punkte werden auf Erreichbarkeit vom bisherigen Endpunkt und zurück zum Start geprüft. Doppelte Punkte, mehr als acht Punkte und unerreichbare Ergänzungen werden ohne Änderung der bisherigen Route abgelehnt. Später blockierte Laufwege beenden die Patrouille mit Meldung. Anhalten/neuer Marschbefehl beendet die Schleife. Beim Wechsel eines Sanitäters zur Patrouille wird der alte Heilungsauftrag bereinigt.
 - Speichert Punktfolge, Folgeindex und laufenden Weg; Ladeprüfung akzeptiert alte zwei- und neue mehrteilige Routen und weist ungültige Indizes/Längen zurück.
-- Eigene Komforterweiterung: Die genaue Mehrpunkt-Bedienung und Achtpunktgrenze sind im erneut geprüften [Originalhandbuch](https://www.mogelpower.de/manuals/Die_Siedler_IV_Handbuch.pdf) nicht belegt. Keine Behauptung originalidentischer Patrouillensteuerung. Keine Rastergrafiken geändert. Punktweises Löschen/Umsortieren und starre Formationspatrouillen bleiben offen.
+- Eigene Komforterweiterung: Die genaue Mehrpunkt-Bedienung und Achtpunktgrenze sind im erneut geprüften [Originalhandbuch](https://www.mogelpower.de/manuals/Die_Siedler_IV_Handbuch.pdf) nicht belegt. Keine Behauptung originalidentischer Patrouillensteuerung. Keine Rastergrafiken geändert. Punktweises Löschen/Umsortieren ist inzwischen ergänzt; starre Formationspatrouillen bleiben offen.
 - Prüfung: 21 Testsuiten einschließlich zyklischer Vierpunktroute, Fortsetzung, ungültiger Ergänzungen und Save-Prüfung; Simulation, Strategie, Build und Diff-Prüfung bestanden. Isolierter Browserlauf für beide Eingabewege, sichtbare Punktfolge, Speicherung/Neuladen und anschließenden Umlauf bestanden; Screenshot visuell geprüft, keine Browserfehler oder persönlichen Save-Änderungen.
 
 ## Sanitäter und Feldheilung
@@ -65,7 +80,7 @@ Prüfung: 22 Testsuiten, separate Simulation und Strategie, Produktionsbuild, ne
 - Direkt im Lagerhaus je Produktionsware: Annehmen, Vorrat auffüllen (einstellbar; Standard 10), nicht annehmen oder ins Hauptlager räumen. Alte Spielstände ohne Regeln nehmen weiterhin alle bisherigen Produktionswaren an.
 - Auffüllen und Räumen sind reale Trägerwege mit Abholung und Lieferung. Bereits reservierte/in Bewegung befindliche Einheiten zählen zum Auffüllziel; Regeln ändern keine schon zugesagten Transporte. Produktionsanlieferungen können den Zielvorrat überschreiten, zehn ist kein Kapazitätslimit.
 - Anhalten verhindert neue Lageraufträge; unterwegs befindliche Waren werden noch geliefert. Abriss erstattet nur unreservierte Bestände; Transporte zu einem abgerissenen Ziel kehren zum Hauptlager zurück. Regeln, Mengen und laufende Wege werden gespeichert und geprüft.
-- Die Standard-Auffüllmenge zehn und die Obergrenze 999 sind eigene Vorgaben, keine verifizierten Originaleinstellungen. Mehrere Quellen je Lager, priorisierte Handelsrouten, Esel und vollständige Original-Verteilungsregeln fehlen weiterhin.
+- Die Standard-Auffüllmenge zehn und die Obergrenze 999 sind eigene Vorgaben, keine verifizierten Originaleinstellungen. Mehrere priorisierte Quellen je Lager sind inzwischen ergänzt. Handel zwischen Spielern, Esel und vollständige Original-Verteilungsregeln fehlen weiterhin.
 - Prüfung: 18 Testsuiten, Simulation-/Strategietests und Build bestanden. Browserprüfungen in separatem Kontext; keine persönlichen Spielstände verändert.
 
 ## Gebäudegebundene Bedienung
@@ -146,7 +161,7 @@ Datei-Import/-Export und reale mobile Hardwaregesten sind implementiert, aber ni
 - Höhen/Gebirge, Planierung, verschiedene Gebäudegrundflächen und weitere Landschaftstypen.
 - Sichtbare Tierzucht, Wildtiere/Jagd; originalgetreue Darstellung/Balance der inzwischen funktionalen Feldphasen.
 - Werkzeuge für noch fehlende Berufe; komplette Arbeits-/Trage-/Kampf-/Sterbeanimationen.
-- Mehrere Quellen/priorisierte Handelsrouten, frei liegende Waren, Handel, Esel und vollständige Verteilungs-/Stau-/Wegeregeln; eigene Lagerbaustufen.
+- Frei liegende Waren, Handel zwischen Spielern, Esel und vollständige Verteilungs-/Stau-/Wegeregeln; eigene Lagerbaustufen. Mehrere priorisierte Lagerquellen sind implementiert.
 - Weitere Originalproduktionen, originale Abbauwahrscheinlichkeiten und Schwefelverwendung.
 - Weitere Soldaten, Hauptmänner, eigene Heiler-/Sanitätergrafiken und vollständige Behandlungsanimationen, vollständige Garnisons-/Turm-/Burg-/Kampfkraftregeln, originalgetreue Geschossregeln und Formationen. Mobile Feldheilung bis 75 % und Lazarett/Vollheilung sind implementiert, siehe oben.
 - Wirtschaftlich aufbauende Gegner-KI, Angriffsplanung, Diplomatie/Bündnisse.
@@ -156,7 +171,7 @@ Datei-Import/-Export und reale mobile Hardwaregesten sind implementiert, aber ni
 - Dunkles Volk, Verderbnis, Morbus und zugehörige Gegenmaßnahmen.
 - Originalkampagnen, komplexe Missionsskripte, vollständige Gefechtskonfiguration, Kartenwahl/-editor, Schwierigkeit, Mehrspieler. Erste eigene Spielziele/Sieg-/Niederlagenzustände sind implementiert, siehe oben.
 - Vollständige Geräuschkulisse/Musik, berufsspezifische Gebäudeanimationen, weitere Umweltgrafiken und vollständiger Detailabgleich mit Originalaufnahmen.
-- Vollständige deutsche Texte, weitere Original-Untermenüs, Formationspatrouillen, punktweises Löschen/Umsortieren von Rundrouten und echte Mobilgeräteprüfung. Mehrteilige Patrouillen sind implementiert, siehe oben.
+- Vollständige deutsche Texte, weitere Original-Untermenüs, Formationspatrouillen und echte Mobilgeräteprüfung. Mehrteilige Patrouillen einschließlich punktweisem Löschen/Umsortieren und Umkehren sind implementiert, siehe oben.
 
 ## Referenzen und neue Grafiken
 

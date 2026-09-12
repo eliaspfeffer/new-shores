@@ -1,4 +1,5 @@
 // Playable strategy layer. Balance values are prototype values, not original S4 constants.
+import {editedPatrol} from './patrol-edit.js';
 import {productionInputs,feedMiner} from './nutrition.js';
 import {checkoutTool,returnTool,nextTool,toolTypes} from './tools.js';
 import {formationOrders,formationTypes} from './formations.js';
@@ -250,5 +251,6 @@ export function createStrategy(api){
     toast(count?count+(append?' Patrouillen um einen Punkt erweitert':' Soldaten auf Patrouille'):append?'Bestehende Patrouille wählen: maximal 8 unterschiedliche, erreichbare Punkte':'Erreichbares Ziel und freie Soldaten auswählen');api.hud();return count>0;
   }
   function setCombatStance(stance){if(!['defend','march'].includes(stance))return false;let n=0;for(const w of workers)if(api.selected.has(w.id)&&own(w)&&alive(w)&&isMilitary(w)){w.combatStance=stance;n++;}toast(n+' Soldaten: '+(stance==='march'?'nur marschieren, kein Gegenangriff':'Gegner in Reichweite bekämpfen'));api.hud();return n>0;}
-  return {state,init,restore,tick,tickWorker,produce,recruit,command,patrol,stop,release,ownerAt,placement,recalculate,isMilitary,readyToBuild,returnSpecialists,depositFor,isRocky,surveyNearest,setCombatStance,selectWounded,sendWounded};
+  function editPatrol(id,action,index){const w=workers.find(w=>w.id===id&&api.selected.has(id)&&own(w)&&alive(w)&&isMilitary(w)&&w.garrisonIndex===undefined);const changed=w&&editedPatrol(w,action,index,routeTo);if(!changed){toast('Route unverändert: mindestens 2 Punkte und vollständig erreichbarer Rundweg nötig');return false;}clearHealing(w);w.patrol=changed;w.route=null;w.routeIndex=0;w.order=null;w.phase='guard';api.hud();toast('Patrouille geändert');return true;}
+  return {state,init,restore,tick,tickWorker,produce,recruit,command,patrol,editPatrol,stop,release,ownerAt,placement,recalculate,isMilitary,readyToBuild,returnSpecialists,depositFor,isRocky,surveyNearest,setCombatStance,selectWounded,sendWounded};
 }
