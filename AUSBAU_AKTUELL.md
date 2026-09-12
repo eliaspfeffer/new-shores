@@ -1,6 +1,25 @@
-# Aktueller Ausbau – 12. September 2026
+# Aktueller Ausbau – 13. September 2026
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
+
+## Zehn ergänzte Wirtschafts-, Militär- und Bedienfunktionen
+
+1. **Kasernenwarteschlangen:** Bis 20 Aufträge mit jeweils 1–20 Schwertkämpfern, Bogenschützen oder Sanitätern, Rang 1–3. Nach acht Simulationssekunden wird ein erreichbarer freier Träger mit den vorhandenen Rekrutierungsregeln umgewandelt. Waffen/Gold werden erst dann abgezogen; Anhalten, fehlende Waren, Trägerreserve oder unerreichbarer Eingang blockieren den nächsten Abschluss. Abbrechen kostet keine Waren. Die direkte Sofortausbildung bleibt zusätzlich erhalten.
+2. **Sammelpunkte:** Pro Kaserne ein erkundeter, begehbarer und vom Eingang erreichbarer Punkt über X/Y-Eingabe. Neu ausgebildete Warteschlangen-Soldaten laufen von ihrer aktuellen Position über den Kaserneneingang zum Ziel; keine Teleportation. Ist der Weg später blockiert, bleiben sie am Eingang. Innenraum-Ausbildungsanimation und Zielwahl durch Kartenklick sind noch offen.
+3. **Turmkapazität:** Neue Besatzungen sind auf drei Schwertkämpfer begrenzt. Überschüssige Ankömmlinge bleiben draußen. Bestehende alte übervolle Besatzungen werden nicht gelöscht; der Grenzwert ist eine eigene Regel.
+4. **Einzelne Besatzungsmitglieder entlassen:** Im Turmmenü namentlich/mit Kennung auswählbar. Der Soldat erscheint am Eingang, Besatzung und Territorialwirkung werden aktualisiert.
+5. **Armeeübersicht:** Eigene lebende Soldaten einschließlich Garnisonen, mit Kennung, Zustand und Lebenspunkten. Anklicken zentriert die Karte und wählt den Soldaten bzw. seinen Turm.
+6. **Untätige Siedler finden:** Übersicht wirklich freier Träger sowie angehaltener Geologen/Pioniere, mit Auswahl und Kamerasprung. Träger mit Aufträgen, Ladung oder Arbeitgeber erscheinen nicht als frei.
+7. **Meldungsjournal:** Die letzten 100 Hinweise mit Spielzeit; direkt aufeinanderfolgende gleiche Meldungen werden zusammengefasst. Im Siedler- und Pausenmenü erreichbar und im Spielstand enthalten. Es protokolliert vorhandene Hinweise, keine zusätzliche vollumfängliche Ereignisdiagnose.
+8. **Begrenzte Produktionsaufträge:** 0–999 weitere vollständige Zyklen oder unbegrenzt, in allen 20 produzierenden Betrieben einschließlich Außenarbeit und Abbau. Angefangene Zyklen zählen mit; 0 hält weitere Arbeit an, fertige Waren werden weiter transportiert. Bei Bauern zählt die Ernte, nicht die Aussaat. Jeder Zyklus liefert die bestehende Chargenmenge, nicht zwingend eine einzelne Ware. Fertige Aufträge werden im Betriebsstatus angezeigt.
+9. **Trägerreserve für Ausbildung:** Einstellbar von 0–50 wirklich freien Trägern, gilt für direkte Rekrutierung und Warteschlangen. Keine rückwirkende Entlassung bestehender Soldaten; Facharbeiteranstellung behält ihre bisherigen separaten Logistikregeln. Alte Spielstände starten mit Reserve 0.
+10. **Kamera beim Laden:** Auch beim Laden aus Speicherplätzen/Import/Zwischenspeicher werden Position und Zoom wiederhergestellt, nicht nur beim automatischen Fortsetzen. Ungültige Kamerawerte werden ignoriert.
+
+Warteschlangen, Sammelpunkte, Restzyklen, Trägerreserve und Journal werden gespeichert und beim Import geprüft. Keine Originalsprites geändert. Die vorhandenen Holz-/Gold-Menüs wurden um echte Steuerelemente mit Touch-Zielen und Statusanzeigen ergänzt.
+
+Prüfung: 26 Node-Testsuiten, separate Simulation/Strategie, Produktionsbuild und isolierte Desktop-/667×375-Touch-Browserläufe. Neue Tests prüfen Kosten, Laufwege, Abbruch, Reserve, Kapazität, individuelle Entlassung, Produktionsstopps innen/außen, Journal, Kamera und Wiederherstellung. Bestehende Speicher- und Gebäudemenü-Browsertests ebenfalls bestanden. Keine persönliche Speicherung verändert.
+
+**Weiter offen:** WLAN-Mehrspieler mit getrennten menschlichen Spielerwirtschaften, Völkerwahl und Netzwerksynchronisation, sowie die weiter unten aufgeführten großen Originalsysteme. Diese zehn Ergänzungen sind kein abgeschlossener Originalklon.
 
 ## Fünf ergänzte Menü-, Speicher- und Farbfunktionen
 

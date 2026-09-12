@@ -9,5 +9,6 @@ export function buildingContext(b,resources,staffStatus=''){
   else if(b.type==='barracks'){status='Rekrutierung bereit · Vorräte im Hauptlager';items=['swords','bows','gold'].map(key=>({key,value:resources[key]||0}));}
   else {status=b.ready?(b.outputInTransit?'Ware unterwegs zum Ausgang':'Ware wartet auf Abholung'):staffStatus||'Bereit';items=(r?.deposit?meals:Object.keys(r?.inputs||{})).map(key=>({key,value:b.buffer?.[key]||0}));if(b.ready)items.push({key:b.ready,value:b.outputAmount||2,output:true});}
   if(b.stopped)status='Angehalten';
+  else if(b.productionRemaining===0&&!b.ready)status='Produktionsauftrag fertig / pausiert';
   return {status,items,progress:b.progress<1?Math.round(b.progress*100):r?Math.min(100,Math.floor((b.work||0)/r.cycle*100)):null};
 }

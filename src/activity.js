@@ -5,14 +5,14 @@ export function constructionStage(progress) {
 }
 export function workActivity(w, buildings, recipes, depositFor, canPlant=()=>true) {
   if (w.dead) return null;
-  if(w.phase==='fieldWork')return w.outdoorJob?.kind==='harvest'?'harvest':w.outdoorJob?.kind==='fish'?'fish':'dig';
+  if(w.phase==='fieldWork')return buildings[w.employerIndex]?.productionRemaining===0?null:w.outdoorJob?.kind==='harvest'?'harvest':w.outdoorJob?.kind==='fish'?'fish':'dig';
   if (w.unit === 'geologist' && w.phase === 'action') return 'survey';
   if (w.unit === 'pioneer' && w.phase === 'action') return 'dig';
-  if (w.phase === 'working' && !w.task?.stopped) return w.gather?.type === 'woodcutter' ? 'chop' : w.gather ? 'quarry' : w.task?.progress < 1 ? 'build' : null;
+  if (w.phase === 'working' && !w.task?.stopped && !(w.gather&&w.task?.productionRemaining===0)) return w.gather?.type === 'woodcutter' ? 'chop' : w.gather ? 'quarry' : w.task?.progress < 1 ? 'build' : null;
   if (w.phase !== 'staffWork') return null;
   const b = buildings[w.employerIndex], r = b && recipes[b.type];
   if(b?.type==='hospital')return !b.stopped&&b.healingActive?'heal':null;
-  if (!b || b.stopped || b.progress < 1 || b.ready || (r?.deposit && !depositFor(b)) || Object.entries(productionInputs(b,r)).some(([k,n]) => (b.buffer?.[k] || 0) < n)) return null;
+  if (!b || b.stopped || b.productionRemaining===0 || b.progress < 1 || b.ready || (r?.deposit && !depositFor(b)) || Object.entries(productionInputs(b,r)).some(([k,n]) => (b.buffer?.[k] || 0) < n)) return null;
   if(b.type==='forester'&&!canPlant(b))return null;
   return b.type === 'forester' ? 'dig' : b.type === 'farm' ? 'harvest' : b.type === 'fisher' ? 'fish' : 'craft';
 }

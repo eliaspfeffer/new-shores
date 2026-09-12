@@ -7,6 +7,8 @@ export function parseSave(text,types,width=50,height=50){
   if(s.playerColor!==undefined&&!['red','blue','green','violet'].includes(s.playerColor))throw new Error('Ungültige Spielerfarbe.');
   if(s.saveName!==undefined&&(typeof s.saveName!=='string'||!s.saveName.trim()||s.saveName.length>48))throw new Error('Ungültiger Spielstandname.');
   const point=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.y>=0&&p.x<width&&p.y<height;
+  if(s.strategy?.carrierReserve!==undefined&&(!Number.isInteger(s.strategy.carrierReserve)||s.strategy.carrierReserve<0||s.strategy.carrierReserve>50))throw new Error('Ungültige Trägerreserve.');
+  if(s.journal!==undefined&&(!Array.isArray(s.journal)||s.journal.length>100||s.journal.some(e=>!e||typeof e.text!=='string'||e.text.length>300||!Number.isFinite(e.time)||e.time<0||!Number.isInteger(e.count)||e.count<1||e.count>999)))throw new Error('Ungültiges Meldungsjournal.');
   if(!s.resources||Object.entries(s.resources).some(([k,v])=>!/^[a-zA-Z][a-zA-Z0-9]{0,24}$/.test(k)||typeof v!=='number'||!Number.isFinite(v)||v<0))throw new Error('Ungültige Vorräte.');
   if(s.terrain&&(!Array.isArray(s.terrain)||s.terrain.length!==height||s.terrain.some(row=>!Array.isArray(row)||row.length!==width||row.some(t=>!['grass','water','shore','void'].includes(t)))))throw new Error('Ungültige Karte.');
   if(!Array.isArray(s.buildings)||!s.buildings.length||s.buildings[0].type!=='storehouse'||s.buildings.some(b=>!point(b)||!types.includes(b.type)||!Number.isInteger(b.x)||!Number.isInteger(b.y)||!(b.progress>=0&&b.progress<=1)))throw new Error('Ungültige Gebäude.');
@@ -38,5 +40,10 @@ export function parseSave(text,types,width=50,height=50){
     for(const key of ['healPulse','healRetry'])if(w[key]!==undefined&&(typeof w[key]!=='number'||w[key]<0||w[key]>2))throw new Error('Ungültiger Heilungsfortschritt.');
   }
   for(const b of s.buildings)if(b.patientId!==undefined&&!Number.isInteger(b.patientId))throw new Error('Ungültige Patientenkennung.');
+  for(const b of s.buildings){
+    if(b.recruitQueue!==undefined&&(b.type!=='barracks'||!Array.isArray(b.recruitQueue)||b.recruitQueue.length>20||b.recruitQueue.some(q=>!q||!['swordsman','archer','medic'].includes(q.type)||![1,2,3].includes(q.rank)||!Number.isInteger(q.count)||q.count<1||q.count>20||!Number.isFinite(q.progress)||q.progress<0||q.progress>8)))throw new Error('Ungültige Ausbildungswarteschlange.');
+    if(b.rallyPoint!==undefined&&(b.type!=='barracks'||!point(b.rallyPoint)||!Number.isInteger(b.rallyPoint.x)||!Number.isInteger(b.rallyPoint.y)))throw new Error('Ungültiger Sammelpunkt.');
+    if(b.productionRemaining!==undefined&&(!Number.isInteger(b.productionRemaining)||b.productionRemaining<0||b.productionRemaining>999))throw new Error('Ungültiger Produktionsauftrag.');
+  }
   return s;
 }

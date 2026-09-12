@@ -1,0 +1,14 @@
+#operations-building{padding:8px 0;border-top:1px solid #ac956450}
+#operations-building label,.carrier-reserve,#operations-dialog label{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+#operations-building input,.carrier-reserve input{width:72px}
+#operations-building button,#operations-building input,#operations-building select,.carrier-reserve input,#operations-dialog button,#operations-dialog select{min-height:44px;padding:6px 10px;color:#f8e6b9;background:#42462d;border:1px solid #b6a170;font:inherit;border-radius:3px;box-sizing:border-box}
+#operations-building p,.carrier-reserve small{font-size:12px;line-height:1.5}
+#training-list>div{padding:6px 0;border-top:1px solid #b6a17040}
+#operations-feedback{color:#f4d588}
+#operations-dialog{width:min(700px,92vw);max-height:88dvh;background:#35291c;color:#f4e2b8;border:4px double #b99c61;border-radius:8px;padding:18px;box-sizing:border-box}
+#operations-dialog::backdrop{background:#151c11bb}
+#operations-dialog header{position:sticky;top:-18px;background:#35291c;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0}
+#operations-dialog h2{font:700 24px Georgia,serif;margin:0}
+.operations-row{padding:10px 0;border-top:1px solid #b6a17040;font-size:14px;line-height:1.5}
+.operations-row button{width:100%;text-align:left}
+#operations-dialog :focus-visible,#operations-building :focus-visible{outline:2px solid #f8d780;outline-offset:2px}
