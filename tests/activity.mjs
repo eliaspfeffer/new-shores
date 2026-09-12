@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import {constructionStage,workActivity} from '../src/activity.js';
+import {recipes,createStrategy} from '../src/strategy.js';
+assert.deepEqual([0,.2,.6,.9,1].map(constructionStage),['Fundament','Mauerwerk','Dachstuhl','Dach & Ausbau','Fertig']);
+const mine={type:'coalmine',progress:1,buffer:{bread:2}},staff={phase:'staffWork',employerIndex:0};
+assert.equal(workActivity(staff,[mine],recipes,()=>null),null,'exhausted mine never animates production');
+assert.equal(workActivity(staff,[mine],recipes,()=>({amount:3})),'craft');
+mine.stopped=true;assert.equal(workActivity(staff,[mine],recipes,()=>({amount:3})),null);mine.stopped=false;mine.buffer.bread=0;assert.equal(workActivity(staff,[mine],recipes,()=>({amount:3})),null);
+assert.equal(workActivity({phase:'idle'},[],recipes),null);
+assert.equal(workActivity({phase:'working',gather:{type:'woodcutter'},task:{}},[],recipes),'chop');
+assert.equal(workActivity({phase:'working',task:{progress:.5}},[],recipes),'build');
+assert.equal(workActivity({unit:'geologist',phase:'action'},[],recipes),'survey');
+const terrain=Array.from({length:50},()=>Array(50).fill('grass')),workers=[{id:0,x:25.5,y:26.5,phase:'idle'}],buildings=[{type:'storehouse',x:25,y:25,progress:1}],stock={tools:1},selected=new Set(),messages=[];
+let blockedCenter=true;
+const strategy=createStrategy({workers,buildings,terrain,trees:[],rocks:[],resources:()=>stock,selected,hud(){},toast:m=>messages.push(m),entrance:b=>({x:b.x+.5,y:b.y+1.5}),routeTo:(w,p)=>blockedCenter&&p.x===18.5&&p.y===22.5?null:[p],followRoute(w){const p=w.route?.at(-1);if(p)Object.assign(w,p);return true;},hasWater:()=>true,isSeen:()=>true});
+strategy.init();const geo=strategy.recruit('geologist');
+assert.ok(strategy.isRocky(18,22));assert.equal(strategy.isRocky(25,25),false);
+strategy.command({x:18,y:22});assert.equal(geo.phase,'command','blocked clicked tree/rock falls back to reachable adjacent tile');
+strategy.tickWorker(geo,1);assert.equal(geo.phase,'action');
+const saved=JSON.parse(JSON.stringify(geo));Object.assign(geo,saved); // Resume an in-flight JSON save, including the finite work queue.
+for(let i=0;i<150;i++)strategy.tickWorker(geo,1);
+assert.equal(strategy.state.deposits[0].discovered,true);assert.ok(geo.surveyDone>1,'multiple physical probes');assert.equal(geo.phase,'guard','completed surveys stop moving');
+const pos=[geo.x,geo.y];strategy.tickWorker(geo,50);assert.deepEqual([geo.x,geo.y],pos);
+strategy.command({x:18,y:22});strategy.stop();assert.equal(geo.surveyQueue.length,0);assert.equal(geo.phase,'guard');
+blockedCenter=false;strategy.surveyNearest();assert.equal(geo.phase,'command');
+assert.ok(!strategy.placement({x:18,y:22},'coalmine'));assert.ok(strategy.placement({x:18,y:22},'ironmine'));
+console.log('PASS: building phases, work-gated animation, blocked survey targets, successive probes, JSON resume, discovery, idle completion, stop and mine matching');

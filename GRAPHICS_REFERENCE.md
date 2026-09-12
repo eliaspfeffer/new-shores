@@ -1,5 +1,7 @@
 # Grafikreferenzen und aktueller Abgleich
 
+> Neuer Nachtrag: [Geologie, Figurenmenü und prozedurale Bau-/Arbeitsanimationen](AKTIVITAET_UPDATE.md). Vorhandene eigene Rastergrafiken weiterverwendet, Originalbild erneut betrachtet. Keine Behauptung vollständig verglichener Original-Animationsfolgen.
+
 > Neuerer UI-/Waren-/Erkundungsabgleich: [AUSBAU_AKTUELL.md](AUSBAU_AKTUELL.md). Schwarzer Erkundungsnebel und ein neues Warengrafikset sind inzwischen implementiert; ältere „offen“-Angaben unten beschreiben den früheren Stand.
 
 ## Nachtrag: rote Gebietsgrenzen

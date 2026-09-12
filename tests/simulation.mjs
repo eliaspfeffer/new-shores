@@ -7,6 +7,7 @@ import {wheelAction,demolitionRefund} from '../src/interaction.js';
 import {createExploration} from '../src/exploration.js';
 import {createWorkforce} from '../src/workforce.js';
 import {parseSave} from '../src/savegames.js';
+import {constructionStage,workActivity} from '../src/activity.js';
 import {goodsOrder,goodsNames,buildingNames,hasVisibleCargo,cargoPose} from '../src/goods.js';
 const map=Array.from({length:5},()=>Array(5).fill('grass'));
 map[1][2]=map[2][2]=map[3][2]='water';
@@ -17,8 +18,8 @@ assert.equal(findPath({x:.5,y:.5},{x:1.5,y:1.5},map,new Set(['1,0','0,1']),new M
 assert.deepEqual([roadStage(9),roadStage(10),roadStage(49),roadStage(50)],[0,1,1,2]);
 assert.equal(walkSpeed(50),9/7);
 const elements=new Map(),storage=new Map();
-const node=()=>({classList:{add(){},remove(){},toggle(){},contains(){return true}},setAttribute(){},addEventListener(){},append(){},remove(){},querySelector:()=>node(),querySelectorAll:()=>[],style:{},getContext:()=>({}),textContent:''});
-const context={parseSave,createWorkforce,createExploration,goodsOrder,goodsNames,buildingNames,hasVisibleCargo,cargoPose,createGoodsArt:()=>({draw(){}}),wheelAction,demolitionRefund,createStrategy,recipes,extraBuildings,facing8,findPath,keyOf,roadStage,walkSpeed,Image:class{},document:{querySelector(k){if(!elements.has(k))elements.set(k,node());return elements.get(k)},querySelectorAll:()=>[],createElement:node,hidden:false},localStorage:{setItem:(k,v)=>storage.set(k,v),getItem:k=>storage.get(k)},addEventListener(){},requestAnimationFrame(){},setTimeout(){},innerWidth:1600,innerHeight:900,devicePixelRatio:1,console};
+const node=()=>({classList:{add(){},remove(){},toggle(){},contains(){return true}},setAttribute(){},addEventListener(){},append(){},after(){},remove(){},querySelector:()=>node(),querySelectorAll:()=>[],style:{},getContext:()=>({}),textContent:''});
+const context={constructionStage,workActivity,createSound:()=>({play(){},setEnabled(){}}),parseSave,createWorkforce,createExploration,goodsOrder,goodsNames,buildingNames,hasVisibleCargo,cargoPose,createGoodsArt:()=>({draw(){}}),wheelAction,demolitionRefund,createStrategy,recipes,extraBuildings,facing8,findPath,keyOf,roadStage,walkSpeed,Image:class{},document:{querySelector(k){if(!elements.has(k))elements.set(k,node());return elements.get(k)},querySelectorAll:()=>[],createElement:node,hidden:false},localStorage:{setItem:(k,v)=>storage.set(k,v),getItem:k=>storage.get(k)},addEventListener(){},requestAnimationFrame(){},setTimeout(){},innerWidth:1600,innerHeight:900,devicePixelRatio:1,console};
 vm.createContext(context);
 const source=fs.readFileSync(new URL('../src/main.js',import.meta.url),'utf8').replace(/^import .*\n/gm,'').replaceAll('import.meta.env.DEV','false').replace(/new URL\([^\n]+?import.meta.url\).href/g,"'test-image.png'");
 vm.runInContext(source+`;globalThis.qa={workforce,exploration,growTree,nearby,workers,buildings,trees,rocks,traffic,trailEdges,terrain,updateWorkers,save,load,runProduction,strategy,selectedWorkers,placementReason,getBuildSites,hitBuilding,iso,setWorkingArea,demolishBuilding,getResources:()=>resources};`,context);

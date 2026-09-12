@@ -6,6 +6,8 @@ Winzige Siedler, warme isometrische Landschaften, sichtbare Warentransporte und 
 
 > **Spielbarer Prototyp, kein fertiges Remake.** Dieses Projekt ist weder das originale *Die Siedler IV* noch ein offizielles Produkt von Ubisoft oder Blue Byte. Es gibt derzeit keine native macOS-App, keine iOS-App und keine App-Store-Version. Desktop-Browser wurden geprüft; die Unterstützung echter iPhones ist noch nicht vollständig verifiziert.
 
+Aktueller Nachtrag: [Geologen, Bauphasen, Arbeitsdetails und Sound](AKTIVITAET_UPDATE.md). Das Repository ist inzwischen privat; die folgenden Bilder zeigen noch den vorherigen Stand.
+
 ## So sieht es tatsächlich aus
 
 Die Bilder zeigen den laufenden Prototyp mit einer über die normalen Bauaktionen errichteten Siedlung. Keine Konzeptbilder und keine Screenshots des Originalspiels.
@@ -95,7 +97,7 @@ npm run build
 npm run preview
 ```
 
-Die sechs Testsuiten prüfen unter anderem Produktion, Navigation, Direkttransport, Personal, Kampf, Erkundung, Abrissrückgaben und Spielstandvalidierung. Ein erfolgreicher Testlauf ist keine Garantie vollständiger Originaltreue oder Gerätekompatibilität.
+Die sieben Testsuiten prüfen unter anderem Produktion, Navigation, Direkttransport, Personal, Kampf, Geologensuche, Arbeitszustände, Erkundung, Abrissrückgaben und Spielstandvalidierung. Ein erfolgreicher Testlauf ist keine Garantie vollständiger Originaltreue oder Gerätekompatibilität.
 
 ## Grafik und Projektstatus
 
