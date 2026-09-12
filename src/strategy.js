@@ -54,10 +54,11 @@ export function createStrategy(api){
     for(const b of sources)for(let y=Math.max(0,Math.floor(b.y-b.r));y<Math.min(terrain.length,b.y+b.r+1);y++)for(let x=Math.max(0,Math.floor(b.x-b.r));x<Math.min(terrain[y].length,b.x+b.r+1);x++){const power=b.r-dist(b,{x,y});if(power>=0&&power>strengths[y][x]){strengths[y][x]=power;owners[y][x]=b.owner||1;}}
   }
   function ownerAt(x,y){return owners[y]?.[x]||0;}
-  function recruit(type,rank=1){
+  function recruit(type,rank=1,barracks=null){
     if(!['pioneer','geologist','swordsman','archer'].includes(type))return false;
     rank=Math.max(1,Math.min(3,Math.floor(Number(rank)||1)));
     const military=['swordsman','archer'].includes(type),resource=military?(type==='archer'?'bows':'swords'):'tools';
+    if(military&&barracks&&(!buildings.includes(barracks)||!own(barracks)||barracks.type!=='barracks'||barracks.progress<1||barracks.stopped))return toast('Diese Kaserne ist noch nicht einsatzbereit');
     if(military&&!buildings.some(b=>own(b)&&b.type==='barracks'&&b.progress>=1&&!b.stopped))return toast('Build an active barracks first');
     const w=workers.find(w=>!w.unit&&!w.carry&&w.phase==='idle');
     if(!w)return toast('No idle carrier available');

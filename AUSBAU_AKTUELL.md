@@ -2,6 +2,14 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Gebäudegebundene Bedienung
+
+- Gebäudeklick zeigt zusätzlich zur Seitenansicht eine verankerte Karte am Gebäude: aktueller Status, Warenbilder/Mengen und Zugang zu den Einstellungen. Bestände, Besatzung und Baufortschritt werden ohne erneutes Anklicken aktualisiert.
+- Rekrutierung und Rangwahl sind aus dem allgemeinen Siedlermenü zur angeklickten Kaserne verschoben. Eine angehaltene oder unfertige Kaserne kann darüber keine Soldaten ausbilden. Waffen und Gold werden weiterhin aus dem Hauptlager bezahlt.
+- „Besatzung heraus“ steht nur beim fertiggestellten Turm; ohne Besatzung ist der Button deaktiviert. Arbeitsgebiete bleiben bei Holzfäller/Steinmetz/Förster, Werkzeugaufträge bei der Schmiede. Unpassende Produktionsaktionen bei fertigen Wohnhäusern/Türmen/Hauptlager sind ausgeblendet. Globale Transportpriorität und Spezialistenbefehle bleiben im Hauptmenü.
+- Dachklicks priorisieren das vorn gezeichnete Gebäude statt eines dahinterliegenden Bodenfelds. Keine Originalgrafiken verändert oder übernommen; die neue Infokarte ist eine eigene Bedienlösung.
+- Prüfung: 17 Testsuiten, Simulation, Strategie und Build. Isolierter Browser-Klicktest für Kaserne, Rangkosten, Produktionsstopp, Turmfreigabe und Schließen der Gebäudekarte; Screenshot visuell geprüft. Keine Tests am persönlichen Spielstand.
+
 ## Neuester Stand: Minennahrung, Werkzeuge, Lager, Patrouillen und Spielziele
 
 Die folgenden Angaben ersetzen ältere Einschränkungen im historischen Protokoll:
