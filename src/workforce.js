@@ -9,6 +9,7 @@ export function createWorkforce(api){
     api.outdoor?.grow(dt);
     for(const w of workers){if(w.employerIndex===undefined)continue;const b=buildings[w.employerIndex];
       if(w.dead){if(b?.workerId===w.id)delete b.workerId;if(b)b.outputInTransit=false;delete w.employerIndex;continue;}
+      if(w.waypoints?.length&&['fieldWait','staffWait'].includes(w.phase)){release(w);continue;}
       if(!valid(b)||w.manualTarget){release(w);continue;}
       w.t=(w.t||0)+dt;
       if(w.phase==='staffTravel'&&followRoute(w,dt)){w.phase=api.moveInside?'staffWait':'staffWork';w.route=null;}

@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {createStrategy} from '../src/strategy.js';
+const terrain=Array.from({length:50},()=>Array(50).fill('grass')),buildings=[{x:25,y:25,type:'storehouse',progress:1}],workers=[{id:1,x:25.5,y:25.5,phase:'idle'}],selected=new Set([1]),visited=[];
+const s=createStrategy({terrain,buildings,workers,trees:[],rocks:[],selected,resources:()=>({}),toast(){},hud(){},entrance:b=>({x:b.x+.5,y:b.y+1.5}),routeTo:(w,p)=>p.x===9.5?null:[p],followRoute(w){const p=w.route.at(-1);Object.assign(w,p);visited.push([Math.floor(p.x),Math.floor(p.y)]);return true;}});
+s.init();s.command({x:26,y:25});s.command({x:27,y:25},true);s.command({x:28,y:25},true);
+Object.assign(workers[0],JSON.parse(JSON.stringify(workers[0])));
+for(let i=0;i<6;i++)s.tickWorker(workers[0],1);
+assert.deepEqual(visited,[[26,25],[27,25],[28,25]],'queued movement order survives JSON roundtrip');
+s.command({x:26,y:25});s.command({x:27,y:25},true);s.stop();assert.equal(workers[0].waypoints.length,0);assert.equal(workers[0].manualTarget,undefined);
+s.command({x:26,y:25});s.command({x:27,y:25},true);s.command({x:29,y:25});assert.equal(workers[0].waypoints.length,0,'new direct command replaces queue');
+s.command({x:9,y:25},true);s.command({x:30,y:25},true);for(let i=0;i<6;i++)s.tickWorker(workers[0],1);assert.equal(Math.floor(workers[0].x),30,'blocked queued destination skipped');
+s.command({x:26,y:25});for(let i=0;i<40;i++)s.command({x:27,y:25},true);assert.equal(workers[0].waypoints.length,32);assert.equal(s.command({x:-1,y:25},true),false);
+console.log('PASS: waypoint order, save/restore, halt, replacement, blocked target and queue limit');
