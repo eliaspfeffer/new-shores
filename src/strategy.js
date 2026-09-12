@@ -137,7 +137,7 @@ export function createStrategy(api){
     if(w.dead||w.garrisonIndex!==undefined)return true;
     if(w.patrol&&w.phase==='guard'){
       const target=w.patrol.points[w.patrol.next],route=routeTo(w,{x:target.x+.5,y:target.y+.5});
-      if(route){w.route=route;w.routeIndex=0;w.phase='patrol';w.patrol.next=1-w.patrol.next;}
+      if(route){w.route=route;w.routeIndex=0;w.phase='patrol';w.patrol.next=(w.patrol.next+1)%w.patrol.points.length;}
       else {delete w.patrol;toast('Patrouille beendet: Laufweg blockiert');}
     }
     if(w.waypoints?.length&&!w.manualTarget&&['idle','guard'].includes(w.phase)&&!w.carry)command(w.waypoints.shift(),false,[w]);
@@ -216,15 +216,23 @@ export function createStrategy(api){
   function readyToBuild(b){return !b.materials||b.materialsSpent||Object.entries(b.materials).every(([k,n])=>(b.buffer?.[k]||0)>=n);}
   function clearAutonomy(w){w.autoWork=false;w.waypoints=[];delete w.workArea;delete w.workSite;delete w.surveyQueue;delete w.surveyVisited;delete w.surveyStatus;w.workRetry=0;}
   function returnSpecialists(){let n=0;for(const w of workers)if(api.selected.has(w.id)&&own(w)&&alive(w)&&['pioneer','geologist'].includes(w.unit)){clearAutonomy(w);delete w.unit;delete w.order;delete w.rank;w.role='carrier';w.phase='idle';w.route=null;returnTool(stock(),w.specialTool||'tools');delete w.specialTool;n++;}api.hud();toast(n+' Spezialisten sind wieder Träger');return n;}
-  function patrol(g){
+  function patrol(g,append=false){
     if(!g||!Number.isInteger(g.x)||!Number.isInteger(g.y)||!terrain[g.y]?.[g.x])return false;
     let count=0;
     for(const w of workers)if(api.selected.has(w.id)&&own(w)&&alive(w)&&isMilitary(w)&&w.garrisonIndex===undefined){
       const start={x:Math.floor(w.x),y:Math.floor(w.y)},target={x:g.x,y:g.y};
+      if(append){
+        const p=w.patrol;if(!p||p.points.length>=8||p.points.some(o=>o.x===g.x&&o.y===g.y))continue;
+        const last=p.points.at(-1),first=p.points[0],center=o=>({x:o.x+.5,y:o.y+.5});
+        if(!routeTo(center(last),center(target))||!routeTo(center(target),center(first)))continue;
+        // If the old final point is next/underway, visit the appended point before returning.
+        if(p.next===0)p.next=p.points.length;
+        p.points.push(target);count++;continue;
+      }
       if(start.x===target.x&&start.y===target.y||!routeTo(w,{x:g.x+.5,y:g.y+.5}))continue;
-      w.patrol={points:[start,target],next:1};w.waypoints=[];delete w.manualTarget;w.order=null;w.route=null;w.phase='guard';count++;
+      clearHealing(w);w.patrol={points:[start,target],next:1};w.waypoints=[];delete w.manualTarget;w.order=null;w.route=null;w.phase='guard';count++;
     }
-    toast(count?count+' Soldaten patrouillieren zwischen Start und Ziel':'Erreichbares Ziel und freie Soldaten auswählen');api.hud();return count>0;
+    toast(count?count+(append?' Patrouillen um einen Punkt erweitert':' Soldaten auf Patrouille'):append?'Bestehende Patrouille wählen: maximal 8 unterschiedliche, erreichbare Punkte':'Erreichbares Ziel und freie Soldaten auswählen');api.hud();return count>0;
   }
   function setCombatStance(stance){if(!['defend','march'].includes(stance))return false;let n=0;for(const w of workers)if(api.selected.has(w.id)&&own(w)&&alive(w)&&isMilitary(w)){w.combatStance=stance;n++;}toast(n+' Soldaten: '+(stance==='march'?'nur marschieren, kein Gegenangriff':'Gegner in Reichweite bekämpfen'));api.hud();return n>0;}
   return {state,init,restore,tick,tickWorker,produce,recruit,command,patrol,stop,release,ownerAt,placement,recalculate,isMilitary,readyToBuild,returnSpecialists,depositFor,isRocky,surveyNearest,setCombatStance,selectWounded};

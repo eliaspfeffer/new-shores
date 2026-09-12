@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {createStrategy} from '../src/strategy.js';
+import {parseSave} from '../src/savegames.js';
 const workers=[{id:1,unit:'swordsman',owner:1,x:25.5,y:24.5,hp:55,phase:'guard'}],visited=[],selected=new Set([1]);let blocked=false;
 const s=createStrategy({terrain:Array.from({length:50},()=>Array(50).fill('grass')),buildings:[{x:25,y:25,type:'storehouse',progress:1}],workers,trees:[],rocks:[],resources:()=>({}),selected,toast(){},hud(){},entrance:b=>({x:b.x+.5,y:b.y+1.5}),routeTo:(w,p)=>blocked?null:[p],followRoute(w){Object.assign(w,w.route.at(-1));visited.push([w.x,w.y]);return true;}});
 assert.equal(s.patrol({x:27,y:24}),true);Object.assign(workers[0],JSON.parse(JSON.stringify(workers[0])));for(let i=0;i<4;i++)s.tickWorker(workers[0],1);
@@ -8,3 +9,18 @@ workers.push({id:2,unit:'swordsman',owner:2,x:25.6,y:24.5,hp:5,phase:'guard'});s
 s.stop();assert.equal(workers[0].patrol,undefined);s.patrol({x:26,y:24});s.command({x:28,y:24});assert.equal(workers[0].patrol,undefined);s.patrol({x:26,y:24});blocked=true;s.tickWorker(workers[0],1);assert.equal(workers[0].patrol,undefined);assert.equal(workers[0].phase,'guard');
 workers[0].unit='pioneer';assert.equal(s.patrol({x:27,y:24}),false);assert.equal(s.patrol({x:-1,y:24}),false);
 console.log('PASS: repeat patrol, saved endpoints, combat/resumption, halt/new-order cancellation and blocked route');
+blocked=false;workers[0].unit='swordsman';Object.assign(workers[0],{x:25.5,y:24.5,phase:'guard',cooldown:0});visited.length=0;
+assert.equal(s.patrol({x:27,y:24},true),false,'append needs an existing patrol');
+s.patrol({x:27,y:24});s.tickWorker(workers[0],1);
+assert.equal(s.patrol({x:27,y:26},true),true,'extend after reaching old endpoint');
+assert.equal(s.patrol({x:25,y:26},true),true);
+const save={version:6,resources:{},buildings:[{type:'storehouse',x:25,y:25,progress:1}],roads:[],workers:[workers[0]]};
+Object.assign(workers[0],parseSave(JSON.stringify(save),['storehouse']).workers[0]);
+for(let i=0;i<7;i++)s.tickWorker(workers[0],1);
+assert.deepEqual(visited,[[27.5,24.5],[27.5,26.5],[25.5,26.5],[25.5,24.5],[27.5,24.5],[27.5,26.5],[25.5,26.5],[25.5,24.5]],'saved four-point route repeats in order');
+const before=JSON.stringify(workers[0]);blocked=true;assert.equal(s.patrol({x:28,y:26},true),false);assert.equal(JSON.stringify(workers[0]),before,'unreachable extension preserves order');blocked=false;
+assert.equal(s.patrol({x:25,y:24},true),false,'duplicate rejected');
+for(let x=28;x<32;x++)assert.equal(s.patrol({x,y:26},true),true);assert.equal(workers[0].patrol.points.length,8);assert.equal(s.patrol({x:32,y:26},true),false,'bounded route');
+for(const patrol of [{points:[{x:25,y:24}],next:0},{points:Array(9).fill({x:25,y:24}),next:0},{points:[{x:25,y:24},{x:27,y:24}],next:2},{points:[{x:25,y:24},{x:27,y:24}],next:.5}])assert.throws(()=>parseSave(JSON.stringify({...save,workers:[{...workers[0],patrol}]}),['storehouse']));
+s.stop();assert.equal(workers[0].patrol,undefined);
+console.log('PASS: four-point cyclic patrol, saved cursor, late extension, duplicate/unreachable/limit rejection, invalid save validation and stop');
