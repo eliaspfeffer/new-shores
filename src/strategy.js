@@ -1,4 +1,5 @@
 // Playable strategy layer. Balance values are prototype values, not original S4 constants.
+import {updateEnemyTactics} from './enemy-tactics.js';
 import {createArmyOrders,freeCarrier,towerCapacity} from './army-orders.js';
 import {editedPatrol} from './patrol-edit.js';
 import {productionInputs,feedMiner} from './nutrition.js';
@@ -138,6 +139,7 @@ export function createStrategy(api){
   function placement(g,type){if(ownerAt(g.x,g.y)!==1)return 'Build inside your territory; use a pioneer to expand';if(recipes[type]?.deposit&&!depositFor({...g,type}))return 'Geologist must discover the matching deposit nearby';return '';}
   function tickWorker(w,dt){
     if(w.dead||w.garrisonIndex!==undefined)return true;
+    if(api.tacticalAI)updateEnemyTactics(w,dt,{enabled:state.tacticalAI!==false,workers,terrain,routeTo,isMilitary});
     if(w.patrol&&w.phase==='guard'){
       const target=w.patrol.points[w.patrol.next],route=routeTo(w,{x:target.x+.5,y:target.y+.5});
       if(route){w.route=route;w.routeIndex=0;w.phase='patrol';w.patrol.next=(w.patrol.next+1)%w.patrol.points.length;}
@@ -150,9 +152,10 @@ export function createStrategy(api){
       w.t=(w.t||0)+dt;w.cooldown=Math.max(0,(w.cooldown||0)-dt);
       if(w.autoWork&&w.workArea&&w.phase==='guard'){w.workRetry=(w.workRetry||0)-dt;if(w.workRetry<=0){if(w.unit==='pioneer')nextPioneer(w);if(w.unit==='geologist')nextSurvey(w);}}
       if(w.unit==='medic'&&heal(w,dt))return true;
-      const enemy=isMilitary(w)&&w.combatStance!=='march'?workers.find(o=>alive(o)&&isMilitary(o)&&(o.owner||1)!==(w.owner||1)&&o.garrisonIndex===undefined&&dist(w,o)<(w.unit==='archer'?4:1.4)):null;
+      const enemy=isMilitary(w)&&w.combatStance!=='march'&&!['retreat','withdraw'].includes(w.tactics?.mode)?workers.find(o=>alive(o)&&isMilitary(o)&&(o.owner||1)!==(w.owner||1)&&o.garrisonIndex===undefined&&dist(w,o)<(w.unit==='archer'?4:1.4)):null;
       if(enemy){if(!w.cooldown){api.onEvent?.(w.unit==='archer'?'bow':'hit',w);const damage=(w.unit==='archer'?7:w.unit==='medic'?4:10)*(1+((w.rank||1)-1)*.4);if(w.unit==='archer')state.projectiles.push({x:w.x,y:w.y,fromX:w.x,fromY:w.y,targetId:enemy.id,owner:w.owner||1,damage,age:0});else damageUnit(enemy,damage);w.cooldown=1.2;w.direction=facing8(enemy.x-w.x,enemy.y-w.y);}return true;}
       if(w.phase==='patrol'){if(followRoute(w,dt)){w.phase='guard';w.route=null;}return true;}
+      if(w.phase==='enemyMove'){if(followRoute(w,dt)){w.phase='guard';w.route=null;}return true;}
       if(w.phase==='command'&&followRoute(w,dt)){w.phase='action';w.wait=0;}
       if(w.phase==='action'){
         w.wait+=dt;const b=buildings[w.order?.building];
@@ -224,7 +227,7 @@ export function createStrategy(api){
     for(let i=state.projectiles.length-1;i>=0;i--){const p=state.projectiles[i],target=workers.find(w=>w.id===p.targetId&&!w.dead&&w.garrisonIndex===undefined);p.age+=dt;if(!target||p.age>5){state.projectiles.splice(i,1);continue;}const dx=target.x-p.x,dy=target.y-p.y,d=Math.hypot(dx,dy),step=dt*7;if(d<=step){api.onEvent?.('hit',target);damageUnit(target,p.damage);state.projectiles.splice(i,1);}else{p.x+=dx/d*step;p.y+=dy/d*step;}}
     clock+=dt;if(clock<1)return;clock=0;recalculate();api.hud();
   }
-  function restore(s){state.carrierReserve=s?.carrierReserve??0;if(s)Object.assign(state,s);else {state.initialized=false;init();}for(const w of workers)if(['geologist','pioneer'].includes(w.unit)&&w.autoWork===undefined&&w.order){w.autoWork=true;w.workArea={x:w.order.x,y:w.order.y,radius:10};w.surveyVisited??=[];w.workRetry=0;}recalculate();}
+  function restore(s){state.tacticalAI=s?.tacticalAI!==false;state.carrierReserve=s?.carrierReserve??0;if(s)Object.assign(state,s);else {state.initialized=false;init();}for(const w of workers)if(['geologist','pioneer'].includes(w.unit)&&w.autoWork===undefined&&w.order){w.autoWork=true;w.workArea={x:w.order.x,y:w.order.y,radius:10};w.surveyVisited??=[];w.workRetry=0;}recalculate();}
   function release(b){if(!b||!own(b))return toast('Select your occupied tower first');const index=buildings.indexOf(b),p=entrance(b);if(!p)return toast('Tower entrance blocked');for(const w of workers)if(w.garrisonIndex===index){delete w.garrisonIndex;Object.assign(w,{x:p.x,y:p.y,phase:'guard',order:null});}b.garrison=0;recalculate();}
   function releaseOne(b,id){
     if(!buildings.includes(b)||b.type!=='tower'||!own(b))return false;

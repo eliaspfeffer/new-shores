@@ -7,6 +7,7 @@ export function parseSave(text,types,width=50,height=50){
   if(s.playerColor!==undefined&&!['red','blue','green','violet'].includes(s.playerColor))throw new Error('Ungültige Spielerfarbe.');
   if(s.saveName!==undefined&&(typeof s.saveName!=='string'||!s.saveName.trim()||s.saveName.length>48))throw new Error('Ungültiger Spielstandname.');
   const point=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.y>=0&&p.x<width&&p.y<height;
+  if(s.strategy?.tacticalAI!==undefined&&typeof s.strategy.tacticalAI!=='boolean')throw new Error('Ungültige Verteidigungs-KI.');
   if(s.strategy?.carrierReserve!==undefined&&(!Number.isInteger(s.strategy.carrierReserve)||s.strategy.carrierReserve<0||s.strategy.carrierReserve>50))throw new Error('Ungültige Trägerreserve.');
   if(s.journal!==undefined&&(!Array.isArray(s.journal)||s.journal.length>100||s.journal.some(e=>!e||typeof e.text!=='string'||e.text.length>300||!Number.isFinite(e.time)||e.time<0||!Number.isInteger(e.count)||e.count<1||e.count>999)))throw new Error('Ungültiges Meldungsjournal.');
   if(!s.resources||Object.entries(s.resources).some(([k,v])=>!/^[a-zA-Z][a-zA-Z0-9]{0,24}$/.test(k)||typeof v!=='number'||!Number.isFinite(v)||v<0))throw new Error('Ungültige Vorräte.');
@@ -45,5 +46,6 @@ export function parseSave(text,types,width=50,height=50){
     if(b.rallyPoint!==undefined&&(b.type!=='barracks'||!point(b.rallyPoint)||!Number.isInteger(b.rallyPoint.x)||!Number.isInteger(b.rallyPoint.y)))throw new Error('Ungültiger Sammelpunkt.');
     if(b.productionRemaining!==undefined&&(!Number.isInteger(b.productionRemaining)||b.productionRemaining<0||b.productionRemaining>999))throw new Error('Ungültiger Produktionsauftrag.');
   }
+  for(const w of s.workers||[])if(w.tactics&&(!point(w.tactics.home)||w.tactics.lastSeen!=null&&!point(w.tactics.lastSeen)||!['guard','return','retreat','wounded','withdraw','engage','pursue','blocked','search'].includes(w.tactics.mode)||!Number.isFinite(w.tactics.clock)||w.tactics.clock< -1||w.tactics.clock>1||!Number.isInteger(w.tactics.lost)||w.tactics.lost<0||w.tactics.lost>4))throw new Error('Ungültiger Verteidigungsauftrag.');
   return s;
 }

@@ -2,6 +2,23 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Gegnerische taktische Verteidigung
+
+Lazarett und Vollheilung waren bereits implementiert; dieser Lauf ergänzt stattdessen die bislang passiven gegnerischen Feldsoldaten.
+
+- Gegnerische Soldaten erkennen gegnerische Militärkräfte bis acht Felder Entfernung, verfolgen sie mit realen Laufwegen und kämpfen mit der bestehenden Nahkampf-/Geschosslogik.
+- Ihr gespeicherter Ausgangspunkt begrenzt die Verfolgung: Ziele jenseits von zwölf Feldern zum Ausgangspunkt werden nicht verfolgt. Nach Kontaktverlust wird höchstens vier Entscheidungsintervalle lang die letzte bekannte Position geprüft, danach kehren sie zurück. Ohne Bedrohung stehen sie still.
+- Bogenschützen versuchen Abstand zu halten; stark Verwundete ziehen sich zum Ausgangspunkt zurück. Keine kostenlose Heilung, keine neuen Einheiten oder Ressourcen.
+- Reaktion höchstens einmal pro Simulationssekunde je Gegner. Unpassierbare Wege lösen keine Teleportation aus. Rückzug und Abstandhalten unterbrechen das eigene Feuern zugunsten der Bewegung.
+- Im Pausenmenü über „Gegnerische Verteidigungs-KI“ abschaltbar. Einstellung, Ausgangspunkt, letzte bekannte Position und laufender Auftrag bleiben im Spielstand erhalten. Abgeschaltete KI beendet ihre Bewegungsaufträge beim Fortsetzen.
+- Die neue Bewegungsphase verwendet vorhandene Richtungs-/Laufbilder und Bewegungsgeräusche. Keine Grafiken ersetzt.
+
+Referenz: [Originalhandbuch, 6.4 und 13.2.2](https://manualmachine.com/gamespc/thesettlersiv/1119087-user-manual/) beschreibt Wache/Patrouille und Bogenschützen als Distanzkämpfer. Wahrnehmungsradius, Verfolgungsgrenze, Rückzugsgrenze von 30 % und Suchdauer sind **eigene, nicht originalverifizierte Regeln**. Wahrnehmung verwendet Entfernung, keine Sichtstrahlprüfung hinter Hindernissen.
+
+Dies ist ein taktisches Verteidigungsmodul, **keine vollständige Gegner-KI**: Wirtschaftsausbau, Rekrutierung, koordinierte Großangriffe, gegnerische Gebäudeeroberung, Spezialistenangriffe und Diplomatie bleiben offen. Es werden nur bereits vorhandene Feldsoldaten gesteuert.
+
+Prüfung: 27 Node-Testsuiten, separate Simulation/Strategie, Produktionsbuild und isolierte Desktop-/Touch-Browserprüfungen für echte Annäherung, Speicherung, Abschalten und Reload. Darstellung visuell geprüft; persönliche Spielstände unangetastet. Fortsetzung bleibt aktiv, da die Großsysteme weiterhin fehlen.
+
 ## Zehn ergänzte Wirtschafts-, Militär- und Bedienfunktionen
 
 1. **Kasernenwarteschlangen:** Bis 20 Aufträge mit jeweils 1–20 Schwertkämpfern, Bogenschützen oder Sanitätern, Rang 1–3. Nach acht Simulationssekunden wird ein erreichbarer freier Träger mit den vorhandenen Rekrutierungsregeln umgewandelt. Waffen/Gold werden erst dann abgezogen; Anhalten, fehlende Waren, Trägerreserve oder unerreichbarer Eingang blockieren den nächsten Abschluss. Abbrechen kostet keine Waren. Die direkte Sofortausbildung bleibt zusätzlich erhalten.

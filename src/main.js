@@ -98,7 +98,7 @@ for(const [type,[name,output]] of Object.entries(extraBuildings))buildDefs[type]
 const outdoor=createOutdoor({workers,buildings,terrain,trees,rocks,roads,routeTo,entrance,followRoute});
 buildDefs.warehouse={name:'Lagerhaus',icon:'⌂',wood:5,stone:4,copy:'Eigenes Warenlager. Verkürzt Transporte zwischen Betrieben.'};
 buildDefs.hospital={name:'Lazarett',icon:'♧',wood:3,stone:3,copy:'Ein Heiler versorgt verwundete Soldaten am Eingang nacheinander bis zur vollen Gesundheit.'};
-const strategy=createStrategy({outdoor,workers,buildings,terrain,trees,rocks,routeTo,entrance,followRoute,toast,hasWater,resources:()=>resources,priority:()=>priorityOrder,selected:selectedWorkers,hud:updateHud,isVisible:(x,y)=>exploration.sees(x,y),isSeen:(x,y)=>exploration.seen(x,y),directSupply:true,hasStaff:b=>workforce.hasStaff(b),onEvent:audibleEvent});
+const strategy=createStrategy({outdoor,workers,buildings,terrain,trees,rocks,routeTo,entrance,followRoute,toast,hasWater,resources:()=>resources,priority:()=>priorityOrder,selected:selectedWorkers,hud:updateHud,isVisible:(x,y)=>exploration.sees(x,y),isSeen:(x,y)=>exploration.seen(x,y),directSupply:true,tacticalAI:true,hasStaff:b=>workforce.hasStaff(b),onEvent:audibleEvent});
 const workforce=createWorkforce({outdoor,workers,buildings,recipes,entrance,routeTo,followRoute,moveInside:(w,p,dt)=>moveWorker(w,p.x,p.y,dt),canWork:b=>b.productionRemaining===0?false:recipes[b.type]?.deposit?Boolean(strategy.depositFor(b)):b.type==='forester'?Boolean(findPlantSite(b)):b.type==='fisher'?hasWater(b):true,resources:()=>resources});
 let quest=0;
 const quests=[
@@ -310,7 +310,7 @@ function makeTools(){
 function gridSprite(image,col,row,cols,rows,p,size){if(!image.complete||!image.naturalWidth)return false;const sw=image.naturalWidth/cols,sh=image.naturalHeight/rows,z=camera.zoom;ctx.drawImage(image,col*sw,row*sh,sw,sh,p.x-size*z/2,p.y-size*z*.92,size*z,size*z);return true;}
 function drawWorker(w){
   if(w.dead||w.garrisonIndex!==undefined||!exploration.sees(w.x,w.y))return;
-const activity=workActivity(w,buildings,recipes,b=>strategy.depositFor(b),b=>Boolean(findPlantSite(b)));const p=iso(w.x,w.y),z=camera.zoom,moving=['healTravel','patrol','outbound','inbound','relocating','supply','command','manual','staffTravel','staffEnter','staffExit','fieldTravel','fieldReturn','recoverCargo'].includes(w.phase);
+const activity=workActivity(w,buildings,recipes,b=>strategy.depositFor(b),b=>Boolean(findPlantSite(b)));const p=iso(w.x,w.y),z=camera.zoom,moving=['enemyMove','healTravel','patrol','outbound','inbound','relocating','supply','command','manual','staffTravel','staffEnter','staffExit','fieldTravel','fieldReturn','recoverCargo'].includes(w.phase);
   const row=w.unit?strategy.isMilitary(w)?2:3:moving?Math.floor((w.t||0)*5)%2:0;
   groundShadow(p,5);
   if(selectedWorkers.has(w.id)||inspectedWorker===w.id){ctx.strokeStyle=colorForOwner(w.owner,playerColor).light;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(p.x,p.y,10*z,5*z,0,0,Math.PI*2);ctx.stroke();}
