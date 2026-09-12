@@ -42,7 +42,7 @@ const assert=require('node:assert/strict');
     assert.ok(mineSite,'discovered deposit has a genuinely buildable mine site');
     await page.locator('#world').click({position:{x:mineSite.sx,y:mineSite.sy}});await page.click('[data-tool="inspect"]');
     await page.waitForFunction(()=>window.__newShores.buildings.some(b=>b.type==='coalmine'&&b.progress===1),null,{timeout:60000});
-    await page.waitForFunction(()=>window.__newShores.workers.some(w=>w.profession==='coalmine'&&w.phase==='staffWork'),null,{timeout:60000});
+    await page.waitForFunction(()=>window.__newShores.workers.some(w=>w.profession==='coalmine'&&w.phase==='staffWait'),null,{timeout:60000});
     await page.click('[data-command-tab="economy"]');
     await page.waitForFunction(()=>document.querySelector('#economy-report').innerText.includes('Brot'),null,{timeout:5000});
     console.log('PASS: discovery unlocks legal mine placement, construction, staffing and missing-food feedback');

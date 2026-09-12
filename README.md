@@ -97,7 +97,9 @@ npm run build
 npm run preview
 ```
 
-Die sieben Testsuiten prüfen unter anderem Produktion, Navigation, Direkttransport, Personal, Kampf, Geologensuche, Arbeitszustände, Erkundung, Abrissrückgaben und Spielstandvalidierung. Ein erfolgreicher Testlauf ist keine Garantie vollständiger Originaltreue oder Gerätekompatibilität.
+Die acht Testsuiten prüfen unter anderem Produktion, Navigation, Direkttransport, Personal, Kampf, autonome Spezialisten, Arbeitszustände, Baustufen, Erkundung, Abrissrückgaben und Spielstandvalidierung. Ein erfolgreicher Testlauf ist keine Garantie vollständiger Originaltreue oder Gerätekompatibilität.
+
+Aktuelles Update: [Autonomie, eigene Baustufen und Arbeitsplatzwege](AUTONOMIE_BAUPHASEN.md), einschließlich verbleibender Lücken und Prüfungen.
 
 ## Grafik und Projektstatus
 

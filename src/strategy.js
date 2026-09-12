@@ -62,7 +62,7 @@ export function createStrategy(api){
     if((stock()[resource]||0)<1)return toast('Need 1 '+resource);
     const gold=military?rank-1:0;if((stock().gold||0)<gold)return toast('Benötigt '+gold+' Gold für Rang '+rank);
     stock()[resource]--;if(gold)stock().gold-=gold;const maxHp=military?55+(rank-1)*20:30;Object.assign(w,{unit:type,rank:military?rank:1,maxHp,owner:1,role:type,hp:maxHp,phase:'guard',task:null,route:null});
-    api.selected.clear();api.selected.add(w.id);api.hud();toast(type+' ready — select a destination');return w;
+    clearAutonomy(w);api.selected.clear();api.selected.add(w.id);api.hud();toast(type+' ready — select a destination');return w;
   }
   function command(g){
     const chosen=workers.filter(w=>api.selected.has(w.id)&&own(w)&&alive(w));if(!chosen.length)return false;
@@ -70,18 +70,30 @@ export function createStrategy(api){
     let issued=0;
     chosen.forEach((w,i)=>{
       let target=b?entrance(b):{x:g.x+.5+(i%3)*.15,y:g.y+.5+Math.floor(i/3)*.15};
-      if(!target)return;let route=routeTo(w,target);if(!route&&w.unit==='geologist'){target=entrance(g);route=target&&routeTo(w,target);}if(!route)return;
+      if(!target)return;let route=routeTo(w,target);if(!route&&['geologist','pioneer'].includes(w.unit)){target=entrance(g);route=target&&routeTo(w,target);}if(!route)return;
       if(!w.unit){if(w.phase==='manual'){w.phase='idle';w.route=null;}w.manualTarget=target;issued++;return;}
       if(w.garrisonIndex!==undefined){const old=buildings[w.garrisonIndex];if(old)old.garrison=Math.max(0,(old.garrison||0)-1);delete w.garrisonIndex;}
-      Object.assign(w,{route,routeIndex:0,phase:'command',order:{x:g.x,y:g.y,building:b?buildings.indexOf(b):-1},wait:0});if(w.unit==='geologist'){w.surveyQueue=surveySites(g);w.surveyDone=0;w.surveyStatus='Unterwegs zum Suchgebiet';}issued++;
+      Object.assign(w,{route,routeIndex:0,phase:'command',order:{x:g.x,y:g.y,building:b?buildings.indexOf(b):-1},wait:0});
+      if(['geologist','pioneer'].includes(w.unit)){w.autoWork=true;w.workArea={x:g.x,y:g.y,radius:10};w.workRetry=0;w.surveyVisited=[];w.workSite=null;w.surveyStatus='Unterwegs ins Arbeitsgebiet';}
+      if(w.unit==='geologist'){w.surveyQueue=surveySites(g);w.surveyDone=0;}issued++;
     });recalculate();api.hud();toast(issued?`${issued} Einheiten beauftragt`:'Ziel ist nicht erreichbar');return true;
   }
-  function stop(){for(const w of workers)if(api.selected.has(w.id)){delete w.manualTarget;if(w.unit){w.route=null;w.order=null;w.surveyQueue=[];w.surveyStatus='Angehalten';w.phase='guard';}else if(w.phase==='manual'){w.route=null;w.phase='idle';}}}
+  function stop(){for(const w of workers)if(api.selected.has(w.id)){delete w.manualTarget;if(w.unit){w.route=null;w.order=null;w.surveyQueue=[];w.workSite=null;w.autoWork=false;w.surveyStatus='Angehalten';w.phase='guard';}else if(w.phase==='manual'){w.route=null;w.phase='idle';}}}
   function isRocky(x,y){return state.deposits.some(d=>dist(d,{x,y})<=2.7);}
-  function surveySites(origin){const sites=[];for(let y=Math.max(0,origin.y-5);y<=Math.min(terrain.length-1,origin.y+5);y++)for(let x=Math.max(0,origin.x-5);x<=Math.min(terrain[y].length-1,origin.x+5);x++)if(terrain[y][x]==='grass'&&isRocky(x,y)&&(x+y)%2===0)sites.push({x,y});return sites.sort((a,b)=>dist(a,origin)-dist(b,origin));}
+  function surveySites(origin){const sites=[],radius=origin.radius||10;for(let y=Math.max(0,origin.y-radius);y<=Math.min(terrain.length-1,origin.y+radius);y++)for(let x=Math.max(0,origin.x-radius);x<=Math.min(terrain[y].length-1,origin.x+radius);x++)if(dist(origin,{x,y})<=radius&&terrain[y][x]==='grass'&&isRocky(x,y)&&(x+y)%2===0)sites.push({x,y});return sites.sort((a,b)=>dist(a,origin)-dist(b,origin));}
+  function reserveSite(w,site){return !workers.some(o=>o!==w&&!o.dead&&o.autoWork&&o.unit===w.unit&&o.workSite?.x===site.x&&o.workSite?.y===site.y);}
   function nextSurvey(w){
-    while(w.surveyQueue?.length){const site=w.surveyQueue.shift();let p={x:site.x+.5,y:site.y+.5},route=routeTo(w,p);if(!route){p=entrance(site);route=p&&routeTo(w,p);}if(!route)continue;Object.assign(w,{route,routeIndex:0,phase:'command',wait:0,surveyStatus:'Nächste Bodenprobe'});return true;}
-    w.phase='guard';w.route=null;w.surveyStatus='Suchgebiet fertig';toast('Geologe: Suchgebiet untersucht. Neues felsiges Gebiet zuweisen.');return false;
+    const visited=new Set(w.surveyVisited||[]);if(!w.surveyQueue?.length&&w.autoWork)w.surveyQueue=surveySites(w.workArea).filter(s=>!visited.has(s.x+','+s.y));
+    while(w.surveyQueue?.length){const site=w.surveyQueue.shift();if(visited.has(site.x+','+site.y)||!reserveSite(w,site))continue;let p={x:site.x+.5,y:site.y+.5},route=routeTo(w,p);if(!route){p=entrance(site);route=p&&routeTo(w,p);}if(!route)continue;Object.assign(w,{workSite:site,route,routeIndex:0,phase:'command',wait:0,surveyStatus:'Autonom: nächste Bodenprobe'});return true;}
+    w.phase='guard';w.route=null;w.workSite=null;w.workRetry=8;w.surveyStatus='Arbeitsgebiet untersucht oder blockiert · wartet';return false;
+  }
+  function neutralFrontier(g){return terrain[g.y]?.[g.x]==='grass'&&ownerAt(g.x,g.y)===0&&[-2,-1,0,1,2].some(dx=>[-2,-1,0,1,2].some(dy=>ownerAt(g.x+dx,g.y+dy)===1));}
+  function nextPioneer(w){
+    const area=w.workArea;if(!area)return false;const sites=[];
+    for(let y=Math.max(1,area.y-area.radius);y<Math.min(terrain.length-1,area.y+area.radius+1);y++)for(let x=Math.max(1,area.x-area.radius);x<Math.min(terrain[y].length-1,area.x+area.radius+1);x++){const s={x,y};if(dist(s,area)<=area.radius&&neutralFrontier(s)&&reserveSite(w,s))sites.push(s);}
+    sites.sort((a,b)=>dist(a,w)+dist(a,area)*.3-dist(b,w)-dist(b,area)*.3);
+    for(const site of sites){const target={x:site.x+.5,y:site.y+.5},route=routeTo(w,target);if(!route)continue;Object.assign(w,{workSite:site,route,routeIndex:0,phase:'command',order:{...site,building:-1},wait:0,surveyStatus:'Autonom: nächste Grenzfläche'});return true;}
+    w.phase='guard';w.route=null;w.workSite=null;w.workRetry=8;w.surveyStatus='Keine erreichbare neutrale Grenzfläche im Arbeitsgebiet';return false;
   }
   function surveyNearest(){const w=workers.find(w=>api.selected.has(w.id)&&w.unit==='geologist'&&!w.dead);if(!w)return toast('Zuerst einen Geologen auswählen');const sites=state.deposits.filter(d=>!d.discovered&&(!api.isSeen||api.isSeen(d.x,d.y))).sort((a,b)=>dist(a,w)-dist(b,w));for(const d of sites){const p=entrance(d);if(p&&routeTo(w,p))return command(d);}toast('Kein erreichbares, unerforschtes Felsgebiet bekannt. Karte erkunden oder Ziel selbst zuweisen.');return false;}
   function depositFor(b){return state.deposits.find(d=>d.discovered&&d.type===recipes[b.type]?.deposit&&d.amount>0&&dist(b,d)<=2);}
@@ -92,6 +104,7 @@ export function createStrategy(api){
     if(w.phase==='manual'){w.t=(w.t||0)+dt;if(followRoute(w,dt)){w.route=null;w.phase='idle';}return true;}
     if(w.unit){
       w.t=(w.t||0)+dt;w.cooldown=Math.max(0,(w.cooldown||0)-dt);
+      if(w.autoWork&&w.workArea&&w.phase==='guard'){w.workRetry=(w.workRetry||0)-dt;if(w.workRetry<=0){if(w.unit==='pioneer')nextPioneer(w);if(w.unit==='geologist')nextSurvey(w);}}
       const enemy=isMilitary(w)?workers.find(o=>alive(o)&&isMilitary(o)&&(o.owner||1)!==(w.owner||1)&&o.garrisonIndex===undefined&&dist(w,o)<(w.unit==='archer'?4:1.4)):null;
       if(enemy){if(!w.cooldown){enemy.hp-=(w.unit==='archer'?7:10)*(1+((w.rank||1)-1)*.4);w.cooldown=1.2;w.direction=facing8(enemy.x-w.x,enemy.y-w.y);if(enemy.hp<=0){enemy.dead=true;api.selected.delete(enemy.id);if(own(enemy))stock().people=Math.max(0,stock().people-1);}}return true;}
       if(w.phase==='command'&&followRoute(w,dt)){w.phase='action';w.wait=0;}
@@ -102,9 +115,9 @@ export function createStrategy(api){
           else {b.garrison=(b.garrison||0)+1;w.garrisonIndex=buildings.indexOf(b);w.phase='garrison';recalculate();}
         }else if(w.unit==='geologist'){
           w.surveyStatus='Untersucht Boden · '+Math.min(100,Math.floor(w.wait/4*100))+' %';
-          if(w.wait>=4){const names={coal:'Kohle',ironOre:'Eisenerz',goldOre:'Golderz',sulfur:'Schwefel'};let found=false;for(const d of state.deposits)if(!d.discovered&&dist(w,d)<2.2){d.discovered=true;found=true;toast('Geologe: '+names[d.type]+' gefunden – '+d.amount+' Vorrat. Passende Mine in der Nähe bauen.');api.onEvent?.('survey',d);}w.surveyDone=(w.surveyDone||0)+1;if(found){w.surveyStatus='Vorkommen gefunden';}nextSurvey(w);}
+          if(w.wait>=4){const names={coal:'Kohle',ironOre:'Eisenerz',goldOre:'Golderz',sulfur:'Schwefel'};let found=false;for(const d of state.deposits)if(!d.discovered&&dist(w,d)<2.2){d.discovered=true;found=true;toast('Geologe: '+names[d.type]+' gefunden – '+d.amount+' Vorrat. Passende Mine in der Nähe bauen.');api.onEvent?.('survey',d);}w.surveyDone=(w.surveyDone||0)+1;const site=w.workSite||w.order;if(site){w.surveyVisited??=[];const key=site.x+','+site.y;if(!w.surveyVisited.includes(key))w.surveyVisited.push(key);}if(found){w.surveyStatus='Vorkommen gefunden';}nextSurvey(w);}
         }
-        else if(w.unit==='pioneer'&&w.wait>=4){const g=w.order;if(ownerAt(g.x,g.y)===0&&state.claims.length<150&&[-2,-1,0,1,2].some(dx=>[-2,-1,0,1,2].some(dy=>ownerAt(g.x+dx,g.y+dy)===1))){state.claims.push({x:g.x,y:g.y});recalculate();toast('Frontier expanded');}else toast('Pioneers expand neutral land beside your frontier');w.phase='guard';}
+        else if(w.unit==='pioneer'){w.surveyStatus='Versetzt Grenze · '+Math.min(100,Math.floor(w.wait/4*100))+' %';if(w.wait>=4){const g=w.order;if(g&&neutralFrontier(g)){state.claims.push({x:g.x,y:g.y});w.claimsMade=(w.claimsMade||0)+1;recalculate();}w.phase='guard';if(w.autoWork)nextPioneer(w);}}
         else if(!['geologist','pioneer'].includes(w.unit)&&w.wait>1)w.phase='guard';
       }return true;
     }
@@ -125,7 +138,7 @@ export function createStrategy(api){
           if((b.buffer?.[item]||0)+pending>=amount*(construction?1:2))continue;
           const dest=entrance(b);if(!dest)continue;
           const candidates=[];if(home&&source?.[item]>0)candidates.push({point:home,source});
-          if(!construction&&api.directSupply)for(const producer of buildings)if(producer!==b&&own(producer)&&producer.progress>=1&&producer.ready===item&&!workers.some(o=>o.task===producer)){const p=entrance(producer);if(p)candidates.push({point:p,producer});}
+          if(!construction&&api.directSupply)for(const producer of buildings)if(producer!==b&&own(producer)&&producer.progress>=1&&!producer.outputInTransit&&producer.ready===item&&!workers.some(o=>o.task===producer)){const p=entrance(producer);if(p)candidates.push({point:p,producer});}
           const routes=candidates.map(c=>({...c,pickup:routeTo(w,c.point),delivery:routeTo(c.point,dest)})).filter(c=>c.pickup&&c.delivery).sort((a,b)=>(a.pickup.length+a.delivery.length)-(b.pickup.length+b.delivery.length));
           const chosen=routes[0];if(!chosen)continue;const {pickup,delivery}=chosen;
           // Reserve stock now; cargo is not rendered until reaching storage.
@@ -146,9 +159,10 @@ export function createStrategy(api){
     if(d)d.amount--;b.ready=r.output;b.outputAmount=r.amount;return true;
   }
   function tick(dt){clock+=dt;if(clock<1)return;clock=0;recalculate();api.hud();}
-  function restore(s){if(s)Object.assign(state,s);else {state.initialized=false;init();}recalculate();}
+  function restore(s){if(s)Object.assign(state,s);else {state.initialized=false;init();}for(const w of workers)if(['geologist','pioneer'].includes(w.unit)&&w.autoWork===undefined&&w.order){w.autoWork=true;w.workArea={x:w.order.x,y:w.order.y,radius:10};w.surveyVisited??=[];w.workRetry=0;}recalculate();}
   function release(b){if(!b||!own(b))return toast('Select your occupied tower first');const index=buildings.indexOf(b),p=entrance(b);if(!p)return toast('Tower entrance blocked');for(const w of workers)if(w.garrisonIndex===index){delete w.garrisonIndex;Object.assign(w,{x:p.x,y:p.y,phase:'guard',order:null});}b.garrison=0;recalculate();}
   function readyToBuild(b){return !b.materials||b.materialsSpent||Object.entries(b.materials).every(([k,n])=>(b.buffer?.[k]||0)>=n);}
-  function returnSpecialists(){let n=0;for(const w of workers)if(api.selected.has(w.id)&&own(w)&&alive(w)&&['pioneer','geologist'].includes(w.unit)){delete w.unit;delete w.order;delete w.rank;w.role='carrier';w.phase='idle';w.route=null;stock().tools=(stock().tools||0)+1;n++;}api.hud();toast(n+' Spezialisten sind wieder Träger');return n;}
+  function clearAutonomy(w){w.autoWork=false;delete w.workArea;delete w.workSite;delete w.surveyQueue;delete w.surveyVisited;delete w.surveyStatus;w.workRetry=0;}
+  function returnSpecialists(){let n=0;for(const w of workers)if(api.selected.has(w.id)&&own(w)&&alive(w)&&['pioneer','geologist'].includes(w.unit)){clearAutonomy(w);delete w.unit;delete w.order;delete w.rank;w.role='carrier';w.phase='idle';w.route=null;stock().tools=(stock().tools||0)+1;n++;}api.hud();toast(n+' Spezialisten sind wieder Träger');return n;}
   return {state,init,restore,tick,tickWorker,produce,recruit,command,stop,release,ownerAt,placement,recalculate,isMilitary,readyToBuild,returnSpecialists,depositFor,isRocky,surveyNearest};
 }

@@ -52,6 +52,8 @@ Prompts: `assets/ART_PROMPTS.md`, Abschnitt „Referenzabgleich Landschaft“. D
 
 ## Arbeitsweise für weitere Grafikgruppen
 
+Baustufen-Update vom 12. September 2026: [Quellen, neu generierte Bildpaare, Prüfung und Grenzen](AUTONOMIE_BAUPHASEN.md). Eigenständige Fundament-/Rohbau-Assets für 23 Gebäudetypen, nicht aus Originalgrafiken ausgeschnitten.
+
 1. Originalversion und Volk des gewünschten Assets benennen.
 2. Passende Screenshots suchen und wirklich ansehen. Quellen dokumentieren; nicht bloß Suchergebnisbeschreibungen verwenden.
 3. Kamerawinkel, Silhouette, Farbfamilie, Größe relativ zu Figuren und Nachbargebäuden sowie Animation unterscheiden.

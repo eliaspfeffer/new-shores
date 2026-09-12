@@ -1,4 +1,5 @@
 import {parseSave} from './savegames.js';
+import {createConstructionArt,constructionLayers} from './construction.js';
 import {constructionStage,workActivity} from './activity.js';
 import {createSound} from './sound.js';
 import {createWorkforce} from './workforce.js';
@@ -44,6 +45,11 @@ const goodsArt=createGoodsArt(new URL('../assets/goods-atlas-keyed-v3.png',impor
 const trees=[], rocks=[], details=[];
 const traffic=new Map(), trailEdges=new Map(), trafficLastUsed=new Map();
 const controlGroups={};
+const constructionArt=createConstructionArt({
+basic:new URL('../assets/construction-basic-key-v1.png',import.meta.url).href,
+economy:new URL('../assets/construction-economy-key-v1.png',import.meta.url).href,
+industry:new URL('../assets/construction-industry-key-v1.png',import.meta.url).href
+});
 const unitNames={carrier:'Träger',builder:'Bauarbeiter',pioneer:'Pionier',geologist:'Geologe',swordsman:'Schwertkämpfer',archer:'Bogenschütze'};
 const sound=createSound();
 function audibleEvent(kind,point){if(paused||document.hidden||!active||!exploration.sees(point.x,point.y))return;const p=iso(point.x,point.y);if(p.x>240&&p.x<innerWidth&&p.y>0&&p.y<innerHeight)sound.play(kind);}
@@ -68,7 +74,7 @@ const buildDefs={
 };
 for(const [type,[name,output]] of Object.entries(extraBuildings))buildDefs[type]={name,icon:type==='barracks'?'⚔':'⚒',wood:4,stone:3,cycle:recipes[type]?.cycle,output,copy:recipes[type]?`Requires ${Object.entries(recipes[type].inputs).map(([k,n])=>n+' '+k).join(', ')||'no input goods'}. Produces ${recipes[type].amount} ${output}. Inputs arrive by carrier.`:'Recruit soldiers using the Units panel; weapons and an idle carrier are required.'};
 const strategy=createStrategy({workers,buildings,terrain,trees,rocks,routeTo,entrance,followRoute,toast,hasWater,resources:()=>resources,priority:()=>priorityOrder,selected:selectedWorkers,hud:updateHud,isVisible:(x,y)=>exploration.sees(x,y),isSeen:(x,y)=>exploration.seen(x,y),directSupply:true,hasStaff:b=>workforce.hasStaff(b),onEvent:audibleEvent});
-const workforce=createWorkforce({workers,buildings,recipes,entrance,routeTo,followRoute,resources:()=>resources});
+const workforce=createWorkforce({workers,buildings,recipes,entrance,routeTo,followRoute,moveInside:(w,p,dt)=>moveWorker(w,p.x,p.y,dt),canWork:b=>recipes[b.type]?.deposit?Boolean(strategy.depositFor(b)):b.type==='forester'?Boolean(findPlantSite(b)):b.type==='fisher'?hasWater(b):true,resources:()=>resources});
 let quest=0;
 const quests=[
   'Our people need timber. Build a woodcutter near the forest.',
@@ -162,18 +168,13 @@ function buildingShape(b){const p=iso(b.x+.5,b.y+.5),z=camera.zoom;const size=b.
 }
 function drawRoad(r){const p=iso(r.x+.5,r.y+.5);if(atlasCell(terrainAtlas,5,p,101,101,.5,.5))return;diamond(r.x,r.y,'#a88a55','#80693f')}
 function drawConstruction(b,p,size){
-  const z=camera.zoom,progress=b.progress;groundShadow(p,32);diamond(b.x,b.y,'#64583dcc','#b7a079');
-  // Stone foundation, rising walls, timber frame, then roof. Never ghost the finished roof.
-  for(let i=0;i<8;i++){const a=i*Math.PI/4;goodsArt.draw(ctx,'stone',p.x+Math.cos(a)*29*z,p.y+Math.sin(a)*12*z,13*z);}
-  const height=size*z*1.15*Math.max(0,(progress-.12)/.88);
-  if(height>0){ctx.save();ctx.beginPath();ctx.rect(p.x-size*z/2,p.y+size*z*.2-height,size*z,height);ctx.clip();buildingArt(b,p,size);ctx.restore();}
-  if(progress>.18&&progress<.94){const top=p.y-Math.min(size*.75,12+progress*size*.72)*z;ctx.save();ctx.strokeStyle='#73502c';ctx.lineWidth=3*z;
-    for(const dx of [-35,-13,13,35]){ctx.beginPath();ctx.moveTo(p.x+dx*z,p.y+6*z);ctx.lineTo(p.x+dx*z,top);ctx.stroke();}
-    for(let y=p.y-5*z;y>top;y-=16*z){ctx.beginPath();ctx.moveTo(p.x-38*z,y);ctx.lineTo(p.x+38*z,y);ctx.stroke();}
-    ctx.strokeStyle='#c19755';ctx.lineWidth=2*z;ctx.beginPath();ctx.moveTo(p.x-35*z,p.y+4*z);ctx.lineTo(p.x+35*z,top);ctx.stroke();ctx.restore();}
-  ctx.fillStyle='#24291c';ctx.fillRect(p.x-28*z,p.y+17*z,56*z,4*z);ctx.fillStyle='#e5bd61';ctx.fillRect(p.x-28*z,p.y+17*z,56*z*progress,4*z);
+  const z=camera.zoom,s=size*z,layers=constructionLayers(b.progress);groundShadow(p,30);
+  if(!constructionArt.has(b.type)){diamond(b.x,b.y,'#746448','#b7a079');return;}
+  constructionArt.draw(ctx,b.type,0,p,s);
+  const reveal=(amount,draw)=>{if(amount<=0)return;ctx.save();ctx.beginPath();ctx.rect(p.x-s/2,p.y+s*.17-s*1.15*amount,s,s*1.15*amount);ctx.clip();draw();ctx.restore();};
+  reveal(layers.shell,()=>constructionArt.draw(ctx,b.type,1,p,s));
+  reveal(layers.finished,()=>buildingArt(b,p,size));
 }
-function oldDrawWorker(w){const p=iso(w.x,w.y);let frame=0;if(w.carry==='wood')frame=3;else if(w.carry==='stone')frame=4;else if(w.phase==='working')frame=w.task?.type==='woodcutter'?5:w.task?.type==='quarry'?6:7;else if(w.phase==='outbound'||w.phase==='inbound'||w.phase==='relocating')frame=Math.floor(w.t*4)%2?1:2;if(inspectedWorker===w.id||selectedWorkers.has(w.id)){ctx.strokeStyle='#fff08a';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y,10*camera.zoom,5*camera.zoom,0,0,Math.PI*2);ctx.stroke();}groundShadow(p,5);atlasCell(workerAtlas,frame,p,34,34,.5,.9);if(w.carry&&!['wood','stone'].includes(w.carry)){const z=camera.zoom;ctx.beginPath();ctx.arc(p.x+7*z,p.y-11*z,3*z,0,Math.PI*2);ctx.fillStyle={planks:'#c69a55',grain:'#d7b84c',flour:'#eee3bf',food:'#c8813c'}[w.carry]||'#c69a55';ctx.fill();ctx.strokeStyle='#6a4324';ctx.stroke()}}
 function renderWorld(){ctx.clearRect(0,0,canvas.width/dpr,canvas.height/dpr);drawCachedGround();drawGeology();drawBuildSites();const key=(x,y)=>x+','+y,roadMap=new Map(roads.map(o=>[key(o.x,o.y),o])),rockMap=new Map(rocks.map(o=>[key(o.x,o.y),o])),detailMap=new Map(details.map(o=>[key(o.x,o.y),o])),buildingMap=new Map(buildings.map(o=>[key(o.x,o.y),o])),treeMap=new Map([...trees,...particles.filter(p=>p.kind==='fall').map(p=>({...p,fallLife:p.life}))].filter(o=>!buildingMap.has(key(o.x,o.y))).map(o=>[key(o.x,o.y),o])),workerMap=new Map();for(const w of workers){const k=key(Math.floor(w.x),Math.floor(w.y));if(!workerMap.has(k))workerMap.set(k,[]);workerMap.get(k).push(w)}ctx.save();for(let s=0;s<MAP_W+MAP_H;s++)for(let y=0;y<MAP_H;y++){const x=s-y;if(x<0||x>=MAP_W)continue;const p=iso(x+.5,y+.5);if(p.x<-150||p.x>innerWidth+150||p.y<-170||p.y>innerHeight+120)continue;const k=key(x,y),t=terrain[y][x],noise=seeded(x,y);if(t==='void')continue;drawTrail(x,y);const road=roadMap.get(k),rock=rockMap.get(k),tree=treeMap.get(k),detail=detailMap.get(k),building=buildingMap.get(k);if(road)drawRoad(road);if(detail&&!road&&!building&&!tree&&!rock)drawDetail(detail);if(rock)drawRock(rock);if(tree)drawTree(tree);if(building&&((building.owner||1)===1||exploration.sees(x,y))){buildingShape(building);drawBuildingGoods(building);}for(const worker of workerMap.get(k)||[])drawWorker(worker)}if(hovered&&hovered.x>=0&&hovered.y>=0&&hovered.x<MAP_W&&hovered.y<MAP_H&&terrain[hovered.y][hovered.x]!=='void')diamond(hovered.x,hovered.y,selectedTool==='inspect'?'#fff2':'#f7d65a55','#ffe47a');ctx.restore();if(selectionBox){ctx.strokeStyle='#f9df83';ctx.fillStyle='#ffdc6020';ctx.lineWidth=1;const b=selectionBox;ctx.fillRect(b.a.x,b.a.y,b.b.x-b.a.x,b.b.y-b.a.y);ctx.strokeRect(b.a.x,b.a.y,b.b.x-b.a.x,b.b.y-b.a.y);}if(++renderCount%8===0)renderMinimap()}
 function renderMinimap(){const w=minimap.width,h=minimap.height,cw=w/MAP_W,ch=h/MAP_H;miniCtx.fillStyle='#080b07';miniCtx.fillRect(0,0,w,h);for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){if(!exploration.seen(x,y))continue;const type=terrain[y][x];miniCtx.fillStyle=type==='water'?'#4b9ab0':type==='shore'?'#d8c17a':'#638f47';miniCtx.globalAlpha=exploration.sees(x,y)?1:.35;miniCtx.fillRect(x*cw,y*ch,Math.ceil(cw),Math.ceil(ch));}miniCtx.globalAlpha=1;for(const b of buildings){if(!exploration.sees(b.x,b.y))continue;miniCtx.fillStyle=(b.owner||1)===2?'#e64b39':'#f2dfad';miniCtx.fillRect(b.x*cw-1,b.y*ch-1,cw+2,ch+2);}for(const worker of workers){if(worker.dead||!exploration.sees(worker.x,worker.y))continue;miniCtx.fillStyle=(worker.owner||1)===2?'#e64b39':'#eee9bb';miniCtx.fillRect(worker.x*cw,worker.y*ch,1,1);}const center=screenToGrid(innerWidth/2,innerHeight/2);miniCtx.strokeStyle='#fff1b5';miniCtx.lineWidth=1;miniCtx.strokeRect((center.x-3)*cw,(center.y-3)*ch,cw*6,ch*6);}
 
@@ -198,7 +199,7 @@ function findPlantSite(b){for(let radius=1;radius<=3;radius++)for(let dy=-radius
 function growTree(b){const site=findPlantSite(b);if(!site)return false;trees.push({...site,v:seeded(site.x+elapsed,site.y),age:0});return true;}
 function runProduction(dt){for(const b of buildings){if(strategy.produce(b,dt))continue;const def=buildDefs[b.type];if(b.progress<1||!def?.cycle||['woodcutter','quarry'].includes(b.type))continue;let valid=!b.stopped&&(b.type!=='forester'||workforce.hasStaff(b));if(valid)b.work=(b.work||0)+dt;if(b.type==='woodcutter')valid=valid&&nearby(trees,b);if(b.type==='quarry')valid=valid&&nearby(rocks,b);if(b.type==='fisher')valid=valid&&hasWater(b);if(def.input)valid=valid&&resources[def.input]>0;if(valid&&b.work>=def.cycle&&!b.ready){b.work=0;if(def.input)resources[def.input]--;if(def.output==='trees'){growTree(b);toast('Forester planted a tree');updateHud()}else b.ready=def.output||(b.type==='woodcutter'?'wood':b.type==='quarry'?'stone':null);if(b.type==='woodcutter'){const i=trees.findIndex(t=>Math.abs(t.x-(b.area||b).x)+Math.abs(t.y-(b.area||b).y)<=3);if(i>=0)trees.splice(i,1)}if(b.type==='quarry'){const r=rocks.find(o=>Math.abs(o.x-(b.area||b).x)+Math.abs(o.y-(b.area||b).y)<=3);if(r&&--r.amount<=0)rocks.splice(rocks.indexOf(r),1)}}}}
 function moveWorker(w,tx,ty,dt){const dx=tx-w.x,dy=ty-w.y,d=Math.hypot(dx,dy);if(d<.01)return true;const step=Math.min(d,dt*.72*(w.role==='carrier'?walkSpeed(traffic.get(keyOf(Math.floor(w.x),Math.floor(w.y)))):1));w.facing=dx-dy<0?-1:1;w.direction=facing8(dx,dy);w.x+=dx/d*step;w.y+=dy/d*step;recordWalk(w,w.x,w.y);return step>=d}
-function pickTask(){const construction=buildings.filter(b=>(b.owner||1)===1&&b.progress<1&&strategy.readyToBuild(b)&&!b.stopped&&!workers.some(w=>w.task===b)).sort((a,b)=>(b.priority?1:0)-(a.priority?1:0))[0];if(construction)return construction;return buildings.filter(b=>(b.owner||1)===1&&!b.stopped&&(b.ready||(b.progress>=1&&b.type==='woodcutter'&&nearby(trees,b))||(b.progress>=1&&b.type==='quarry'&&nearby(rocks,b)))&&!workers.some(w=>w.task===b)).sort((a,b)=>priorityOrder.indexOf(a.ready)-priorityOrder.indexOf(b.ready))[0]||null}
+function pickTask(){const construction=buildings.filter(b=>(b.owner||1)===1&&b.progress<1&&strategy.readyToBuild(b)&&!b.stopped&&!workers.some(w=>w.task===b)).sort((a,b)=>(b.priority?1:0)-(a.priority?1:0))[0];if(construction)return construction;return buildings.filter(b=>(b.owner||1)===1&&!b.stopped&&(b.ready&&!b.outputInTransit||(b.progress>=1&&b.type==='woodcutter'&&nearby(trees,b))||(b.progress>=1&&b.type==='quarry'&&nearby(rocks,b)))&&!workers.some(w=>w.task===b)).sort((a,b)=>priorityOrder.indexOf(a.ready)-priorityOrder.indexOf(b.ready))[0]||null}
 function deliveryAmount(item){return item==='food'?3:2}
 function followRoute(w,dt){const point=w.route?.[w.routeIndex];if(!point)return true;if(moveWorker(w,point.x,point.y,dt))w.routeIndex++;return w.routeIndex>=w.route.length}
 function updateWorkers(dt){
@@ -273,7 +274,7 @@ function makeTools(){
 function gridSprite(image,col,row,cols,rows,p,size){if(!image.complete||!image.naturalWidth)return false;const sw=image.naturalWidth/cols,sh=image.naturalHeight/rows,z=camera.zoom;ctx.drawImage(image,col*sw,row*sh,sw,sh,p.x-size*z/2,p.y-size*z*.92,size*z,size*z);return true;}
 function drawWorker(w){
   if(w.dead||w.garrisonIndex!==undefined||!exploration.sees(w.x,w.y))return;
-const activity=workActivity(w,buildings,recipes,b=>strategy.depositFor(b),b=>Boolean(findPlantSite(b)));const p=iso(w.x,w.y),z=camera.zoom,moving=['outbound','inbound','relocating','supply','command','manual','staffTravel'].includes(w.phase);
+const activity=workActivity(w,buildings,recipes,b=>strategy.depositFor(b),b=>Boolean(findPlantSite(b)));const p=iso(w.x,w.y),z=camera.zoom,moving=['outbound','inbound','relocating','supply','command','manual','staffTravel','staffEnter','staffExit'].includes(w.phase);
   const row=w.unit?strategy.isMilitary(w)?2:3:moving?Math.floor((w.t||0)*5)%2:0;
   groundShadow(p,5);
   if(selectedWorkers.has(w.id)||inspectedWorker===w.id){ctx.strokeStyle=(w.owner||1)===2?'#ec7971':'#fff08a';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(p.x,p.y,10*z,5*z,0,0,Math.PI*2);ctx.stroke();}
@@ -287,6 +288,8 @@ const activity=workActivity(w,buildings,recipes,b=>strategy.depositFor(b),b=>Boo
   if(w.unit){ctx.fillStyle=w.owner===2?'#df594d':'#84bbef';ctx.fillRect(p.x-7*z,p.y-32*z,14*z,2*z);ctx.fillStyle='#70b66a';ctx.fillRect(p.x-7*z,p.y-35*z,14*z*Math.max(0,(w.hp||0)/(w.maxHp||(strategy.isMilitary(w)?55:30))),2*z);}
   if(cargo&&!pose.behind)drawCargo();
   if(activity)drawWorkAction(w,p,activity);
+  if(w.workCarry)goodsArt.draw(ctx,w.workCarry,p.x+5*z,p.y-17*z,18*z);
+  if(w.inside){ctx.fillStyle='#221c1555';ctx.fillRect(p.x-11*z,p.y-5*z,22*z,5*z);}
 }
 let buildSitesKey='',buildSites=[];
 function getBuildSites(type){
@@ -320,9 +323,10 @@ function render(){renderWorld();drawWorkingArea();
     ctx.fillStyle=marker.owner===1?'#ff6556':'#ffe08b';ctx.beginPath();ctx.ellipse(p.x-r*.2,p.y-1-r*.35,r*.55,r*.32,0,0,Math.PI*2);ctx.fill();
   }
   for(const d of strategy.state.deposits){if(!d.discovered||!exploration.seen(d.x,d.y))continue;const p=iso(d.x+.5,d.y+.5),z=camera.zoom;ctx.fillStyle='#735333';ctx.fillRect(p.x-2*z,p.y-20*z,3*z,22*z);ctx.fillStyle='#e5cd8c';ctx.fillRect(p.x-13*z,p.y-37*z,26*z,22*z);goodsArt.draw(ctx,d.type,p.x,p.y-27*z,22*z);ctx.fillStyle='#231e13';ctx.font='bold '+Math.max(9,11*z)+'px sans-serif';ctx.textAlign='center';ctx.fillText(String(d.amount),p.x,p.y-40*z);ctx.textAlign='start';}
-  drawFog();
+  drawSpecialistArea();drawFog();
 }
 function selectBox(box,add=false){const hits=workers.filter(w=>!w.dead&&(w.owner||1)===1&&w.garrisonIndex===undefined).filter(w=>{const p=iso(w.x,w.y);return p.x>=Math.min(box.a.x,box.b.x)&&p.x<=Math.max(box.a.x,box.b.x)&&p.y>=Math.min(box.a.y,box.b.y)&&p.y<=Math.max(box.a.y,box.b.y);});const preferred=hits.find(w=>strategy.isMilitary(w))?.unit||hits.find(w=>w.unit)?.unit;if(!add)selectedWorkers.clear();for(const w of hits)if(preferred?w.unit===preferred:!w.unit)selectedWorkers.add(w.id);toast(`${selectedWorkers.size} ${preferred||'workers'} selected`);}
+function drawSpecialistArea(){for(const w of workers){if(!selectedWorkers.has(w.id)||!w.autoWork||!w.workArea)continue;const a=w.workArea,p=iso(a.x+.5,a.y+.5),z=camera.zoom;ctx.save();ctx.strokeStyle=w.unit==='pioneer'?'#f4c75e99':'#a0d4e899';ctx.lineWidth=1.5;ctx.setLineDash([5,5]);ctx.beginPath();ctx.ellipse(p.x,p.y,a.radius*TILE_W*.707*z,a.radius*TILE_H*.707*z,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);if(w.workSite){const t=iso(w.workSite.x+.5,w.workSite.y+.5);ctx.beginPath();ctx.ellipse(t.x,t.y,9*z,4*z,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}}
 function legacyInspectAt(p){const candidate=workers.filter(w=>w.unit&&!w.dead&&w.garrisonIndex===undefined).find(w=>{const q=iso(w.x,w.y);return Math.hypot(q.x-p.x,q.y-12*camera.zoom-p.y)<16;});if(candidate){selectedWorkers.clear();if((candidate.owner||1)===1)selectedWorkers.add(candidate.id);inspectedWorker=candidate.id;document.querySelector('#info-panel').classList.add('hidden');toast(`${candidate.unit} · ${Math.ceil(candidate.hp)} HP${candidate.owner===2?' · enemy':' · right-click or tap destination'}`);return;}oldInspectAt(p);}
 function updateHud(){baseUpdateHud();const rations=document.querySelector('#rations-count');if(rations)rations.textContent=(resources.bread||0)+(resources.fish||0)+(resources.meat||0);const stocks=document.querySelector('#strategy-stocks');if(stocks){const html=Object.entries(resources).filter(([k])=>!['people','beds','food'].includes(k)).map(([k,v])=>`<div class="stock-row">${goodIcon(k)}<span>${goodsNames[k]||k}</span><b>${Math.floor(v)}</b></div>`).join('');if(stocks.innerHTML!==html)stocks.innerHTML=html;}updateEconomyReport();updateUnitStatus();}
 document.querySelectorAll('[data-recruit]').forEach(button=>button.onclick=()=>{selectedTool='inspect';strategy.recruit(button.dataset.recruit,document.querySelector('#soldier-rank').value);updateUnitStatus();});
@@ -389,10 +393,10 @@ document.querySelector('#restart-button').onclick=()=>{localStorage.removeItem('
 document.querySelector('#help-button').onclick=()=>document.querySelector('#help-modal').classList.remove('hidden');
 document.querySelector('#close-help').onclick=()=>document.querySelector('#help-modal').classList.add('hidden');
 addEventListener('resize',resize);initWorld();strategy.init();exploration.update(buildings,workers);makeTools();initCommandSidebar();initSaveSlots();initDetails();updateHud();requestAnimationFrame(loop);
-if(import.meta.env.DEV)globalThis.__newShores={particles,getBuildSites,strategy,selectedWorkers,constructionStage,workActivity,terrain,buildings,roads,trees,rocks,details,workers,get resources(){return resources},get camera(){return camera}};
+if(import.meta.env.DEV)globalThis.__newShores={constructionArt,constructionLayers,workforce,particles,getBuildSites,strategy,selectedWorkers,constructionStage,workActivity,terrain,buildings,roads,trees,rocks,details,workers,get resources(){return resources},get camera(){return camera}};
 addEventListener('keydown',e=>{if(!active)return;if(demolitionTarget&&e.key!=='Escape')return;if(['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))return;if(/^[1-9]$/.test(e.key)&&(e.ctrlKey||e.metaKey)){e.preventDefault();controlGroups[e.key]=[...selectedWorkers];toast('Gruppe '+e.key+' gespeichert');return;}if(/^[1-9]$/.test(e.key)&&controlGroups[e.key]?.length){selectedWorkers.clear();for(const w of workers)if(controlGroups[e.key].includes(w.id)&&!w.dead&&(w.owner||1)===1)selectedWorkers.add(w.id);selectedTool='inspect';toast('Gruppe '+e.key+' ausgewählt');return;}if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();camera.x+=e.key==='ArrowLeft'?40:e.key==='ArrowRight'?-40:0;camera.y+=e.key==='ArrowUp'?40:e.key==='ArrowDown'?-40:0;return;}if(e.code==='Space'){e.preventDefault();paused=!paused;document.querySelector('#pause-modal').classList.toggle('hidden',!paused);return}if(e.key==='Escape'){commandMode=false;cancelDemolition();selectedWorkers.clear();inspectedWorker=null;settingArea=false;selectedTool='inspect';document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('active',x.dataset.tool==='inspect'));document.querySelector('#info-panel').classList.add('hidden');return}const keys=['inspect','woodcutter','quarry','house','tower','forester'];const tool=keys[Number(e.key)-1];if(tool){commandMode=false;settingArea=false;selectedWorkers.clear();selectedTool=tool;document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('active',x.dataset.tool===tool))}});
 
-function drawBuildingGoods(b){const p=iso(b.x+.5,b.y+.5),items=Object.entries(b.buffer||{}).filter(([,n])=>n>0).map(([k,n])=>[k,Math.min(n,3)]);if(b.ready)items.push([b.ready,Math.min(b.outputAmount||2,3)]);let offset=0;for(const [item,n] of items)for(let i=0;i<n;i++){goodsArt.draw(ctx,item,p.x+(-24+(offset%5)*11)*camera.zoom,p.y+(5+Math.floor(offset/5)*7)*camera.zoom,17*camera.zoom);offset++;}}
+function drawBuildingGoods(b){const p=iso(b.x+.5,b.y+.5),items=Object.entries(b.buffer||{}).filter(([,n])=>n>0).map(([k,n])=>[k,Math.min(n,3)]);if(b.ready&&!b.outputInTransit)items.push([b.ready,Math.min(b.outputAmount||2,3)]);let offset=0;for(const [item,n] of items)for(let i=0;i<n;i++){goodsArt.draw(ctx,item,p.x+(-24+(offset%5)*11)*camera.zoom,p.y+(5+Math.floor(offset/5)*7)*camera.zoom,17*camera.zoom);offset++;}}
 const fogCanvas=document.createElement('canvas');let fogKey='';
 function drawFog(){const key=[camera.x,camera.y,camera.zoom,innerWidth,innerHeight,exploration.revision].join(',');if(fogKey!==key){fogCanvas.width=innerWidth+64;fogCanvas.height=innerHeight+64;const c=fogCanvas.getContext('2d');c.translate(32,32);for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){if(exploration.sees(x,y))continue;const p=iso(x+.5,y+.5),a=TILE_W*camera.zoom/2,b=TILE_H*camera.zoom/2;if(p.x+a< -32||p.x-a>innerWidth+32||p.y+b< -32||p.y-b>innerHeight+32)continue;c.fillStyle=exploration.seen(x,y)?'rgba(3,8,4,.63)':'#030604';c.beginPath();c.moveTo(p.x-a-1,p.y);c.lineTo(p.x,p.y-b-1);c.lineTo(p.x+a+1,p.y);c.lineTo(p.x,p.y+b+1);c.closePath();c.fill();}fogKey=key;}ctx.save();ctx.filter='blur(9px)';ctx.drawImage(fogCanvas,-32,-32);ctx.restore();}
 
@@ -414,7 +418,7 @@ function drawWorkAction(w,p,kind){
 }
 function updateWorkSounds(){for(const w of workers){const kind=workActivity(w,buildings,recipes,b=>strategy.depositFor(b),b=>Boolean(findPlantSite(b))),beat=Math.floor((w.t||0)*1.2);if(kind&&w.soundBeat!==beat){w.soundBeat=beat;audibleEvent(kind,w);}}}
 function unitMenuArt(type){const special=['archer','pioneer','geologist'].includes(type),row=type==='geologist'?3:type==='pioneer'||type==='swordsman'?2:0;return `background-image:url("${(special?specialistAtlas:directionAtlas).src}");background-size:800% 400%;background-position:${2/7*100}% ${row/3*100}%`;}
-function updateUnitStatus(){const status=document.querySelector('#unit-status');if(!status)return;const selected=workers.filter(w=>selectedWorkers.has(w.id)&&!w.dead);status.textContent=selected.length?selected.map(w=>`${unitNames[w.unit]||buildingNames[w.profession]||unitNames[w.role]||'Siedler'}: ${w.unit==='geologist'?(w.surveyStatus||'Wartet auf Suchauftrag')+' · '+(w.surveyDone||0)+' Proben':w.phase==='guard'||w.phase==='idle'?'wartet':w.phase==='staffWork'?'am Arbeitsplatz':'im Einsatz'}`).join(' · '):'Siedler auswählen oder einen Spezialisten ausbilden.';document.querySelectorAll('[data-recruit]').forEach(b=>{const count=workers.filter(w=>w.unit===b.dataset.recruit&&!w.dead&&(w.owner||1)===1).length;const el=b.querySelector('.unit-count');if(el)el.textContent=count+' vorhanden';});}
+function updateUnitStatus(){const status=document.querySelector('#unit-status');if(!status)return;const selected=workers.filter(w=>selectedWorkers.has(w.id)&&!w.dead);status.textContent=selected.length?selected.map(w=>`${unitNames[w.unit]||buildingNames[w.profession]||unitNames[w.role]||'Siedler'}: ${['geologist','pioneer'].includes(w.unit)?(w.surveyStatus||'Wartet auf Suchauftrag')+(w.unit==='geologist'?' · '+(w.surveyDone||0)+' Proben':' · '+(w.claimsMade||0)+' Grenzflächen'):w.phase==='guard'||w.phase==='idle'?'wartet':w.phase==='staffWork'?'am Arbeitsplatz':'im Einsatz'}`).join(' · '):'Siedler auswählen oder einen Spezialisten ausbilden.';document.querySelectorAll('[data-recruit]').forEach(b=>{const count=workers.filter(w=>w.unit===b.dataset.recruit&&!w.dead&&(w.owner||1)===1).length;const el=b.querySelector('.unit-count');if(el)el.textContent=count+' vorhanden';});}
 function initDetails(){
   document.querySelectorAll('[data-recruit]').forEach(b=>{const type=b.dataset.recruit;b.classList.add('unit-card');b.innerHTML=`<span class="unit-preview" role="img" aria-label="${unitNames[type]}" style='${unitMenuArt(type)}'></span><strong>${unitNames[type]}</strong><small class="unit-count"></small>${goodAmount(type==='swordsman'?'swords':type==='archer'?'bows':'tools',1)}`;});
   const units=document.querySelector('.unit-buttons'),status=document.createElement('p');status.id='unit-status';units.after(status);
@@ -439,7 +443,23 @@ function initCommandSidebar(){
   document.querySelector('#economy-report').onclick=e=>{const b=e.target.closest('[data-building-index]');if(!b)return;const target=buildings[Number(b.dataset.buildingIndex)];if(!target)return;const p=iso(target.x+.5,target.y+.5);camera.x+=innerWidth/2+100-p.x;camera.y+=innerHeight/2-p.y;inspect(target);};
   showCommandPanel('build');
 }
-function updateEconomyReport(){const report=document.querySelector('#economy-report');if(!report)return;const html=buildings.map((b,i)=>{if((b.owner||1)!==1)return '';const r=recipes[b.type];let status=b.progress<1?'Baustelle · '+constructionStage(b.progress)+' · '+Math.round(b.progress*100)+' %':b.stopped?'Angehalten':b.ready?'Ware wartet auf Abholung':(r||b.type==='forester')&&!workforce.hasStaff(b)?'Kein Facharbeiter / Werkzeug':r?Object.entries(r.inputs).filter(([k,n])=>(b.buffer?.[k]||0)<n).map(([k])=>goodsNames[k]).join(', '):'';if(r&&status&&!status.startsWith('Kein')&&!b.ready&&!b.stopped&&b.progress>=1)status='Fehlt: '+status;if(!status&&b.progress>=1&&!b.stopped){if(b.type==='woodcutter'&&!nearby(trees,b))status='Keine ausgewachsenen Bäume im Arbeitsgebiet';if(b.type==='quarry'&&!nearby(rocks,b))status='Keine Steine im Arbeitsgebiet';if(r?.deposit&&!strategy.depositFor(b))status='Passendes Vorkommen fehlt oder ist erschöpft';if(b.type==='forester'&&!findPlantSite(b))status='Kein freier Pflanzplatz im Arbeitsgebiet';}if(!status)status=b.type==='storehouse'?'Zentrales Lager':r?'Produziert · '+Math.min(99,Math.floor((b.work||0)/r.cycle*100))+' %':'Bereit';return `<button data-building-index="${i}"><strong>${buildingNames[b.type]||b.name}</strong><span>${status}</span></button>`;}).join('');if(report.innerHTML!==html)report.innerHTML=html;}
+function updateEconomyReport(){
+  const report=document.querySelector('#economy-report');if(!report)return;
+  const html=buildings.map((b,i)=>{
+    if((b.owner||1)!==1)return '';const r=recipes[b.type],staff=workers.find(w=>!w.dead&&w.employerIndex===i);
+    let status='';
+    if(b.progress<1)status='Baustelle · '+constructionStage(b.progress)+' · '+Math.round(b.progress*100)+' %';
+    else if(b.stopped)status='Angehalten';
+    else if(b.ready)status=b.outputInTransit?'Ware auf dem Weg zum Ausgang':'Ware wartet auf Abholung';
+    else if((r||b.type==='forester')&&!staff)status='Kein Facharbeiter / Werkzeug';
+    else if(r?.deposit&&!strategy.depositFor(b))status='Vorkommen fehlt oder ist erschöpft';
+    else if(r){const missing=Object.entries(r.inputs).filter(([k,n])=>(b.buffer?.[k]||0)<n).map(([k])=>goodsNames[k]);if(missing.length)status='Fehlt: '+missing.join(', ');}
+    if(!status&&staff&&staff.phase!=='staffWork')status=workforce.status(b);
+    if(!status){if(b.type==='woodcutter'&&!nearby(trees,b))status='Keine ausgewachsenen Bäume im Arbeitsgebiet';if(b.type==='quarry'&&!nearby(rocks,b))status='Keine Steine im Arbeitsgebiet';if(b.type==='forester'&&!findPlantSite(b))status='Kein freier Pflanzplatz im Arbeitsgebiet';}
+    if(!status)status=b.type==='storehouse'?'Zentrales Lager':r?'Produziert · '+Math.min(99,Math.floor((b.work||0)/r.cycle*100))+' %':'Bereit';
+    return `<button data-building-index="${i}"><strong>${buildingNames[b.type]||b.name}</strong><span>${status}</span></button>`;
+  }).join('');if(report.innerHTML!==html)report.innerHTML=html;
+}
 
 function initSaveSlots(){
   const panel=document.querySelector('#save-slots');panel.innerHTML=[1,2,3].map(n=>`<div class="save-slot"><span id="slot-label-${n}">Platz ${n}</span><button data-store-slot="${n}">Sichern</button><button data-load-slot="${n}">Laden</button></div>`).join('');
