@@ -2,6 +2,13 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Militärbefehle: Rückzug und verteilte Marschziele
+
+- Ausgewählte Soldaten können zwischen „Gegner bekämpfen“ und „Nur marschieren“ wechseln. Im Marschmodus unterbricht Gegnerkontakt den Lauf nicht; eigene Angriffe und Angriffe auf feindliche Türme unterbleiben. Feindlicher Schaden und bereits abgefeuerte Geschosse bleiben wirksam. Der Modus bleibt gespeichert; ältere Spielstände behalten das bisherige Kampfverhalten.
+- Kompakte Marschziele, Reihe oder Block im Siedlermenü. Reihe/Block vergeben unterschiedliche erreichbare Zielplätze an Schwertkämpfer und Bogenschützen. Bei Wasser, Hindernissen oder Kartenrand werden nahe Ersatzplätze gesucht; ohne erreichbaren Platz bleibt die betreffende Einheit zurück. Das sind Zielaufstellungen, keine starren Formationen während des Laufens. Gebäudebefehle, Patrouillen und angehängte Shift-Wegpunkte behalten ihre bisherigen Regeln.
+- Eigene vereinfachte Bedienung, keine vollständig nachgebildeten Original-Kampfregeln. Hauptmänner, Sanitäter, Heilung, weitere Soldatentypen und koordinierte Original-Formationen bleiben offen.
+- Prüfung: 20 Testsuiten, Simulation-/Strategietests und Build bestanden. Isolierter Browserlauf für Moduswahl, drei unterschiedliche Zielplätze, Rückzug an einem Gegner vorbei ohne Gegenangriff und Speicherung; keine persönlichen Spielstände verändert.
+
 ## Lagerregeln und Umlagerung
 
 **Erweitert:** Zielvorräte lassen sich nun pro Ware von 0 bis 999 einstellen (alte Spielstände: 10). Jedes Lager kann das Hauptlager oder ein anderes eigenes Lager als Auffüllquelle verwenden. Ein Quelllager gibt für Umlagerungen nur Überschüsse über seinen eigenen aktiven Zielvorrat frei; das verhindert Pendeltransporte zwischen gegenseitigen Auffüllquellen. Verbrauch durch Produktionsbetriebe bleibt davon unabhängig. Wird die Quelle abgerissen, werden künftige Aufträge auf das Hauptlager zurückgesetzt; bestehende Transportmengen bleiben erhalten. Quellen und Mengen werden gespeichert und validiert. Bedienung und echte Lieferungen zwischen zwei Lagern mit Änderung der Zielmenge im Browser getestet; 19 Testsuiten und Build bestanden. Die schmale Darstellung der Quellen-/Zielmengenbeschriftung wurde bei der visuellen Prüfung korrigiert.

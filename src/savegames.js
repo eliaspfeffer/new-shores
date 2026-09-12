@@ -29,5 +29,6 @@ export function parseSave(text,types,width=50,height=50){
     if(b.storageTargets!==undefined&&(!b.storageTargets||typeof b.storageTargets!=='object'||Array.isArray(b.storageTargets)||Object.entries(b.storageTargets).some(([key,n])=>!depotGoods.includes(key)||!Number.isInteger(n)||n<0||n>999)))throw new Error('Ungültige Lagerzielmenge.');
     if(b.storageSource!==undefined&&(!Number.isInteger(b.storageSource)||b.storageSource<0||b.storageSource>=s.buildings.length||b.storageSource===index||b.storageSource!==0&&(s.buildings[b.storageSource].type!=='warehouse'||(s.buildings[b.storageSource].owner||1)!==1)))throw new Error('Ungültige Lagerquelle.');
   }
+  for(const w of s.workers||[])if(w.combatStance!==undefined&&!['defend','march'].includes(w.combatStance))throw new Error('Ungültiger Kampfbefehl.');
   return s;
 }

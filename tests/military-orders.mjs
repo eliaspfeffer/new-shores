@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {formationOrders} from '../src/formations.js';
+import {createStrategy} from '../src/strategy.js';
+import {parseSave} from '../src/savegames.js';
+const terrain=Array.from({length:50},()=>Array(50).fill('grass')),units=Array.from({length:6},(_,id)=>({id,x:20.5,y:20.5,unit:'swordsman',phase:'guard',hp:55}));
+terrain[20][19]='water';const routeTo=(w,p)=>p.x===21.5&&p.y===20.5?null:[p];
+const orders=formationOrders({x:20,y:20},units,'block',terrain,routeTo);assert.equal(orders.size,6);assert.equal(new Set([...orders.values()].map(o=>o.point.x+','+o.point.y)).size,6);for(const o of orders.values())assert.equal(terrain[Math.floor(o.point.y)][Math.floor(o.point.x)],'grass');
+assert.equal(formationOrders({x:0,y:0},units,'line',terrain,routeTo).size,6,'edge slots fall back to reachable map cells');assert.equal(formationOrders({x:20,y:20},units,'block',terrain,()=>null).size,0);
+const buildings=[{type:'storehouse',x:25,y:25,progress:1}],workers=[{id:1,unit:'swordsman',owner:1,x:20.5,y:20.5,hp:55,phase:'guard'},{id:2,unit:'swordsman',owner:2,x:20.6,y:20.5,hp:55,phase:'guard'}],selected=new Set([1]);let moved=0;
+const s=createStrategy({terrain,workers,buildings,trees:[],rocks:[],selected,resources:()=>({}),toast(){},hud(){},entrance:b=>({x:b.x+.5,y:b.y+1.5}),routeTo:(w,p)=>[p],followRoute(w){Object.assign(w,w.route.at(-1));moved++;return true;}});
+s.setCombatStance('march');s.command({x:25,y:20});s.tickWorker(workers[0],1);assert.equal(moved,1,'retreat is not cancelled by nearby enemy');assert.equal(workers[1].hp,55,'no counterattack');
+workers[0].x=20.5;workers[0].y=20.5;s.setCombatStance('defend');s.tickWorker(workers[0],1);assert.equal(workers[1].hp,45);
+const save={version:6,resources:{},buildings,workers,roads:[]};assert.ok(parseSave(JSON.stringify(save),['storehouse']));workers[0].combatStance='broken';assert.throws(()=>parseSave(JSON.stringify(save),['storehouse']));
+console.log('PASS: unique reachable formation slots, water/edge/blocked fallback, retreat without counterattack, restored defense and save validation');
