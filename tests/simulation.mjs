@@ -28,6 +28,8 @@ const elements=new Map(),storage=new Map();
 const node=()=>({classList:{add(){},remove(){},toggle(){},contains(){return true}},setAttribute(){},addEventListener(){},append(){},prepend(){},before(){},after(){},remove(){},querySelector:()=>node(),querySelectorAll:()=>[],style:{},getContext:()=>({}),textContent:''});
 const context={constructionLayers,createConstructionArt:()=>({has:()=>false}),constructionStage,workActivity,createSound:()=>({play(){},setEnabled(){}}),parseSave,createWorkforce,createExploration,goodsOrder,goodsNames,buildingNames,hasVisibleCargo,cargoPose,createGoodsArt:()=>({draw(){}}),wheelAction,demolitionRefund,createStrategy,recipes,extraBuildings,facing8,findPath,keyOf,roadStage,walkSpeed,Image:class{},document:{querySelector(k){if(!elements.has(k))elements.set(k,node());return elements.get(k)},querySelectorAll:()=>[],createElement:node,hidden:false},localStorage:{setItem:(k,v)=>storage.set(k,v),getItem:k=>storage.get(k)},addEventListener(){},requestAnimationFrame(){},setTimeout(){},innerWidth:1600,innerHeight:900,devicePixelRatio:1,console};
 context.document.addEventListener=()=>{};
+context.initAudioControls=()=>{};
+context.productionSounds={};
 Object.assign(context,{productionInputs,minePreferences,meals});
 Object.assign(context,{toolTypes,professionTools,checkoutTool,returnTool});
 context.createOutdoor=createOutdoor;

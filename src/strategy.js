@@ -149,7 +149,7 @@ export function createStrategy(api){
       if(w.autoWork&&w.workArea&&w.phase==='guard'){w.workRetry=(w.workRetry||0)-dt;if(w.workRetry<=0){if(w.unit==='pioneer')nextPioneer(w);if(w.unit==='geologist')nextSurvey(w);}}
       if(w.unit==='medic'&&heal(w,dt))return true;
       const enemy=isMilitary(w)&&w.combatStance!=='march'?workers.find(o=>alive(o)&&isMilitary(o)&&(o.owner||1)!==(w.owner||1)&&o.garrisonIndex===undefined&&dist(w,o)<(w.unit==='archer'?4:1.4)):null;
-      if(enemy){if(!w.cooldown){const damage=(w.unit==='archer'?7:w.unit==='medic'?4:10)*(1+((w.rank||1)-1)*.4);if(w.unit==='archer')state.projectiles.push({x:w.x,y:w.y,fromX:w.x,fromY:w.y,targetId:enemy.id,owner:w.owner||1,damage,age:0});else damageUnit(enemy,damage);w.cooldown=1.2;w.direction=facing8(enemy.x-w.x,enemy.y-w.y);}return true;}
+      if(enemy){if(!w.cooldown){api.onEvent?.(w.unit==='archer'?'bow':'hit',w);const damage=(w.unit==='archer'?7:w.unit==='medic'?4:10)*(1+((w.rank||1)-1)*.4);if(w.unit==='archer')state.projectiles.push({x:w.x,y:w.y,fromX:w.x,fromY:w.y,targetId:enemy.id,owner:w.owner||1,damage,age:0});else damageUnit(enemy,damage);w.cooldown=1.2;w.direction=facing8(enemy.x-w.x,enemy.y-w.y);}return true;}
       if(w.phase==='patrol'){if(followRoute(w,dt)){w.phase='guard';w.route=null;}return true;}
       if(w.phase==='command'&&followRoute(w,dt)){w.phase='action';w.wait=0;}
       if(w.phase==='action'){
@@ -157,11 +157,11 @@ export function createStrategy(api){
         if(isMilitary(w)&&b?.type==='hospital'&&own(b)){
           if(w.hp>=maxHealth(w)){w.phase='guard';w.order=null;toast('Soldat vollständig genesen');}return true;
         }else if(w.unit==='swordsman'&&b?.type==='tower'){
-          if(!own(b)){if(w.combatStance==='march'){w.phase='guard';w.order=null;return true;}if(w.wait>=1.2){b.hp=(b.hp??100)-12;w.wait=0;if(b.hp<=0){b.owner=1;b.hp=100;b.garrison=0;toast('Outpost captured');recalculate();}}}
+          if(!own(b)){if(w.combatStance==='march'){w.phase='guard';w.order=null;return true;}if(w.wait>=1.2){b.hp=(b.hp??100)-12;w.wait=0;if(b.hp<=0){b.owner=1;b.hp=100;b.garrison=0;api.onEvent?.('capture',b);toast('Outpost captured');recalculate();}}}
           else {b.garrison=(b.garrison||0)+1;w.garrisonIndex=buildings.indexOf(b);w.phase='garrison';recalculate();}
         }else if(w.unit==='geologist'){
           w.surveyStatus='Untersucht Boden · '+Math.min(100,Math.floor(w.wait/4*100))+' %';
-          if(w.wait>=4){const names={coal:'Kohle',ironOre:'Eisenerz',goldOre:'Golderz',sulfur:'Schwefel'};let found=false;for(const d of state.deposits)if(!d.discovered&&dist(w,d)<2.2){d.discovered=true;found=true;toast('Geologe: '+names[d.type]+' gefunden – '+d.amount+' Vorrat. Passende Mine in der Nähe bauen.');api.onEvent?.('survey',d);}w.surveyDone=(w.surveyDone||0)+1;const site=w.workSite||w.order;if(site){w.surveyVisited??=[];const key=site.x+','+site.y;if(!w.surveyVisited.includes(key))w.surveyVisited.push(key);}if(found){w.surveyStatus='Vorkommen gefunden';}nextSurvey(w);}
+          if(w.wait>=4){const names={coal:'Kohle',ironOre:'Eisenerz',goldOre:'Golderz',sulfur:'Schwefel'};let found=false;for(const d of state.deposits)if(!d.discovered&&dist(w,d)<2.2){d.discovered=true;found=true;toast('Geologe: '+names[d.type]+' gefunden – '+d.amount+' Vorrat. Passende Mine in der Nähe bauen.');api.onEvent?.('discovery',d);}w.surveyDone=(w.surveyDone||0)+1;const site=w.workSite||w.order;if(site){w.surveyVisited??=[];const key=site.x+','+site.y;if(!w.surveyVisited.includes(key))w.surveyVisited.push(key);}if(found){w.surveyStatus='Vorkommen gefunden';}nextSurvey(w);}
         }
         else if(w.unit==='pioneer'){w.surveyStatus='Versetzt Grenze · '+Math.min(100,Math.floor(w.wait/4*100))+' %';if(w.wait>=4){const g=w.order;if(g&&neutralFrontier(g)){state.claims.push({x:g.x,y:g.y,single:true});w.claimsMade=(w.claimsMade||0)+1;recalculate();}w.phase='guard';if(w.autoWork)nextPioneer(w);}}
         else if(!['geologist','pioneer'].includes(w.unit)&&w.wait>1)w.phase='guard';
@@ -208,7 +208,7 @@ export function createStrategy(api){
     if(r.deposit)b.miningEnergy--;else for(const [k,n] of Object.entries(r.inputs))b.buffer[k]-=n;
     if(d)d.amount--;b.ready=b.type==='toolsmith'?b.activeTool:r.output;delete b.activeTool;b.outputAmount=d?1:r.amount;return true;
   }
-  function damageUnit(target,damage){if(target.dead)return;target.hp-=damage;if(target.hp<=0){target.hp=0;target.dead=true;api.selected.delete(target.id);if(own(target))stock().people=Math.max(0,(stock().people||0)-1);}}
+  function damageUnit(target,damage){if(target.dead)return;target.hp-=damage;if(target.hp<=0){target.hp=0;target.dead=true;api.onEvent?.('death',target);api.selected.delete(target.id);if(own(target))stock().people=Math.max(0,(stock().people||0)-1);}}
   function tick(dt){
     for(const [index,b] of buildings.entries())if(b.type==='hospital'){
       b.healingActive=false;if(!own(b)||b.progress<1||b.stopped||!api.hasStaff?.(b))continue;
@@ -217,7 +217,7 @@ export function createStrategy(api){
       if(w){b.patientId=w.id;w.hp=Math.min(maxHealth(w),w.hp+dt*2);b.healingActive=true;}else delete b.patientId;
     }
     state.projectiles??=[];
-    for(let i=state.projectiles.length-1;i>=0;i--){const p=state.projectiles[i],target=workers.find(w=>w.id===p.targetId&&!w.dead&&w.garrisonIndex===undefined);p.age+=dt;if(!target||p.age>5){state.projectiles.splice(i,1);continue;}const dx=target.x-p.x,dy=target.y-p.y,d=Math.hypot(dx,dy),step=dt*7;if(d<=step){damageUnit(target,p.damage);state.projectiles.splice(i,1);}else{p.x+=dx/d*step;p.y+=dy/d*step;}}
+    for(let i=state.projectiles.length-1;i>=0;i--){const p=state.projectiles[i],target=workers.find(w=>w.id===p.targetId&&!w.dead&&w.garrisonIndex===undefined);p.age+=dt;if(!target||p.age>5){state.projectiles.splice(i,1);continue;}const dx=target.x-p.x,dy=target.y-p.y,d=Math.hypot(dx,dy),step=dt*7;if(d<=step){api.onEvent?.('hit',target);damageUnit(target,p.damage);state.projectiles.splice(i,1);}else{p.x+=dx/d*step;p.y+=dy/d*step;}}
     clock+=dt;if(clock<1)return;clock=0;recalculate();api.hud();
   }
   function restore(s){if(s)Object.assign(state,s);else {state.initialized=false;init();}for(const w of workers)if(['geologist','pioneer'].includes(w.unit)&&w.autoWork===undefined&&w.order){w.autoWork=true;w.workArea={x:w.order.x,y:w.order.y,radius:10};w.surveyVisited??=[];w.workRetry=0;}recalculate();}

@@ -170,7 +170,7 @@ Datei-Import/-Export und reale mobile Hardwaregesten sind implementiert, aber ni
 - Schiffe, Häfen, Werften, Fahrzeuge, Kriegsmaschinen und Transport-/Landungsregeln.
 - Dunkles Volk, Verderbnis, Morbus und zugehörige Gegenmaßnahmen.
 - Originalkampagnen, komplexe Missionsskripte, vollständige Gefechtskonfiguration, Kartenwahl/-editor, Schwierigkeit, Mehrspieler. Erste eigene Spielziele/Sieg-/Niederlagenzustände sind implementiert, siehe oben.
-- Vollständige Geräuschkulisse/Musik, berufsspezifische Gebäudeanimationen, weitere Umweltgrafiken und vollständiger Detailabgleich mit Originalaufnahmen.
+- Eigene Musik und synthetische Arbeits-/Transport-/Bau-/Kampf-/Naturgeräusche samt Lautstärkereglern sind implementiert, siehe [AUDIO.md](AUDIO.md). Noch offen: vollständiger Original-Hörvergleich, Sprachaufnahmen, weitere Musikvarianten und Audio noch fehlender Spielsysteme; außerdem berufsspezifische Gebäudeanimationen und weitere Umweltgrafiken.
 - Vollständige deutsche Texte, weitere Original-Untermenüs, Formationspatrouillen und echte Mobilgeräteprüfung. Mehrteilige Patrouillen einschließlich punktweisem Löschen/Umsortieren und Umkehren sind implementiert, siehe oben.
 
 ## Referenzen und neue Grafiken
