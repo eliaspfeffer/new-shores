@@ -51,7 +51,7 @@ const assert=require('node:assert/strict');
     assert.ok(saved.strategy.deposits.some(d=>d.discovered));assert.ok(saved.workers.find(w=>w.unit==='geologist').surveyQueue);
     await page.click('#sound-button');assert.equal(await page.locator('#sound-button').getAttribute('aria-pressed'),'true');
     await page.click('#sound-button');assert.equal(await page.locator('#sound-button').getAttribute('aria-pressed'),'false');
-    await page.reload();await page.waitForFunction(()=>Boolean(window.__newShores));await page.click('#continue-game');
+    await page.reload();await page.waitForFunction(()=>Boolean(window.__newShores));await page.waitForSelector('#game-screen.active');
     assert.ok(await page.evaluate(()=>window.__newShores.strategy.state.deposits.some(d=>d.discovered)));
     assert.deepEqual(errors,[]);
     console.log('PASS: material deliveries, staged construction, housing, survey save/reload, audio opt-in/out, zero page errors');

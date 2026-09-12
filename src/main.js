@@ -1,4 +1,5 @@
 import {parseSave} from './savegames.js';
+import {createOutdoor} from './outdoor.js';
 import {createConstructionArt,constructionLayers} from './construction.js';
 import {constructionStage,workActivity} from './activity.js';
 import {createSound} from './sound.js';
@@ -73,8 +74,9 @@ const buildDefs={
   fisher:{name:'Fisher Hut',icon:'⌁',wood:4,stone:1,cycle:10,output:'food',copy:'Catches two portions of food from coastal water.'}
 };
 for(const [type,[name,output]] of Object.entries(extraBuildings))buildDefs[type]={name,icon:type==='barracks'?'⚔':'⚒',wood:4,stone:3,cycle:recipes[type]?.cycle,output,copy:recipes[type]?`Requires ${Object.entries(recipes[type].inputs).map(([k,n])=>n+' '+k).join(', ')||'no input goods'}. Produces ${recipes[type].amount} ${output}. Inputs arrive by carrier.`:'Recruit soldiers using the Units panel; weapons and an idle carrier are required.'};
-const strategy=createStrategy({workers,buildings,terrain,trees,rocks,routeTo,entrance,followRoute,toast,hasWater,resources:()=>resources,priority:()=>priorityOrder,selected:selectedWorkers,hud:updateHud,isVisible:(x,y)=>exploration.sees(x,y),isSeen:(x,y)=>exploration.seen(x,y),directSupply:true,hasStaff:b=>workforce.hasStaff(b),onEvent:audibleEvent});
-const workforce=createWorkforce({workers,buildings,recipes,entrance,routeTo,followRoute,moveInside:(w,p,dt)=>moveWorker(w,p.x,p.y,dt),canWork:b=>recipes[b.type]?.deposit?Boolean(strategy.depositFor(b)):b.type==='forester'?Boolean(findPlantSite(b)):b.type==='fisher'?hasWater(b):true,resources:()=>resources});
+const outdoor=createOutdoor({workers,buildings,terrain,trees,rocks,roads,routeTo,entrance,followRoute});
+const strategy=createStrategy({outdoor,workers,buildings,terrain,trees,rocks,routeTo,entrance,followRoute,toast,hasWater,resources:()=>resources,priority:()=>priorityOrder,selected:selectedWorkers,hud:updateHud,isVisible:(x,y)=>exploration.sees(x,y),isSeen:(x,y)=>exploration.seen(x,y),directSupply:true,hasStaff:b=>workforce.hasStaff(b),onEvent:audibleEvent});
+const workforce=createWorkforce({outdoor,workers,buildings,recipes,entrance,routeTo,followRoute,moveInside:(w,p,dt)=>moveWorker(w,p.x,p.y,dt),canWork:b=>recipes[b.type]?.deposit?Boolean(strategy.depositFor(b)):b.type==='forester'?Boolean(findPlantSite(b)):b.type==='fisher'?hasWater(b):true,resources:()=>resources});
 let quest=0;
 const quests=[
   'Our people need timber. Build a woodcutter near the forest.',
@@ -205,6 +207,7 @@ function followRoute(w,dt){const point=w.route?.[w.routeIndex];if(!point)return 
 function updateWorkers(dt){
   for(const w of workers){
     if(w.employerIndex!==undefined)continue;
+    if(w.phase==='recoverCargo'){w.t=(w.t||0)+dt;if(!w.route){const home=entrance(buildings[0]);w.route=home&&routeTo(w,home);w.routeIndex=0;}if(w.route&&followRoute(w,dt)){resources[w.carry]=(resources[w.carry]||0)+2;w.carry=null;w.route=null;w.phase='idle';updateHud();}continue;}
     if(strategy.tickWorker(w,dt))continue;
     w.t+=dt;
     if(w.phase==='relocating'){w.phase='idle';w.route=null;}
@@ -237,8 +240,9 @@ function setQuest(n){quest=Math.max(quest,n);document.querySelector('#quest-text
 function completed(b){audibleEvent('complete',b);toast(`${b.name} completed`);if(b.type==='woodcutter'&&quest===0)setQuest(1);if(b.type==='quarry'&&quest<=2)setQuest(3);if(b.type==='house'){resources.beds+=4;if(resources.people<resources.beds){const added=Math.min(2,resources.beds-resources.people);resources.people+=added;const h=entrance(b)||entrance(buildings[0]);for(let i=0;i<added;i++)workers.push({id:workers.length,x:h.x,y:h.y,homeX:h.x,homeY:h.y,phase:'idle',task:null,t:0,carry:null});}setQuest(4)}updateHud()}
 function baseUpdateHud(){for(const k of Object.keys(resources)){const el=document.querySelector(`#${k}-count`),stock=document.querySelector(`#${k}-stock`);if(el)el.textContent=Math.floor(resources[k]);if(stock)stock.textContent=Math.floor(resources[k])}priorityOrder.forEach((k,i)=>{const el=document.querySelector(`#${k}-priority`);if(el)el.textContent=i+1})}
 function placementReason(g,type=selectedTool){if(!exploration.seen(g.x,g.y))return 'Erkunde dieses Gebiet zuerst';const territoryReason=strategy.placement(g,type);if(territoryReason)return territoryReason;if(g.x<1||g.y<1||g.x>=MAP_W-1||g.y>=MAP_H-1)return 'Too close to the shore';if(terrain[g.y]?.[g.x]!=='grass')return 'Buildings need clear grass';if(buildings.some(b=>b.x===g.x&&b.y===g.y)||roads.some(r=>r.x===g.x&&r.y===g.y))return 'That tile is occupied';if(rocks.some(r=>r.x===g.x&&r.y===g.y)||trees.some(t=>t.x===g.x&&t.y===g.y))return 'Clear ground required: trees or rocks occupy this site';if(type==='woodcutter'&&!nearby(trees,g))return 'Woodcutters must be near trees';if(type==='quarry'&&!nearby(rocks,g))return 'Stonecutters must be near rock';if(type==='fisher'&&!hasWater(g))return 'Fishers must be near the coast';return ''}
-function canPlace(g){return !placementReason(g)}
-function place(g){if(selectedTool==='road'){const reason=placementReason(g,'road');if(reason)return toast(reason);roads.push(g);if(quest===1)setQuest(2);toast('Road placed');save();return}const d=buildDefs[selectedTool];if(!d)return;const reason=placementReason(g);if(reason)return toast(reason);if(resources.planks<d.wood||resources.stone<d.stone)return toast(`Need ${d.wood} planks and ${d.stone} stone`);resources.planks-=d.wood;resources.stone-=d.stone;buildings.push({materials:{planks:d.wood,stone:d.stone},reserved:{planks:d.wood,stone:d.stone},type:selectedTool,name:d.name,x:g.x,y:g.y,progress:.02,copy:d.copy,work:0});updateHud();save()}
+function canPlace(g){return !placementReason(g)&&!outdoorOccupied(g)}
+function outdoorOccupied(g){return buildings.some(b=>b.fields?.some(f=>f.x===g.x&&f.y===g.y))||workers.some(w=>w.outdoorJob?.x===g.x&&w.outdoorJob?.y===g.y);}
+function place(g){if(outdoorOccupied(g))return toast('Hier liegt ein Feld oder ein aktiver Arbeitsort.');if(selectedTool==='road'){const reason=placementReason(g,'road');if(reason)return toast(reason);roads.push(g);if(quest===1)setQuest(2);toast('Road placed');save();return}const d=buildDefs[selectedTool];if(!d)return;const reason=placementReason(g);if(reason)return toast(reason);if(resources.planks<d.wood||resources.stone<d.stone)return toast(`Need ${d.wood} planks and ${d.stone} stone`);resources.planks-=d.wood;resources.stone-=d.stone;buildings.push({materials:{planks:d.wood,stone:d.stone},reserved:{planks:d.wood,stone:d.stone},type:selectedTool,name:d.name,x:g.x,y:g.y,progress:.02,copy:d.copy,work:0});updateHud();save()}
 function inspect(g){
   const b=buildings.find(b=>b.x===g.x&&b.y===g.y);if(!b)return;
   if(b.owner===2){toast('Feindlicher Außenposten: Schwertkämpfer zum Erobern schicken');return;}
@@ -274,7 +278,7 @@ function makeTools(){
 function gridSprite(image,col,row,cols,rows,p,size){if(!image.complete||!image.naturalWidth)return false;const sw=image.naturalWidth/cols,sh=image.naturalHeight/rows,z=camera.zoom;ctx.drawImage(image,col*sw,row*sh,sw,sh,p.x-size*z/2,p.y-size*z*.92,size*z,size*z);return true;}
 function drawWorker(w){
   if(w.dead||w.garrisonIndex!==undefined||!exploration.sees(w.x,w.y))return;
-const activity=workActivity(w,buildings,recipes,b=>strategy.depositFor(b),b=>Boolean(findPlantSite(b)));const p=iso(w.x,w.y),z=camera.zoom,moving=['outbound','inbound','relocating','supply','command','manual','staffTravel','staffEnter','staffExit'].includes(w.phase);
+const activity=workActivity(w,buildings,recipes,b=>strategy.depositFor(b),b=>Boolean(findPlantSite(b)));const p=iso(w.x,w.y),z=camera.zoom,moving=['outbound','inbound','relocating','supply','command','manual','staffTravel','staffEnter','staffExit','fieldTravel','fieldReturn','recoverCargo'].includes(w.phase);
   const row=w.unit?strategy.isMilitary(w)?2:3:moving?Math.floor((w.t||0)*5)%2:0;
   groundShadow(p,5);
   if(selectedWorkers.has(w.id)||inspectedWorker===w.id){ctx.strokeStyle=(w.owner||1)===2?'#ec7971':'#fff08a';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(p.x,p.y,10*z,5*z,0,0,Math.PI*2);ctx.stroke();}
@@ -294,11 +298,11 @@ const activity=workActivity(w,buildings,recipes,b=>strategy.depositFor(b),b=>Boo
 let buildSitesKey='',buildSites=[];
 function getBuildSites(type){
   if(!buildDefs[type])return [];
-  const key=[type,exploration.revision,terrainRevision,trees.length,rocks.length,buildings.length,roads.length,JSON.stringify(strategy.state.claims),strategy.state.deposits.map(d=>`${d.x},${d.y},${d.discovered},${d.amount>0}`).join(';'),buildings.filter(b=>b.type==='tower').map(b=>`${b.owner},${b.garrison},${b.progress>=1}`).join(';')].join('|');
+  const key=[type,exploration.revision,terrainRevision,trees.length,rocks.length,buildings.length,roads.length,JSON.stringify(strategy.state.claims),strategy.state.deposits.map(d=>`${d.x},${d.y},${d.discovered},${d.amount>0}`).join(';'),buildings.filter(b=>b.type==='tower').map(b=>`${b.owner},${b.garrison},${b.progress>=1}`).join(';'),buildings.flatMap(b=>b.fields||[]).map(f=>`${f.x},${f.y}`).join(';'),workers.filter(w=>w.outdoorJob).map(w=>`${w.outdoorJob.x},${w.outdoorJob.y}`).join(';')].join('|');
   if(key!==buildSitesKey){
     const blocked=new Set([...trees,...rocks,...buildings,...roads].map(o=>keyOf(o.x,o.y)));buildSites=[];
     for(let y=1;y<MAP_H-1;y++)for(let x=1;x<MAP_W-1;x++){if(blocked.has(keyOf(x,y))||terrain[y][x]!=='grass'||strategy.ownerAt(x,y)!==1)continue;if(!placementReason({x,y},type))buildSites.push({x,y});}
-    buildSitesKey=key;
+    buildSites=buildSites.filter(g=>!outdoorOccupied(g));buildSitesKey=key;
   }return buildSites;
 }
 function drawBuildSites(){
@@ -316,7 +320,7 @@ function drawBuildSites(){
   const html=message.replace(def.wood+' Bretter / '+def.stone+' Stein',goodAmount('planks',def.wood)+' '+goodAmount('stone',def.stone));if(hint.innerHTML!==html)hint.innerHTML=html;hint.classList.remove('hidden');
 }
 function borderMarkers(){const points=[];for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){const owner=strategy.ownerAt(x,y);if(!owner||!['grass','shore'].includes(terrain[y][x]))continue;if([[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>strategy.ownerAt(x+dx,y+dy)!==owner))points.push({x,y,owner});}return points;}
-function render(){renderWorld();drawWorkingArea();
+function render(){renderWorld();drawFields();drawWorkingArea();
   for(const marker of borderMarkers()){if(!exploration.sees(marker.x,marker.y))continue;const p=iso(marker.x+.5,marker.y+.5),r=Math.max(2.6,4.4*camera.zoom);if(p.x<-8||p.y<-8||p.x>innerWidth+8||p.y>innerHeight+8)continue;
     ctx.fillStyle='#26170dc9';ctx.beginPath();ctx.ellipse(p.x,p.y+1.5,r+1,r*.62,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle=marker.owner===1?'#aa191b':'#b98524';ctx.beginPath();ctx.ellipse(p.x,p.y-1,r,r*.9,0,0,Math.PI*2);ctx.fill();
@@ -345,7 +349,24 @@ function inspectAt(p,add=false){
 function setWorkingArea(b,g){if(!b||!['forester','woodcutter','quarry'].includes(b.type))return false;if(terrain[g.y]?.[g.x]!=='grass'||strategy.ownerAt(g.x,g.y)!==1||Math.abs(g.x-b.x)+Math.abs(g.y-b.y)>8){toast('Choose grass in your territory within 8 tiles of the building');return false;}if(b.type==='quarry'&&!nearby(rocks,g)){toast('Stonecutter working area needs stone');return false;}
   b.area={x:g.x,y:g.y};for(const w of workers)if(w.task===b&&w.gather&&!w.carry){w.task=null;w.gather=null;w.route=null;w.phase='idle';}settingArea=false;inspect(b);save();return true;
 }
-function drawWorkingArea(){const b=inspectedBuilding;if(!b||!['forester','woodcutter','quarry'].includes(b.type))return;const area=settingArea&&hovered?hovered:b.area||b;ctx.save();for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){if(Math.abs(dx)+Math.abs(dy)>3)continue;const x=area.x+dx,y=area.y+dy;if(terrain[y]?.[x]==='grass')diamond(x,y,'#7fdc7320','#c7e68c77');}ctx.restore();}
+function drawWorkingArea(){
+  const b=inspectedBuilding;if(!b||!['forester','woodcutter','quarry'].includes(b.type))return;
+  const area=settingArea&&hovered?hovered:b.area||b,z=camera.zoom;
+  ctx.save();
+  // Dense centre, then progressively sparser rings; no filled tiles or grid lines.
+  const dot=(dx,dy,outer=false)=>{const x=area.x+.5+dx,y=area.y+.5+dy;if(terrain[Math.floor(y)]?.[Math.floor(x)]!=='grass')return;const p=iso(x,y),r=(outer?2.3:2.7)*z;ctx.fillStyle='#384322cc';ctx.beginPath();ctx.ellipse(p.x+.5*z,p.y+1*z,r+z,r*.7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=outer?'#c5cc56':'#e0df68';ctx.beginPath();ctx.ellipse(p.x,p.y,r,r*.65,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff7b9';ctx.fillRect(p.x-r*.4,p.y-r*.35,Math.max(1,z),Math.max(1,z));};
+  for(let y=-1.2;y<=1.21;y+=.3)for(let x=-1.2;x<=1.21;x+=.3)if(Math.hypot(x,y)<=1.2)dot(x,y);
+  for(const [radius,count] of [[1.65,24],[2.25,20],[3,16]])for(let i=0;i<count;i++){const a=i/count*Math.PI*2;dot(Math.cos(a)*radius,Math.sin(a)*radius,true);}
+  ctx.restore();
+}
+function drawFields(){for(const b of buildings)for(const f of b.fields||[]){
+  if(!exploration.sees(f.x,f.y))continue;
+  for(let row=0;row<4;row++)for(let col=0;col<4;col++){
+    const p=iso(f.x+.15+col*.2,f.y+.15+row*.2),z=camera.zoom,growth=Math.min(1,f.age/35);
+    ctx.strokeStyle='#59462c';ctx.lineWidth=2*z;ctx.beginPath();ctx.moveTo(p.x-3*z,p.y);ctx.lineTo(p.x+3*z,p.y);ctx.stroke();
+    if(growth>.1){ctx.strokeStyle=growth>.8?'#d6b75b':'#90a44d';ctx.lineWidth=1.5*z;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x,p.y-(2+growth*8)*z);ctx.lineTo(p.x-2*z,p.y-(1+growth*6)*z);ctx.stroke();}
+  }
+}}
 function refundText(refund){return Object.entries(refund).map(([k,n])=>`${n} ${goodsNames[k]||k}`).join(', ')||'keine Waren';}
 function configureBuildingActions(b){document.querySelector('#area-toggle').hidden=!['forester','woodcutter','quarry'].includes(b.type);const button=document.querySelector('#demolish-building');button.disabled=b.type==='storehouse';button.textContent=b.type==='storehouse'?'Hauptlager geschützt':`Abreißen · Rückgabe ${refundText(demolitionRefund(b,buildDefs[b.type],workers,buildings.indexOf(b)))}`;}
 function openDemolition(){const b=inspectedBuilding;if(!b||b.type==='storehouse'||(b.owner||1)!==1)return;demolitionTarget=b;demolitionWasPaused=paused;paused=true;document.querySelector('#demolition-copy').textContent=`${buildingNames[b.type]||b.name} abreißen? Rückgabe: ${refundText(demolitionRefund(b,buildDefs[b.type],workers,buildings.indexOf(b)))}. Verbaute Materialien: 50 % (abgerundet). Unbenutzte Waren und Werkzeuge: vollständig.${b.type==='house'?' Vier Wohnplätze entfallen.':''}${b.type==='tower'?' Sein Gebietseinfluss entfällt.':''}`;document.querySelector('#demolition-modal').classList.remove('hidden');}
@@ -379,7 +400,7 @@ document.querySelector('#priority-toggle').onclick=()=>{if(inspectedBuilding){in
 document.querySelector('#area-toggle').onclick=()=>{if(inspectedBuilding&&['forester','woodcutter','quarry'].includes(inspectedBuilding.type)){settingArea=true;selectedTool='inspect';toast('Choose a work area inside your territory (within 8 tiles of this building)');}};
 minimap.addEventListener('click',e=>{const r=minimap.getBoundingClientRect(),x=Math.max(0,Math.min(MAP_W-1,Math.floor((e.clientX-r.left)/r.width*MAP_W))),y=Math.max(0,Math.min(MAP_H-1,Math.floor((e.clientY-r.top)/r.height*MAP_H)));camera.x=innerWidth/2-(x-y)*TILE_W/2*camera.zoom;camera.y=innerHeight/2-(x+y)*TILE_H/2*camera.zoom});
 document.querySelector('.inventory-panel').addEventListener('click',e=>{const item=e.target.closest('[data-priority]')?.dataset.priority;if(!item)return;priorityOrder=[item,...priorityOrder.filter(k=>k!==item)];toast(`${item} transport prioritized`);updateHud();save()});
-function save(){try{localStorage.setItem('new-shores-save',JSON.stringify({version:6,controlGroups,exploration:exploration.save(),strategy:strategy.state,terrain,resources,buildings,roads,trees,rocks,traffic:[...traffic],trailEdges:[...trailEdges],trafficLastUsed:[...trafficLastUsed],workers:workers.map(w=>({...w,taskIndex:w.task?buildings.indexOf(w.task):-1,task:undefined})),priorityOrder,quest,elapsed,ecoMode}));return true;}catch(error){toast('Save failed: browser storage unavailable');return false;}}
+function save(){try{const snapshot={version:6,savedAt:Date.now(),camera,controlGroups,exploration:exploration.save(),strategy:strategy.state,terrain,resources,buildings,roads,trees,rocks,traffic:[...traffic],trailEdges:[...trailEdges],trafficLastUsed:[...trafficLastUsed],workers:workers.map(w=>({...w,taskIndex:w.task?buildings.indexOf(w.task):-1,task:undefined})),priorityOrder,quest,elapsed,ecoMode};const previous=localStorage.getItem('new-shores-save');if(previous){let valid=false;try{const prior=parseSave(previous,['storehouse',...Object.keys(buildDefs)]);if(JSON.stringify({...snapshot,savedAt:prior.savedAt})===previous)return true;valid=true;}catch{}if(valid)localStorage.setItem('new-shores-autosave-backup',previous);}localStorage.setItem('new-shores-save',JSON.stringify(snapshot));return true;}catch(error){toast('Speichern fehlgeschlagen: Browserspeicher nicht verfügbar oder voll');return false;}}
 function load(){try{const s=parseSave(localStorage.getItem('new-shores-save'),['storehouse',...Object.keys(buildDefs)]);if(!s)return false;if(s.terrain)terrain.splice(0,terrain.length,...s.terrain);terrainRevision++;for(const b of s.buildings)if(terrain[b.y]?.[b.x])terrain[b.y][b.x]='grass';resources={beds:12,planks:0,grain:0,flour:0,...s.resources};buildings.splice(0,buildings.length,...s.buildings.filter(b=>terrain[b.y]?.[b.x]==='grass'));roads.splice(0,roads.length,...s.roads.filter(r=>terrain[r.y]?.[r.x]==='grass'));if(s.trees)trees.splice(0,trees.length,...s.trees.filter(o=>terrain[o.y]?.[o.x]==='grass'));if(s.rocks)rocks.splice(0,rocks.length,...s.rocks.filter(o=>terrain[o.y]?.[o.x]==='grass'));traffic.clear();trailEdges.clear();trafficLastUsed.clear();for(const [k,v] of s.trafficLastUsed||[])trafficLastUsed.set(k,v);for(const [k,v] of s.traffic||[])traffic.set(k,v);for(const [k,v] of s.trailEdges||[])trailEdges.set(k,v);if(s.workers)workers.splice(0,workers.length,...s.workers.map(w=>({...w,task:w.taskIndex>=0?buildings[w.taskIndex]:null})));else {const h=entrance(buildings[0]);workers.forEach((w,i)=>{w.x=h.x+(i%3)*.22;w.y=h.y+Math.floor(i/3)*.22;w.phase='idle';w.task=null;w.carry=null;});}if((s.version||0)<5){resources.tools??=4;resources.planks=Math.max(16,resources.planks||0);}strategy.restore(s.strategy);for(const key of Object.keys(controlGroups))delete controlGroups[key];for(const [key,ids] of Object.entries(s.controlGroups||{}))if(/^[1-9]$/.test(key)&&Array.isArray(ids))controlGroups[key]=ids.filter(Number.isInteger);exploration.restore(s.exploration);exploration.update(buildings,workers);priorityOrder=s.priorityOrder||priorityOrder;ecoMode=s.ecoMode??true;document.querySelector('#power-button').textContent=`Eco render: ${ecoMode?'on':'off'}`;quest=s.quest||0;elapsed=s.elapsed||0;setQuest(quest);updateHud();return true}catch{return false}}
 function start(continueGame=false){active=true;last=0;title.classList.remove('active');game.classList.add('active');if(continueGame)load();resize();}
 document.querySelector('#new-game').onclick=()=>start(false);document.querySelector('#continue-game').onclick=()=>{if(!load())return alert('Kein gültiger Spielstand vorhanden. Gründe zuerst eine Siedlung.');start(false)};
@@ -389,7 +410,7 @@ document.querySelector('#dismiss-quest').onclick=()=>document.querySelector('#qu
 document.querySelector('#save-button').onclick=()=>{if(save())toast('Settlement saved');};
 document.querySelector('#resume-button').onclick=()=>{paused=false;document.querySelector('#pause-modal').classList.add('hidden')};
 document.querySelector('#power-button').onclick=()=>{ecoMode=!ecoMode;document.querySelector('#power-button').textContent=`Eco render: ${ecoMode?'on':'off'}`;resize();save()};
-document.querySelector('#restart-button').onclick=()=>{localStorage.removeItem('new-shores-save');location.reload()};
+document.querySelector('#restart-button').onclick=()=>{if(!confirm('Neue Siedlung beginnen? Die aktuelle wird als Sicherung aufbewahrt.'))return;if(!save())return;localStorage.setItem('new-shores-before-load',localStorage.getItem('new-shores-save'));active=false;localStorage.removeItem('new-shores-save');sessionStorage.setItem('new-shores-fresh-start','1');location.reload()};
 document.querySelector('#help-button').onclick=()=>document.querySelector('#help-modal').classList.remove('hidden');
 document.querySelector('#close-help').onclick=()=>document.querySelector('#help-modal').classList.add('hidden');
 addEventListener('resize',resize);initWorld();strategy.init();exploration.update(buildings,workers);makeTools();initCommandSidebar();initSaveSlots();initDetails();updateHud();requestAnimationFrame(loop);
@@ -411,6 +432,7 @@ function drawGeology(){
 }
 function drawWorkAction(w,p,kind){
   const z=camera.zoom,t=w.t||0,swing=Math.sin(t*7),side=(w.direction??2)>=3&&(w.direction??2)<=5?-1:1;
+  if(kind==='fish'){ctx.save();ctx.strokeStyle='#987044';ctx.lineWidth=2*z;ctx.beginPath();ctx.moveTo(p.x,p.y-13*z);ctx.lineTo(p.x+side*23*z,p.y-32*z);ctx.stroke();ctx.strokeStyle='#eee6bc88';ctx.lineWidth=z;ctx.beginPath();ctx.moveTo(p.x+side*23*z,p.y-32*z);ctx.lineTo(p.x+side*30*z,p.y+Math.sin(t)*z);ctx.stroke();ctx.restore();return;}
   const tool=kind==='chop'?'axe':kind==='dig'?'shovel':kind==='harvest'?'sickle':'hammer';
   ctx.save();ctx.translate(p.x+side*7*z,p.y-14*z);ctx.rotate(side*(-.35+swing*.8));goodsArt.draw(ctx,tool,0,-5*z,18*z,side<0);ctx.restore();
   if(swing>.65){ctx.fillStyle=kind==='chop'?'#dcb67a':kind==='quarry'?'#b7b7a2':'#d1bd8b';for(let i=0;i<3;i++){const phase=(t*2+i*.21)%1;ctx.fillRect(p.x+side*(9+phase*9)*z,p.y-(4+Math.sin(phase*Math.PI)*9+i)*z,2*z,2*z);}}
@@ -472,3 +494,25 @@ function initSaveSlots(){
 }
 function refreshSaveSlots(){for(const n of [1,2,3]){const key='new-shores-slot-'+n;document.querySelector('#slot-label-'+n).textContent=localStorage.getItem(key)?'Platz '+n+' · '+(localStorage.getItem(key+'-date')||'gesichert'):'Platz '+n+' · leer';document.querySelector('[data-load-slot="'+n+'"]').disabled=!localStorage.getItem(key);}}
 function restoreSnapshot(text){try{parseSave(text,['storehouse',...Object.keys(buildDefs)]);if(!save())return;localStorage.setItem('new-shores-before-load',localStorage.getItem('new-shores-save'));localStorage.setItem('new-shores-save',text);if(!load()){localStorage.setItem('new-shores-save',localStorage.getItem('new-shores-before-load'));load();throw new Error('Spielstand konnte nicht geladen werden; Sicherheitskopie wiederhergestellt');}selectedWorkers.clear();inspectedBuilding=null;settingArea=false;commandMode=false;selectedTool='inspect';showCommandPanel('build');paused=true;document.querySelector('#pause-modal').classList.remove('hidden');toast('Spielstand geladen. Vorheriger Stand bleibt als Sicherheitskopie erhalten.');}catch(e){toast('Laden abgebrochen: '+e.message);}}
+
+// Save synchronously before reload/backgrounding; never overwrite a save from the title screen.
+addEventListener('pagehide',()=>{if(active)save();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&active)save();});
+function resumeAutomatically(){
+  try{
+    if(sessionStorage.getItem('new-shores-fresh-start')){sessionStorage.removeItem('new-shores-fresh-start');return;}
+    let restored=load(),recovered=false;
+    if(!restored)for(const key of ['new-shores-autosave-backup','new-shores-before-load']){
+      const text=localStorage.getItem(key);if(!text)continue;
+      try{parseSave(text,['storehouse',...Object.keys(buildDefs)]);}catch{continue;}
+      localStorage.setItem('new-shores-save',text);if(load()){restored=true;recovered=true;break;}
+    }
+    if(!restored)return;
+    const view=JSON.parse(localStorage.getItem('new-shores-save')).camera;
+    if(view&&Number.isFinite(view.x)&&Number.isFinite(view.y)&&Number.isFinite(view.zoom)&&view.zoom>=.4&&view.zoom<=2)Object.assign(camera,view);
+    start(false);document.querySelector('#quest-panel').classList.add('hidden');
+    toast(recovered?'Sicherung automatisch wiederhergestellt':'Spielstand automatisch fortgesetzt');
+  }catch{toast('Spielstand konnte nicht automatisch geladen werden.');}
+}
+const restoreAutosave=document.createElement('button');restoreAutosave.id='restore-autosave';restoreAutosave.textContent='Vorherigen Autosave wiederherstellen';restoreAutosave.onclick=()=>{const text=localStorage.getItem('new-shores-autosave-backup');if(!text)return toast('Noch keine Autosave-Sicherung vorhanden');restoreSnapshot(text);};document.querySelector('#restore-backup').after(restoreAutosave);
+resumeAutomatically();

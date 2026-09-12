@@ -48,7 +48,7 @@ export function createStrategy(api){
   function nextId(){return Math.max(-1,...workers.map(w=>w.id))+1;}
   function recalculate(){
     owners=terrain.map(row=>row.map(()=>0));const strengths=terrain.map(row=>row.map(()=>-Infinity));
-    const sources=[...buildings.filter(b=>b.progress>=1&&!b.destroyed&&(b.type==='storehouse'||b.type==='tower'&&b.garrison>0)).map(b=>({...b,r:b.type==='storehouse'?12:9})),...state.claims.map(c=>({...c,r:2.5,owner:1}))];
+    const sources=[...buildings.filter(b=>b.progress>=1&&!b.destroyed&&(b.type==='storehouse'||b.type==='tower'&&b.garrison>0)).map(b=>({...b,r:b.type==='storehouse'?12:9})),...state.claims.map(c=>({...c,r:c.single?0:2.5,owner:1}))];
     for(const b of sources)for(let y=Math.max(0,Math.floor(b.y-b.r));y<Math.min(terrain.length,b.y+b.r+1);y++)for(let x=Math.max(0,Math.floor(b.x-b.r));x<Math.min(terrain[y].length,b.x+b.r+1);x++){const power=b.r-dist(b,{x,y});if(power>=0&&power>strengths[y][x]){strengths[y][x]=power;owners[y][x]=b.owner||1;}}
   }
   function ownerAt(x,y){return owners[y]?.[x]||0;}
@@ -87,7 +87,7 @@ export function createStrategy(api){
     while(w.surveyQueue?.length){const site=w.surveyQueue.shift();if(visited.has(site.x+','+site.y)||!reserveSite(w,site))continue;let p={x:site.x+.5,y:site.y+.5},route=routeTo(w,p);if(!route){p=entrance(site);route=p&&routeTo(w,p);}if(!route)continue;Object.assign(w,{workSite:site,route,routeIndex:0,phase:'command',wait:0,surveyStatus:'Autonom: nächste Bodenprobe'});return true;}
     w.phase='guard';w.route=null;w.workSite=null;w.workRetry=8;w.surveyStatus='Arbeitsgebiet untersucht oder blockiert · wartet';return false;
   }
-  function neutralFrontier(g){return terrain[g.y]?.[g.x]==='grass'&&ownerAt(g.x,g.y)===0&&[-2,-1,0,1,2].some(dx=>[-2,-1,0,1,2].some(dy=>ownerAt(g.x+dx,g.y+dy)===1));}
+  function neutralFrontier(g){return terrain[g.y]?.[g.x]==='grass'&&ownerAt(g.x,g.y)===0&&[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>ownerAt(g.x+dx,g.y+dy)===1);}
   function nextPioneer(w){
     const area=w.workArea;if(!area)return false;const sites=[];
     for(let y=Math.max(1,area.y-area.radius);y<Math.min(terrain.length-1,area.y+area.radius+1);y++)for(let x=Math.max(1,area.x-area.radius);x<Math.min(terrain[y].length-1,area.x+area.radius+1);x++){const s={x,y};if(dist(s,area)<=area.radius&&neutralFrontier(s)&&reserveSite(w,s))sites.push(s);}
@@ -117,7 +117,7 @@ export function createStrategy(api){
           w.surveyStatus='Untersucht Boden · '+Math.min(100,Math.floor(w.wait/4*100))+' %';
           if(w.wait>=4){const names={coal:'Kohle',ironOre:'Eisenerz',goldOre:'Golderz',sulfur:'Schwefel'};let found=false;for(const d of state.deposits)if(!d.discovered&&dist(w,d)<2.2){d.discovered=true;found=true;toast('Geologe: '+names[d.type]+' gefunden – '+d.amount+' Vorrat. Passende Mine in der Nähe bauen.');api.onEvent?.('survey',d);}w.surveyDone=(w.surveyDone||0)+1;const site=w.workSite||w.order;if(site){w.surveyVisited??=[];const key=site.x+','+site.y;if(!w.surveyVisited.includes(key))w.surveyVisited.push(key);}if(found){w.surveyStatus='Vorkommen gefunden';}nextSurvey(w);}
         }
-        else if(w.unit==='pioneer'){w.surveyStatus='Versetzt Grenze · '+Math.min(100,Math.floor(w.wait/4*100))+' %';if(w.wait>=4){const g=w.order;if(g&&neutralFrontier(g)){state.claims.push({x:g.x,y:g.y});w.claimsMade=(w.claimsMade||0)+1;recalculate();}w.phase='guard';if(w.autoWork)nextPioneer(w);}}
+        else if(w.unit==='pioneer'){w.surveyStatus='Versetzt Grenze · '+Math.min(100,Math.floor(w.wait/4*100))+' %';if(w.wait>=4){const g=w.order;if(g&&neutralFrontier(g)){state.claims.push({x:g.x,y:g.y,single:true});w.claimsMade=(w.claimsMade||0)+1;recalculate();}w.phase='guard';if(w.autoWork)nextPioneer(w);}}
         else if(!['geologist','pioneer'].includes(w.unit)&&w.wait>1)w.phase='guard';
       }return true;
     }
@@ -149,6 +149,7 @@ export function createStrategy(api){
     }return false;
   }
   function produce(b,dt){
+    if(api.outdoor?.handles(b))return true;
     const r=recipes[b.type];if(!r)return false;
     if(api.hasStaff&&!api.hasStaff(b))return true;
     if(!own(b)||b.stopped||b.progress<1||b.ready||r.coastal&&!api.hasWater(b))return true;

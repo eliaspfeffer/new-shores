@@ -5,7 +5,8 @@ import {constructionLayers,constructionTypes} from '../src/construction.js';
 const terrain=Array.from({length:50},()=>Array(50).fill('grass')),buildings=[{type:'storehouse',progress:1,x:25,y:25}],workers=[{id:1,x:35.5,y:25.5,phase:'idle'}],stock={tools:3},selected=new Set();
 const api={terrain,buildings,workers,trees:[],rocks:[],resources:()=>stock,selected,toast(){},hud(){},entrance:b=>({x:b.x+.5,y:b.y+1.5}),routeTo:(w,p)=>[p],followRoute(w){Object.assign(w,w.route?.at(-1));return true;},hasWater:()=>true};
 const s=createStrategy(api);s.init();const pioneer=s.recruit('pioneer');s.command({x:37,y:25});
-for(let i=0;i<120;i++)s.tickWorker(pioneer,1);
+const owned=()=>terrain.reduce((sum,row,y)=>sum+row.filter((_,x)=>s.ownerAt(x,y)===1).length,0);
+for(let i=0;i<120;i++){const before=owned(),claims=s.state.claims.length;s.tickWorker(pioneer,1);assert.equal(owned()-before,s.state.claims.length-claims,'each completed pioneer action gains exactly one tile');}
 assert.ok(s.state.claims.length>3,'one pioneer command expands repeatedly');
 assert.ok(s.state.claims.every(c=>Math.hypot(c.x-37,c.y-25)<=10),'pioneer stays in assigned work area');
 assert.equal(s.ownerAt(37,14),2,'protected enemy territory is never taken by a pioneer');

@@ -3,15 +3,17 @@ export function createWorkforce(api){
   const {workers,buildings,recipes,entrance,routeTo,followRoute}=api;
   let recruitmentClock=0;
   const valid=b=>b&&(b.owner||1)===1&&b.progress>=1&&!b.stopped;
-  function release(w,returnTool=true){const b=buildings[w.employerIndex];if(b?.workerId===w.id)delete b.workerId;if(b){b.outputInTransit=false;const p=entrance(b);if(p&&w.inside){w.x=p.x;w.y=p.y;}}delete w.inside;delete w.workCarry;delete w.employerIndex;delete w.profession;w.task=null;w.route=null;w.phase='idle';if(w.workTool){if(returnTool)api.resources().tools=(api.resources().tools||0)+1;delete w.workTool;}}
-  function hasStaff(b){const i=buildings.indexOf(b);return workers.some(w=>!w.dead&&w.employerIndex===i&&w.phase==='staffWork');}
+  function release(w,returnTool=true){const cargo=w.phase.startsWith('field')?w.workCarry:null,b=buildings[w.employerIndex];if(b?.workerId===w.id)delete b.workerId;if(b){b.outputInTransit=false;const p=entrance(b);if(p&&w.inside){w.x=p.x;w.y=p.y;}}delete w.inside;delete w.workCarry;delete w.outdoorJob;delete w.outdoorTime;delete w.employerIndex;delete w.profession;w.task=null;w.route=null;w.phase=cargo?'recoverCargo':'idle';if(cargo){w.carry=cargo;w.role='carrier';}if(w.workTool){if(returnTool)api.resources().tools=(api.resources().tools||0)+1;delete w.workTool;}}
+  function hasStaff(b){const i=buildings.indexOf(b);return workers.some(w=>!w.dead&&w.employerIndex===i&&(w.phase==='staffWork'||w.phase.startsWith('field')));}
   function update(dt){
+    api.outdoor?.grow(dt);
     for(const w of workers){if(w.employerIndex===undefined)continue;const b=buildings[w.employerIndex];
       if(w.dead){if(b?.workerId===w.id)delete b.workerId;if(b)b.outputInTransit=false;delete w.employerIndex;continue;}
       if(!valid(b)||w.manualTarget){release(w);continue;}
       w.t=(w.t||0)+dt;
       if(w.phase==='staffTravel'&&followRoute(w,dt)){w.phase=api.moveInside?'staffWait':'staffWork';w.route=null;}
-      else if(!['staffWork','staffTravel','staffWait','staffEnter','staffExit'].includes(w.phase)){release(w);continue;}
+      else if(!['staffWork','staffTravel','staffWait','staffEnter','staffExit'].includes(w.phase)&&!w.phase.startsWith('field')){release(w);continue;}
+      if(api.outdoor?.update(w,b,dt))continue;
       if(!api.moveInside)continue;
       const recipe=recipes[b.type],available=!b.ready&&(!api.canWork||api.canWork(b))&&Object.entries(recipe?.inputs||{}).every(([k,n])=>(b.buffer?.[k]||0)>=n);
       const door=entrance(b),desk={x:b.x+.55,y:b.y+.65};
@@ -29,6 +31,6 @@ export function createWorkforce(api){
     }
   }
   function beforeDemolish(index){for(const w of workers){if(w.employerIndex===index)release(w,false);else if(w.employerIndex>index)w.employerIndex--;}}
-  function status(b){const w=workers.find(w=>!w.dead&&w.employerIndex===buildings.indexOf(b));return !w?'Kein Facharbeiter / Werkzeug':w.phase==='staffTravel'?'Facharbeiter unterwegs':w.phase==='staffEnter'?'Bringt Vorräte an den Arbeitsplatz':w.phase==='staffExit'?'Bringt Waren zum Ausgang':w.phase==='staffWait'?'Facharbeiter wartet am Eingang':'Facharbeiter arbeitet';}
+  function status(b){const w=workers.find(w=>!w.dead&&w.employerIndex===buildings.indexOf(b));return !w?'Kein Facharbeiter / Werkzeug':w.phase==='fieldTravel'?'Unterwegs zum Arbeitsort':w.phase==='fieldReturn'?'Kehrt zum Betrieb zurück':w.phase==='fieldWork'?({sow:'Sät aus',harvest:'Erntet Getreide',plant:'Pflanzt einen Baum',fish:'Angelt am Ufer'}[w.outdoorJob?.kind]||'Arbeitet draußen'):w.phase==='fieldWait'?'Wartet auf Ernte, freien Arbeitsort oder Abholung':w.phase==='staffTravel'?'Facharbeiter unterwegs':w.phase==='staffEnter'?'Bringt Vorräte an den Arbeitsplatz':w.phase==='staffExit'?'Bringt Waren zum Ausgang':w.phase==='staffWait'?'Facharbeiter wartet am Eingang':'Facharbeiter arbeitet';}
   return {update,hasStaff,beforeDemolish,release,status};
 }

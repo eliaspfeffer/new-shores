@@ -4,6 +4,7 @@ export function constructionStage(progress) {
 }
 export function workActivity(w, buildings, recipes, depositFor, canPlant=()=>true) {
   if (w.dead) return null;
+  if(w.phase==='fieldWork')return w.outdoorJob?.kind==='harvest'?'harvest':w.outdoorJob?.kind==='fish'?'fish':'dig';
   if (w.unit === 'geologist' && w.phase === 'action') return 'survey';
   if (w.unit === 'pioneer' && w.phase === 'action') return 'dig';
   if (w.phase === 'working' && !w.task?.stopped) return w.gather?.type === 'woodcutter' ? 'chop' : w.gather ? 'quarry' : w.task?.progress < 1 ? 'build' : null;
