@@ -18,6 +18,7 @@ Spielstände sind pro Gerät und Webadresse gespeichert, nicht über Tailscale s
 - Einheit antippen, „Ziel“ und anschließend Ziel antippen; „Halt“ beendet ihre Aufträge. Die Hand löscht Auswahl und Werkzeugmodus.
 - Untere Befehlsleiste öffnet Bauen, Siedler, Waren oder Betriebe. Ausklappbare Menüs statt der ständig belegten Desktop-Seitenleiste; Gebäudebilder und Kosten bleiben vorhanden. Nach Auswahl eines Gebäudes schließt das Menü zur Platzierung.
 - Ein Gebäude antippen öffnet seine regulären Einstellungen. Arbeitsgebiet/Befehlswahl gibt die Karte wieder frei. „Zur Karte“ schließt das Menü ohne die Simulation zurückzusetzen.
+- „Gebäudeeinstellungen öffnen“ zeigt zusätzlich ein eigenes, scrollbar bedienbares Fenster. Schließen oder Escape kehrt zur Übersicht zurück; Arbeitsgebiet und Abriss verlassen das Fenster für den nächsten Schritt. Das Hauptlager hat keinen solchen Knopf, weil es automatisch arbeitet und geschützt ist. Betrieb/Priorität bestätigen Änderungen und melden auch Speicherfehler.
 - Minikarte rechts oben einblenden; daneben große Zoomknöpfe. Hauptbefehle mindestens 44 CSS-Pixel, Berücksichtigung der iPhone-Sicherheitsränder.
 
 ## Referenz und Grenzen

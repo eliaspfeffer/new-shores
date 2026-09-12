@@ -2,6 +2,18 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Fünf ergänzte Punkte der Gebäudebedienung
+
+1. „Gebäudeeinstellungen“ öffnet ein deutlich abgegrenztes natives Dialogfenster mit Gebäudename, eigener Grafik, Live-Status und den tatsächlichen bestehenden Steuerelementen. Keine duplizierten Attrappen oder separaten Zustände.
+2. Beim geschützten Hauptlager werden beide Einstellungsöffner ausgeblendet und durch eine Erklärung ersetzt. Andere Gebäude besitzen mindestens eine reale Aktion, etwa Abriss; es werden keine künstlichen Einstellungen erfunden.
+3. Betrieb und Priorität zeigen ihren Zustand mit `aria-pressed` und melden Änderung sowie Speichererfolg bzw. Speicherfehler innerhalb der Ansicht.
+4. Desktop und mobiles Querformat: eigener Öffner in der Gebäudeansicht, 44-Pixel-Bedienelemente im Dialog, scrollbar, Schließen/Escape mit Fokusrückgabe. Arbeitsgebiet und Abriss geben die Karte bzw. Bestätigung frei. Bestehende Modalebene korrigiert, damit die mobile Seitenleiste keine Bestätigungsklicks abfängt.
+5. Neuer isolierter Browser-Regressionslauf für Desktop und 667×375 Touch-Ansicht: Öffnen, Hauptlagerschutz, echte Änderungen, Escape/Schließen, Arbeitsgebiet/Abriss, Werkzeugauftrag, Lagerregel/Zielvorrat und Wiederherstellung nach Reload. Kein Zugriff auf persönliche Spielstände.
+
+Zusätzlich beim Prüfen gefunden: Der veraltete Aufruf einer nicht mehr vorhandenen Worker-Zeichenfunktion bei noch ungeladenem Atlas konnte den Renderloop abbrechen. Bis die vorhandenen Grafiken geladen sind, wartet diese Zeichnung jetzt auf das nächste Bild. Keine Grafikfamilie ersetzt; keine neue Originaltreue behauptet.
+
+Prüfung: 22 Testsuiten, separate Simulation und Strategie, Produktionsbuild, neuer Desktop-/Touch-Dialogtest einschließlich simuliertem Speicherfehler sowie bestehender mobiler Offline-/Gestenlauf bestanden. Beide Dialogansichten visuell geprüft. Reale iPhone-Hardware bleibt ungeprüft; kein Leistungstest.
+
 ## Mobile Querformat-Oberfläche und Offline-Spiel
 
 - Eigene mobile Ansicht unter `/?mobile=1`, automatisch auf primären Touchgeräten: untere große Befehlsleiste, ausklappbare Menüs, Ressourcen oben, Minikarte und Zoom rechts. Referenz der iPhone-Fassung visuell angesehen, eigene CSS-Bedienelemente statt kopierter Originalgrafiken. Desktop bleibt erhalten.

@@ -32,6 +32,7 @@ Object.assign(context,{productionInputs,minePreferences,meals});
 Object.assign(context,{toolTypes,professionTools,checkoutTool,returnTool});
 context.createOutdoor=createOutdoor;
 Object.assign(context,{mobile:{enabled:false},initMobile(){},initOffline(){}});
+context.initBuildingSettings=()=>({sync(){},feedback(){}});
 context.buildingContext=buildingContext;
 Object.assign(context,{scenarios,createScenario,objectives,advanceScenario});
 Object.assign(context,{chooseStorage,rerouteStorageAfterDemolition,depotGoods,tickStorageTransfer});

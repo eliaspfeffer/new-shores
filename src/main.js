@@ -1,4 +1,6 @@
 import {mobile,initMobile,initOffline} from './mobile.js';
+import {initBuildingSettings} from './building-settings.js';
+let buildingSettings=null;
 import {parseSave} from './savegames.js';
 import {buildingContext} from './building-context.js';
 import {scenarios,createScenario,objectives,advanceScenario} from './scenarios.js';
@@ -306,7 +308,7 @@ const activity=workActivity(w,buildings,recipes,b=>strategy.depositFor(b),b=>Boo
   if(cargo&&pose.behind)drawCargo();
   if(activity){p.y+=Math.sin((w.t||0)*5)*1.3*z;}
   const specialRow=w.unit==='archer'?moving?Math.floor((w.t||0)*5)%2:0:w.unit==='pioneer'?2:w.unit==='geologist'?3:null;
-  if(!gridSprite(specialRow===null?directionAtlas:specialistAtlas,w.direction??2,specialRow??row,8,4,p,32)){oldDrawWorker(w);return;}
+  if(!gridSprite(specialRow===null?directionAtlas:specialistAtlas,w.direction??2,specialRow??row,8,4,p,32))return;
   if(w.unit&&strategy.isMilitary(w)){for(let i=0;i<(w.rank||1);i++){ctx.fillStyle='#f5d36e';ctx.fillRect(p.x+(-5+i*4)*z,p.y-39*z,3*z,2*z);}}
   if(w.unit){ctx.fillStyle=w.owner===2?'#df594d':'#84bbef';ctx.fillRect(p.x-7*z,p.y-32*z,14*z,2*z);ctx.fillStyle='#70b66a';ctx.fillRect(p.x-7*z,p.y-35*z,14*z*Math.min(1,Math.max(0,(w.hp||0)/(w.maxHp||(strategy.isMilitary(w)?55:30)))),2*z);}
   if(w.unit==='medic'){ctx.fillStyle='#f2ead0';ctx.fillRect(p.x+6*z,p.y-24*z,9*z,9*z);ctx.fillStyle='#245c73';ctx.font=`bold ${8*z}px sans-serif`;ctx.fillText('S',p.x+8*z,p.y-17*z);if(w.healPulse>0){ctx.strokeStyle='#b7e998';ctx.lineWidth=2*z;ctx.beginPath();ctx.arc(p.x,p.y-14*z,(5+(1-w.healPulse)*10)*z,0,Math.PI*2);ctx.stroke();}}
@@ -419,8 +421,8 @@ canvas.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);drag=nu
 canvas.addEventListener('wheel',e=>{e.preventDefault();const action=wheelAction(e);if(action.zoom)zoomAt(pointerPos(e),action.zoom);else {camera.x+=action.x;camera.y+=action.y;}},{passive:false});
 document.querySelector('#zoom-slider').oninput=e=>zoomAt({x:innerWidth/2,y:innerHeight/2},Number(e.target.value)/camera.zoom);
 document.querySelector('#clear-selection').onclick=()=>{selectedWorkers.clear();commandMode=false;inspectedWorker=null;settingArea=false;selectedTool='inspect';document.querySelector('#info-panel').classList.add('hidden');};
-document.querySelector('#production-toggle').onclick=()=>{if(inspectedBuilding){inspectedBuilding.stopped=!inspectedBuilding.stopped;inspect(inspectedBuilding);save();}};
-document.querySelector('#priority-toggle').onclick=()=>{if(inspectedBuilding){inspectedBuilding.priority=!inspectedBuilding.priority;inspect(inspectedBuilding);save();}};
+document.querySelector('#production-toggle').onclick=()=>{if(inspectedBuilding){inspectedBuilding.stopped=!inspectedBuilding.stopped;inspect(inspectedBuilding);buildingSettings?.feedback(inspectedBuilding.stopped?'Betrieb angehalten':'Betrieb fortgesetzt',save());}};
+document.querySelector('#priority-toggle').onclick=()=>{if(inspectedBuilding){inspectedBuilding.priority=!inspectedBuilding.priority;inspect(inspectedBuilding);buildingSettings?.feedback(inspectedBuilding.priority?'Priorität auf hoch gesetzt':'Priorität auf normal gesetzt',save());}};
 document.querySelector('#area-toggle').onclick=()=>{if(inspectedBuilding&&['forester','woodcutter','quarry'].includes(inspectedBuilding.type)){settingArea=true;selectedTool='inspect';toast('Choose a work area inside your territory (within 8 tiles of this building)');}};
 minimap.addEventListener('click',e=>{const r=minimap.getBoundingClientRect(),x=Math.max(0,Math.min(MAP_W-1,Math.floor((e.clientX-r.left)/r.width*MAP_W))),y=Math.max(0,Math.min(MAP_H-1,Math.floor((e.clientY-r.top)/r.height*MAP_H)));camera.x=innerWidth/2-(x-y)*TILE_W/2*camera.zoom;camera.y=innerHeight/2-(x+y)*TILE_H/2*camera.zoom});
 document.querySelector('.inventory-panel').addEventListener('click',e=>{const item=e.target.closest('[data-priority]')?.dataset.priority;if(!item)return;priorityOrder=[item,...priorityOrder.filter(k=>k!==item)];toast(`${item} transport prioritized`);updateHud();save()});
@@ -483,7 +485,7 @@ function initDetails(){
   document.querySelector('#building-actions').append(document.querySelector('#release-garrison'));
   const card=document.createElement('aside');card.id='building-map-card';card.hidden=true;card.setAttribute('aria-label','Ausgewähltes Gebäude auf der Karte');card.innerHTML='<button id="close-building-card" aria-label="Gebäudeauswahl schließen">×</button><strong></strong><p></p><div class="context-goods"></div><button id="building-settings">Gebäudeeinstellungen</button>';game.append(card);
   document.querySelector('#close-building-card').onclick=()=>{inspectedBuilding=null;settingArea=false;document.querySelector('#info-panel').classList.add('hidden');card.hidden=true;showCommandPanel('build');};
-  document.querySelector('#building-settings').onclick=()=>{if(inspectedBuilding){showCommandPanel('building');document.querySelector('#building-actions').scrollIntoView({block:'nearest'});}};
+  buildingSettings=initBuildingSettings({getBuilding:()=>inspectedBuilding,name:b=>buildingNames[b.type]||b.name});
   const toolOutput=document.createElement('select');toolOutput.id='tool-output';toolOutput.setAttribute('aria-label','Werkzeugschmiede: Produktionsauftrag');toolOutput.hidden=true;toolOutput.innerHTML='<option value="auto">Automatisch: knappstes Werkzeug</option>'+toolTypes.map(k=>`<option value="${k}">${goodsNames[k]}</option>`).join('');toolOutput.onchange=()=>{if(inspectedBuilding?.type==='toolsmith'){inspectedBuilding.toolChoice=toolOutput.value;save();inspect(inspectedBuilding);}};document.querySelector('#building-actions').append(toolOutput);
   document.querySelectorAll('[data-recruit]').forEach(b=>{const type=b.dataset.recruit;b.classList.add('unit-card');b.innerHTML=`<span class="unit-preview" role="img" aria-label="${unitNames[type]}" style='${unitMenuArt(type)}'></span><strong>${unitNames[type]}</strong><small class="unit-count"></small>${goodAmount(['swordsman','medic'].includes(type)?'swords':type==='archer'?'bows':professionTools[type],1)}`;});
   const units=document.querySelector('.unit-buttons'),status=document.createElement('p');status.id='unit-status';units.after(status);
@@ -495,6 +497,7 @@ function initDetails(){
 }
 function showCommandPanel(name){if(mobile.enabled&&name==='building')document.documentElement.classList.add('mobile-panel');document.querySelectorAll('[data-command-panel]').forEach(el=>el.classList.toggle('hidden',el.dataset.commandPanel!==name));document.querySelectorAll('[data-command-tab]').forEach(el=>{el.classList.toggle('active',el.dataset.commandTab===name);el.setAttribute('aria-pressed',String(el.dataset.commandTab===name));});}
 function configureContextControls(b){const call=document.querySelector('#hospital-recall');if(call){call.hidden=b.type!=='hospital';call.disabled=b.progress<1||b.stopped;}
+  buildingSettings?.sync();document.querySelector('#production-toggle').setAttribute('aria-pressed',String(Boolean(b.stopped)));document.querySelector('#priority-toggle').setAttribute('aria-pressed',String(Boolean(b.priority)));
   const rules=document.querySelector('#warehouse-rules');if(rules){rules.hidden=b.type!=='warehouse';const source=rules.querySelector('#storage-source');if(source){const options=buildings.map((d,i)=>d!==b&&(i===0||d.type==='warehouse'&&(d.owner||1)===1)?'<option value="'+i+'">'+(i===0?'Hauptlager':'Lager '+d.x+', '+d.y)+'</option>':'').join('');if(source.innerHTML!==options)source.innerHTML=options;source.value=String(b.storageSource||0);source.disabled=b.progress<1;}rules.querySelectorAll('[data-storage-good]').forEach(el=>{el.value=b.storageRules?.[el.dataset.storageGood]||'accept';el.disabled=b.progress<1;});rules.querySelectorAll('[data-storage-target]').forEach(el=>{if(document.activeElement!==el)el.value=b.storageTargets?.[el.dataset.storageTarget]??10;el.disabled=b.progress<1;el.hidden=b.storageRules?.[el.dataset.storageTarget]!=='collect';el.previousElementSibling.hidden=el.hidden;});}
   const ready=b.progress>=1,productive=Boolean(recipes[b.type])||['woodcutter','quarry','forester','barracks','warehouse','hospital'].includes(b.type);
   document.querySelector('#production-toggle').hidden=ready&&!productive;
