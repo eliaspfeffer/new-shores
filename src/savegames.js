@@ -30,5 +30,9 @@ export function parseSave(text,types,width=50,height=50){
     if(b.storageSource!==undefined&&(!Number.isInteger(b.storageSource)||b.storageSource<0||b.storageSource>=s.buildings.length||b.storageSource===index||b.storageSource!==0&&(s.buildings[b.storageSource].type!=='warehouse'||(s.buildings[b.storageSource].owner||1)!==1)))throw new Error('Ungültige Lagerquelle.');
   }
   for(const w of s.workers||[])if(w.combatStance!==undefined&&!['defend','march'].includes(w.combatStance))throw new Error('Ungültiger Kampfbefehl.');
+  for(const w of s.workers||[]){
+    if(w.healTargetId!==undefined&&!Number.isInteger(w.healTargetId))throw new Error('Ungültiger Heilungsauftrag.');
+    for(const key of ['healPulse','healRetry'])if(w[key]!==undefined&&(typeof w[key]!=='number'||w[key]<0||w[key]>2))throw new Error('Ungültiger Heilungsfortschritt.');
+  }
   return s;
 }

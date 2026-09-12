@@ -2,11 +2,21 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Sanitäter und Feldheilung
+
+- Sanitäter sind in einer fertigen, aktiven Kaserne in drei Rängen rekrutierbar: ein Schwert, zusätzlich 0/1/2 Gold. Es wird ein eigener freier lebender Träger umgeschult, kein zusätzlicher Siedler erzeugt. Sie sind angreifbare Militäreinheiten mit schwachem Nahkampf und unterstützen Auswahlgruppen, Marschziele und Patrouillen.
+- Im Stand suchen sie erreichbare eigene verwundete Soldaten im Umkreis von fünf Kartenfeldern auf. Behandlung erfolgt nur innerhalb 1,5 Feldern und schrittweise bis exakt 75 % der maximalen Trefferpunkte. Tote, Feinde, der Sanitäter selbst und Turmbesatzungen sind ausgeschlossen. Ohne Patienten stehen sie still. Neue Marschbefehle/Patrouillen haben Vorrang; „Nur marschieren“ verhindert auch automatische Heilungsausflüge. „Anhalten“ bricht einen laufenden Weg ab, die lokale Patientensuche bleibt im Verteidigungsmodus aktiv.
+- „Nur Verwundete behalten“ oder Rücktaste entfernt gesunde Einheiten aus der aktuellen Auswahl, um den Rückzug verwundeter Soldaten zu erleichtern. Trefferpunkte, Sanitäterrang und laufende Versorgungswege werden gespeichert und fortgesetzt. Verlorene/tote Patienten brechen den Weg ab.
+- Quelle: [Originalhandbuch, Militär, gedruckte Seiten 48–49 und Einheitentabelle](https://www.mogelpower.de/manuals/Die_Siedler_IV_Handbuch.pdf). Die 75-%-Grenze, schwacher Nahkampf, Schwert und drei Ränge sind dort belegt. Reichweiten, 3/4/5 Heilpunkte je 1,2 Sekunden und die vorhandenen 55/75/95 Trefferpunkte sind eigene Balance, keine verifizierten Originalwerte.
+- Darstellung bewusst noch unvollständig: vorhandene richtungsabhängige Soldatengrafik mit „S“-Kennzeichnung und kurzem Versorgungspuls. Kein eigener Sanitäter-Sprite oder vollständige Behandlungsanimation; dafür ist noch ein passender visueller Einzelabgleich nötig. Keine Originalgrafiken übernommen oder neue Rastergrafiken erzeugt.
+- Prüfung: 21 Testsuiten, Simulation, Strategie und Build bestanden. Isolierter Browserlauf: Kaserne anklicken, Rang-II-Sanitäter rekrutieren, Schwert/Gold abbuchen, Verwundeten tatsächlich erreichen, während der Heilung speichern/neuladen, bis 75 % weiterheilen und Verwundetenauswahl bedienen. Screenshot visuell geprüft; keine Browserfehler, keine persönlichen Saves verändert.
+- Noch offen: Lazarett mit Heiler und Vollheilung, eigene Sanitätergrafiken/Animationen, Hauptmänner und die übrigen unten aufgeführten Systeme. Der Gesamtauftrag bleibt unvollständig.
+
 ## Militärbefehle: Rückzug und verteilte Marschziele
 
 - Ausgewählte Soldaten können zwischen „Gegner bekämpfen“ und „Nur marschieren“ wechseln. Im Marschmodus unterbricht Gegnerkontakt den Lauf nicht; eigene Angriffe und Angriffe auf feindliche Türme unterbleiben. Feindlicher Schaden und bereits abgefeuerte Geschosse bleiben wirksam. Der Modus bleibt gespeichert; ältere Spielstände behalten das bisherige Kampfverhalten.
 - Kompakte Marschziele, Reihe oder Block im Siedlermenü. Reihe/Block vergeben unterschiedliche erreichbare Zielplätze an Schwertkämpfer und Bogenschützen. Bei Wasser, Hindernissen oder Kartenrand werden nahe Ersatzplätze gesucht; ohne erreichbaren Platz bleibt die betreffende Einheit zurück. Das sind Zielaufstellungen, keine starren Formationen während des Laufens. Gebäudebefehle, Patrouillen und angehängte Shift-Wegpunkte behalten ihre bisherigen Regeln.
-- Eigene vereinfachte Bedienung, keine vollständig nachgebildeten Original-Kampfregeln. Hauptmänner, Sanitäter, Heilung, weitere Soldatentypen und koordinierte Original-Formationen bleiben offen.
+- Eigene vereinfachte Bedienung, keine vollständig nachgebildeten Original-Kampfregeln. Hauptmänner, Lazarett, weitere Soldatentypen und koordinierte Original-Formationen bleiben offen. Sanitäter/Feldheilung sind inzwischen ergänzt, siehe oben.
 - Prüfung: 20 Testsuiten, Simulation-/Strategietests und Build bestanden. Isolierter Browserlauf für Moduswahl, drei unterschiedliche Zielplätze, Rückzug an einem Gegner vorbei ohne Gegenangriff und Speicherung; keine persönlichen Spielstände verändert.
 
 ## Lagerregeln und Umlagerung
@@ -99,7 +109,7 @@ Datei-Import/-Export und reale mobile Hardwaregesten sind implementiert, aber ni
 - Werkzeuge für noch fehlende Berufe; komplette Arbeits-/Trage-/Kampf-/Sterbeanimationen.
 - Mehrere Quellen/priorisierte Handelsrouten, frei liegende Waren, Handel, Esel und vollständige Verteilungs-/Stau-/Wegeregeln; eigene Lagerbaustufen.
 - Weitere Originalproduktionen, originale Abbauwahrscheinlichkeiten und Schwefelverwendung.
-- Weitere Soldaten, Hauptmänner, Sanitäter, vollständige Garnisons-/Turm-/Burg-/Kampfkraftregeln, originalgetreue Geschossregeln, Heilung und Formationen.
+- Weitere Soldaten, Hauptmänner, Lazarett/Vollheilung, eigene Sanitätergrafiken, vollständige Garnisons-/Turm-/Burg-/Kampfkraftregeln, originalgetreue Geschossregeln und Formationen. Mobile Feldheilung bis 75 % ist implementiert, siehe oben.
 - Wirtschaftlich aufbauende Gegner-KI, Angriffsplanung, Diplomatie/Bündnisse.
 - Völker mit eigenen Gebäuden, Berufen, Waren und Fähigkeiten; zusätzliche Spezialisten.
 - Religion, Alkoholketten, Tempel, Opfer, Mana und Wunder.

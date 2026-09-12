@@ -16,7 +16,7 @@ export function objectives(state,buildings,workers,resources){
   ];
   if(state.mode==='conquest')return [
     {key:'enemyTowers',current:buildings.filter(b=>!own(b)&&!b.destroyed&&b.type==='tower').length,target:0},
-    {key:'enemyTroops',current:workers.filter(w=>!w.dead&&(w.owner||1)!==1&&['swordsman','archer'].includes(w.unit)).length,target:0}
+    {key:'enemyTroops',current:workers.filter(w=>!w.dead&&(w.owner||1)!==1&&['swordsman','archer','medic'].includes(w.unit)).length,target:0}
   ];
   return [];
 }

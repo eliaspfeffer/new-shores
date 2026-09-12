@@ -35,7 +35,30 @@ export function createStrategy(api){
   const stock=()=>api.resources();
   const own=b=>(b.owner||1)===1;
   const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-  const isMilitary=w=>['swordsman','archer'].includes(w.unit);
+  const isMilitary=w=>['swordsman','archer','medic'].includes(w.unit);
+  const maxHealth=w=>w.maxHp||(isMilitary(w)?55+((w.rank||1)-1)*20:30);
+  const healable=(w,o)=>o!==w&&alive(o)&&isMilitary(o)&&(o.owner||1)===(w.owner||1)&&o.garrisonIndex===undefined&&o.hp>0&&o.hp<maxHealth(o)*.75;
+  function clearHealing(w){delete w.healTargetId;delete w.healRetry;w.healPulse=0;if(w.phase==='healTravel'){w.phase='guard';w.route=null;}}
+  function heal(w,dt){
+    w.healPulse=Math.max(0,(w.healPulse||0)-dt);
+    if(w.combatStance==='march'){clearHealing(w);return false;}
+    if(!['guard','healTravel'].includes(w.phase)||w.patrol)return false;
+    if(w.phase==='healTravel'){
+      const target=workers.find(o=>o.id===w.healTargetId);
+      if(!target||!healable(w,target)||dist(w,target)>6){clearHealing(w);return false;}
+      if(dist(w,target)<=1.5){w.phase='guard';w.route=null;}
+      else if(followRoute(w,dt)){clearHealing(w);return true;}
+      else return true;
+    }
+    const near=workers.filter(o=>healable(w,o)&&dist(w,o)<=1.5).sort((a,b)=>a.hp/maxHealth(a)-b.hp/maxHealth(b))[0];
+    if(near){if(!w.cooldown){const amount=Math.min(2+(w.rank||1),maxHealth(near)*.75-near.hp);near.hp+=amount;w.cooldown=1.2;w.healPulse=1;w.healTargetId=near.id;w.direction=facing8(near.x-w.x,near.y-w.y);}return true;}
+    // Idle medics seek nearby patients. Explicit movement orders and patrols take priority.
+    if(w.phase!=='guard'||w.patrol)return false;
+    w.healRetry=(w.healRetry||0)-dt;if(w.healRetry>0)return false;w.healRetry=2;
+    for(const target of workers.filter(o=>healable(w,o)&&dist(w,o)<=5).sort((a,b)=>dist(w,a)-dist(w,b))){const route=routeTo(w,{x:target.x,y:target.y});if(!route)continue;Object.assign(w,{healTargetId:target.id,phase:'healTravel',route,routeIndex:0});return true;}
+    delete w.healTargetId;return false;
+  }
+  function selectWounded(){for(const id of api.selected){const w=workers.find(o=>o.id===id);if(!w||!own(w)||!alive(w)||!isMilitary(w)||!(w.hp<maxHealth(w)))api.selected.delete(id);}api.hud();}
   const alive=w=>!w.dead;
   function init(){
     if(state.initialized)return;state.initialized=true;
@@ -56,12 +79,12 @@ export function createStrategy(api){
   }
   function ownerAt(x,y){return owners[y]?.[x]||0;}
   function recruit(type,rank=1,barracks=null){
-    if(!['pioneer','geologist','swordsman','archer'].includes(type))return false;
+    if(!['pioneer','geologist','swordsman','archer','medic'].includes(type))return false;
     rank=Math.max(1,Math.min(3,Math.floor(Number(rank)||1)));
-    const military=['swordsman','archer'].includes(type),resource=military?(type==='archer'?'bows':'swords'):'tools';
+    const military=isMilitary({unit:type}),resource=military?(type==='archer'?'bows':'swords'):'tools';
     if(military&&barracks&&(!buildings.includes(barracks)||!own(barracks)||barracks.type!=='barracks'||barracks.progress<1||barracks.stopped))return toast('Diese Kaserne ist noch nicht einsatzbereit');
     if(military&&!buildings.some(b=>own(b)&&b.type==='barracks'&&b.progress>=1&&!b.stopped))return toast('Build an active barracks first');
-    const w=workers.find(w=>!w.unit&&!w.carry&&w.phase==='idle');
+    const w=workers.find(w=>alive(w)&&own(w)&&!w.unit&&!w.carry&&w.employerIndex===undefined&&w.phase==='idle');
     if(!w)return toast('No idle carrier available');
     if(military&&(stock()[resource]||0)<1)return toast('Need 1 '+resource);
     const gold=military?rank-1:0;if((stock().gold||0)<gold)return toast('Benötigt '+gold+' Gold für Rang '+rank);
@@ -85,12 +108,12 @@ export function createStrategy(api){
       if(!append&&!targets)w.waypoints=[];
       if(!w.unit){if(w.phase==='manual'){w.phase='idle';w.route=null;}w.manualTarget=target;issued++;return;}
       if(w.garrisonIndex!==undefined){const old=buildings[w.garrisonIndex];if(old)old.garrison=Math.max(0,(old.garrison||0)-1);delete w.garrisonIndex;}
-      Object.assign(w,{route,routeIndex:0,phase:'command',order:{x:g.x,y:g.y,building:b?buildings.indexOf(b):-1},wait:0});
+      clearHealing(w);Object.assign(w,{route,routeIndex:0,phase:'command',order:{x:g.x,y:g.y,building:b?buildings.indexOf(b):-1},wait:0});
       if(['geologist','pioneer'].includes(w.unit)){w.autoWork=true;w.workArea={x:g.x,y:g.y,radius:10};w.workRetry=0;w.surveyVisited=[];w.workSite=null;w.surveyStatus='Unterwegs ins Arbeitsgebiet';}
       if(w.unit==='geologist'){w.surveyQueue=surveySites(g);w.surveyDone=0;}issued++;
     });recalculate();api.hud();toast(issued?`${issued} Einheiten beauftragt`:'Ziel ist nicht erreichbar');return true;
   }
-  function stop(){for(const w of workers)if(api.selected.has(w.id)){delete w.patrol;w.waypoints=[];delete w.manualTarget;if(w.unit){w.route=null;w.order=null;w.surveyQueue=[];w.workSite=null;w.autoWork=false;w.surveyStatus='Angehalten';w.phase='guard';}else if(w.phase==='manual'){w.route=null;w.phase='idle';}}}
+  function stop(){for(const w of workers)if(api.selected.has(w.id)){clearHealing(w);delete w.patrol;w.waypoints=[];delete w.manualTarget;if(w.unit){w.route=null;w.order=null;w.surveyQueue=[];w.workSite=null;w.autoWork=false;w.surveyStatus='Angehalten';w.phase='guard';}else if(w.phase==='manual'){w.route=null;w.phase='idle';}}}
   function isRocky(x,y){return state.deposits.some(d=>dist(d,{x,y})<=2.7);}
   function surveySites(origin){const sites=[],radius=origin.radius||10;for(let y=Math.max(0,origin.y-radius);y<=Math.min(terrain.length-1,origin.y+radius);y++)for(let x=Math.max(0,origin.x-radius);x<=Math.min(terrain[y].length-1,origin.x+radius);x++)if(dist(origin,{x,y})<=radius&&terrain[y][x]==='grass'&&isRocky(x,y)&&(x+y)%2===0)sites.push({x,y});return sites.sort((a,b)=>dist(a,origin)-dist(b,origin));}
   function reserveSite(w,site){return !workers.some(o=>o!==w&&!o.dead&&o.autoWork&&o.unit===w.unit&&o.workSite?.x===site.x&&o.workSite?.y===site.y);}
@@ -123,8 +146,9 @@ export function createStrategy(api){
     if(w.unit){
       w.t=(w.t||0)+dt;w.cooldown=Math.max(0,(w.cooldown||0)-dt);
       if(w.autoWork&&w.workArea&&w.phase==='guard'){w.workRetry=(w.workRetry||0)-dt;if(w.workRetry<=0){if(w.unit==='pioneer')nextPioneer(w);if(w.unit==='geologist')nextSurvey(w);}}
+      if(w.unit==='medic'&&heal(w,dt))return true;
       const enemy=isMilitary(w)&&w.combatStance!=='march'?workers.find(o=>alive(o)&&isMilitary(o)&&(o.owner||1)!==(w.owner||1)&&o.garrisonIndex===undefined&&dist(w,o)<(w.unit==='archer'?4:1.4)):null;
-      if(enemy){if(!w.cooldown){const damage=(w.unit==='archer'?7:10)*(1+((w.rank||1)-1)*.4);if(w.unit==='archer')state.projectiles.push({x:w.x,y:w.y,fromX:w.x,fromY:w.y,targetId:enemy.id,owner:w.owner||1,damage,age:0});else damageUnit(enemy,damage);w.cooldown=1.2;w.direction=facing8(enemy.x-w.x,enemy.y-w.y);}return true;}
+      if(enemy){if(!w.cooldown){const damage=(w.unit==='archer'?7:w.unit==='medic'?4:10)*(1+((w.rank||1)-1)*.4);if(w.unit==='archer')state.projectiles.push({x:w.x,y:w.y,fromX:w.x,fromY:w.y,targetId:enemy.id,owner:w.owner||1,damage,age:0});else damageUnit(enemy,damage);w.cooldown=1.2;w.direction=facing8(enemy.x-w.x,enemy.y-w.y);}return true;}
       if(w.phase==='patrol'){if(followRoute(w,dt)){w.phase='guard';w.route=null;}return true;}
       if(w.phase==='command'&&followRoute(w,dt)){w.phase='action';w.wait=0;}
       if(w.phase==='action'){
@@ -203,5 +227,5 @@ export function createStrategy(api){
     toast(count?count+' Soldaten patrouillieren zwischen Start und Ziel':'Erreichbares Ziel und freie Soldaten auswählen');api.hud();return count>0;
   }
   function setCombatStance(stance){if(!['defend','march'].includes(stance))return false;let n=0;for(const w of workers)if(api.selected.has(w.id)&&own(w)&&alive(w)&&isMilitary(w)){w.combatStance=stance;n++;}toast(n+' Soldaten: '+(stance==='march'?'nur marschieren, kein Gegenangriff':'Gegner in Reichweite bekämpfen'));api.hud();return n>0;}
-  return {state,init,restore,tick,tickWorker,produce,recruit,command,patrol,stop,release,ownerAt,placement,recalculate,isMilitary,readyToBuild,returnSpecialists,depositFor,isRocky,surveyNearest,setCombatStance};
+  return {state,init,restore,tick,tickWorker,produce,recruit,command,patrol,stop,release,ownerAt,placement,recalculate,isMilitary,readyToBuild,returnSpecialists,depositFor,isRocky,surveyNearest,setCombatStance,selectWounded};
 }
