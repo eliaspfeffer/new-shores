@@ -2,6 +2,20 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Fünf ergänzte Menü-, Speicher- und Farbfunktionen
+
+1. **Speichern & Hauptmenü:** Rückkehr aus dem Pausenmenü ohne laufende Hintergrundsimulation. Bei Speicherfehler bleibt das Spiel geöffnet. Fortsetzen lädt den Stand; eine neue Siedlung legt nach Bestätigung eine Sicherung an und initialisiert eine frische Welt.
+2. **Spielstandübersicht im Haupt- und Pausenmenü:** Autosave, drei Speicherplätze, Zwischenspeicher und vorhandene Sicherungen mit Datum, Spielzeit, Gebäude-/Siedlerzahl. Leere und ungültige Einträge sind nicht ladbar. Laden bewahrt den vorherigen Stand und öffnet die geladene Welt pausiert.
+3. **Benannte Speicherplätze:** Sichern unter einem eigenen Namen und Umbenennen bis 48 Zeichen. Namen stehen im einzelnen Spielstand, nicht nur in separaten Metadaten. Bestehende Speicherplatzknöpfe behalten vergebene Namen beim Überschreiben.
+4. **Zwischenspeicher:** Eigener Platz mit F5/Schnellspeichern und F9/Schnellladen, zusätzlich Touch-Knöpfe im Pausenmenü. Vorheriger Zwischenspeicher bleibt separat erhalten. Laden erfordert Bestätigung. Auf Mac-Tastaturen gegebenenfalls Fn verwenden.
+5. **Spielerfarbe:** Rot, Blau, Grün oder Violett vor Spielbeginn sowie im Pausenmenü. Farbe wird gespeichert und für Grenzpunkte, Minikartenmarkierungen, Einheitenbalken und Auswahlmarkierungen verwendet. Der bestehende KI-Gegner erhält eine andere Farbe. Kleidung und Gebäude-Sprites werden nicht umgefärbt; alte Spielstände erhalten Blau.
+
+Die vorhandene Holz-/Gold-Gestaltung bleibt erhalten; neue Dialoge besitzen erreichbare Schließen-/Fokuszustände, mobile 44-Pixel-Bedienelemente und erkennbare Fehler-/Leerzustände. Keine Rastergrafiken geändert.
+
+**Noch kein WLAN-Mehrspieler:** Es gibt weiterhin keine Netzwerksynchronisation, Lobby, getrennten menschlichen Spielerwirtschaften oder Völkerwahl. Die Farbauswahl allein ist ausdrücklich kein Mehrspielermodus. Speicherstände bleiben lokal pro Gerät/Browser-Ursprung.
+
+Prüfung: 25 Node-Testsuiten einschließlich Speicherbibliothek/Farbvalidierung, separate Simulation/Strategie und Produktionsbuild. Isolierte Desktop-/667×375-Touch-Browserprüfungen für Hauptmenürückkehr, Speichern, Umbenennen, Laden, Sicherungserhalt, Schnellzugriffe, Farbwechsel, vollen Speicher, Reload und frischen Spielstart. Persönliche Spielstände bleiben unverändert.
+
 ## Sechs ergänzte Routen- und Lagerfunktionen
 
 1. Einzelne Patrouillenpunkte entfernen, solange mindestens zwei übrig bleiben.

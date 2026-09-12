@@ -1,0 +1,22 @@
+const {chromium}=require('playwright');const assert=require('node:assert/strict');
+(async()=>{const browser=await chromium.launch({channel:'chrome',headless:true});try{for(const mobile of [false,true]){
+ const context=await browser.newContext({viewport:mobile?{width:667,height:375}:{width:1400,height:900},hasTouch:mobile,isMobile:mobile}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
+ await page.goto('http://localhost:4176/'+(mobile?'?mobile=1':''));
+ await page.click('#open-title-saves');assert(await page.locator('#save-library-dialog').isVisible());assert(await page.locator('[data-load-save="new-shores-quicksave"]').isDisabled());await page.keyboard.press('Escape');
+ await page.selectOption('#new-player-color','green');await page.click('#new-game');await page.click('#dismiss-quest');await page.click('#pause-button');
+ await page.click('#quick-save');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('new-shores-quicksave')).playerColor),'green');
+ await page.selectOption('#current-player-color','violet');await page.click('#quick-load');assert.equal(await page.locator('#current-player-color').inputValue(),'green');
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('new-shores-before-load')).playerColor),'violet');
+ await page.click('#open-pause-saves');const row=page.locator('[data-save-key="new-shores-slot-1"]');await row.locator('input').fill('Hafen <img src=x>');await row.getByRole('button',{name:'Hier sichern'}).click();
+ await row.locator('input').fill('Unser grünes Tal');await row.getByRole('button',{name:'Umbenennen'}).click();assert.equal(await row.locator('strong').innerText(),'Unser grünes Tal');
+ await page.screenshot({path:'/tmp/new-shores-session-'+(mobile?'mobile':'desktop')+'.png'});
+ await page.click('#close-save-library');await page.click('#return-main-menu');assert(await page.locator('#title-screen.active').isVisible());
+ const saved=await page.evaluate(()=>localStorage.getItem('new-shores-save'));await page.click('#open-title-saves');await page.locator('[data-load-save="new-shores-slot-1"]').click();assert(await page.locator('#game-screen.active').isVisible());
+ assert.equal(await page.evaluate(()=>localStorage.getItem('new-shores-before-load')),saved);
+ await page.selectOption('#current-player-color','red');await page.click('#resume-button');await page.keyboard.press('F5');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('new-shores-quicksave')).playerColor),'red');
+ await page.keyboard.press('F9');assert(await page.locator('#pause-modal').isVisible());
+ await page.evaluate(()=>{window.originalSet=Storage.prototype.setItem;Storage.prototype.setItem=function(){throw new DOMException('Full','QuotaExceededError');};});await page.click('#return-main-menu');assert(await page.locator('#game-screen.active').isVisible());await page.evaluate(()=>{Storage.prototype.setItem=window.originalSet;});
+ await page.reload();await page.waitForSelector('#game-screen.active');await page.click('#pause-button');assert.equal(await page.locator('#current-player-color').inputValue(),'red');
+ await page.click('#return-main-menu');await page.selectOption('#new-player-color','violet');await page.click('#new-game');await page.waitForSelector('#title-screen.active');await page.waitForFunction(()=>document.querySelector('#new-player-color')?.value==='violet');await page.click('#new-game');await page.click('#pause-button');await page.click('#save-button');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('new-shores-save')).playerColor),'violet');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('new-shores-before-load')).playerColor),'red');
+ assert.deepEqual(errors,[]);console.log('PASS '+(mobile?'mobile':'desktop')+': menu return, library, names, quicksave/restore, colors, preserved backup, quota failure, reload and fresh world');await context.close();
+}}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

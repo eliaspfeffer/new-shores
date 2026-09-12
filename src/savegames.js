@@ -4,6 +4,8 @@ export function parseSave(text,types,width=50,height=50){
   const s=JSON.parse(text);
   function check(value,depth=0){if(depth>16)throw new Error('Ungültige Datenstruktur.');if(value&&typeof value==='object')for(const [k,v] of Object.entries(value)){if(['__proto__','constructor','prototype'].includes(k))throw new Error('Ungültiger Datenschlüssel.');check(v,depth+1);}else if(typeof value==='number'&&!Number.isFinite(value))throw new Error('Ungültiger Zahlenwert.');}
   check(s);if(!s||typeof s!=='object'||!Number.isInteger(s.version)||s.version<1||s.version>6)throw new Error('Diese Spielstandversion wird nicht unterstützt.');
+  if(s.playerColor!==undefined&&!['red','blue','green','violet'].includes(s.playerColor))throw new Error('Ungültige Spielerfarbe.');
+  if(s.saveName!==undefined&&(typeof s.saveName!=='string'||!s.saveName.trim()||s.saveName.length>48))throw new Error('Ungültiger Spielstandname.');
   const point=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.y>=0&&p.x<width&&p.y<height;
   if(!s.resources||Object.entries(s.resources).some(([k,v])=>!/^[a-zA-Z][a-zA-Z0-9]{0,24}$/.test(k)||typeof v!=='number'||!Number.isFinite(v)||v<0))throw new Error('Ungültige Vorräte.');
   if(s.terrain&&(!Array.isArray(s.terrain)||s.terrain.length!==height||s.terrain.some(row=>!Array.isArray(row)||row.length!==width||row.some(t=>!['grass','water','shore','void'].includes(t)))))throw new Error('Ungültige Karte.');
