@@ -98,6 +98,9 @@ h1 span { color:#efbd4e; padding-left:.22em; }
 #command-sidebar .building-preview{width:82px;height:76px;grid-row:auto}
 #command-sidebar .building-card strong{font-size:10px;margin:0 0 3px;min-height:14px}
 #command-sidebar .building-purpose{display:none}
+#command-sidebar .mine-resource{display:inline-flex;align-items:center;justify-content:center;gap:3px;max-width:100%;margin:0 0 4px;padding:1px 4px;border-radius:3px;background:#17231988;color:#f1e5b9;font:11px/1.3 system-ui}
+#command-sidebar .mine-resource .goods-icon{width:24px;height:24px;flex-shrink:0}
+#command-sidebar .tool .mine-resource>span{font:11px/1.3 system-ui;margin:0;padding:0}
 #command-sidebar .building-cost{font-size:9px;border:0;margin:0;padding:0;color:#e6d9a4}
 #catalog-detail{margin:0;padding:8px;border-top:2px ridge #ab975e;min-height:48px;flex-shrink:0;background:#252c1dc4;font-size:11px}
 #command-sidebar .resource-bar{position:static;transform:none;width:100%;height:100%;max-width:none;padding:6px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:3px;border:0;border-radius:0;background:none;box-shadow:none;box-sizing:border-box}

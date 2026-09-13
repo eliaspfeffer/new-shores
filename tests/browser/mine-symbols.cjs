@@ -1,0 +1,10 @@
+const {chromium}=require('playwright'),assert=require('node:assert/strict');
+(async()=>{const browser=await chromium.launch({channel:'chrome',headless:true});try{for(const mobile of [false,true]){
+ const context=await browser.newContext({viewport:mobile?{width:667,height:375}:{width:1400,height:900},hasTouch:mobile,isMobile:mobile}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('http://localhost:4176/'+(mobile?'?mobile=1':''));await page.click('#new-game');await page.click('#dismiss-quest');if(mobile)await page.click('#mobile-controls [data-panel="build"]');await page.click('[data-category="metal"]');
+ for(const[type,item,label]of [['coalmine','coal','Kohle'],['ironmine','ironOre','Eisenerz'],['goldmine','goldOre','Golderz'],['sulfurmine','sulfur','Schwefel']]){
+  const card=page.locator('.building-card[data-tool="'+type+'"]'),badge=card.locator('.mine-resource');if(mobile&&!await card.isVisible())await page.click('#mobile-controls [data-panel="build"]');await card.scrollIntoViewIfNeeded();assert.equal(await badge.getAttribute('data-resource'),item);assert.equal(await badge.innerText(),label);assert(await badge.locator('.goods-icon').isVisible());assert.equal(await card.locator('.building-cost .good-amount').count(),2);await badge.click();assert.match(await card.getAttribute('class'),/active/);
+  assert(await badge.evaluate(e=>e.scrollWidth<=e.clientWidth+1),'badge fits its card');
+ }
+ if(mobile)await page.click('#mobile-controls [data-panel="build"]');await page.locator('.building-card[data-tool="coalmine"]').scrollIntoViewIfNeeded();await page.screenshot({path:'/tmp/new-shores-mine-symbols-'+(mobile?'mobile':'desktop')+'.png'});assert.deepEqual(errors,[]);console.log('PASS mine symbols '+(mobile?'mobile':'desktop')+': four mappings, visible art/name, unchanged costs, selectable badges and no overflow');await context.close();
+}}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

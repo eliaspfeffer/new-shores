@@ -1,5 +1,7 @@
 # Aktueller Ausbau – 13. September 2026
 
+Minenkarten zeigen jetzt zusätzlich zu den Baukosten das vorhandene Warensymbol mit Namen für Kohle, Eisenerz, Golderz bzw. Schwefel. Die Zuordnung kommt direkt aus dem jeweiligen Produktionsrezept; Geologenfund und geförderte Ware sind damit im Baumenü erkennbar. Keine neuen Assets oder Änderungen an Spielständen/Produktion.
+
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
 ## Eroberungsfolgen für zivile Gebäude und physische Warenbergung

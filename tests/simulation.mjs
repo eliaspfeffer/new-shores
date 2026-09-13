@@ -66,6 +66,8 @@ assert.equal((catalog.match(/class="building-preview"/g)||[]).length,25,'every b
 assert.ok(!catalog.includes('undefined'),'all buildings have names, art and descriptions');
 assert.ok(catalog.includes('1 Mehl + 1 Wasser → 2 Brot.'),'menu describes actual strategy recipe, not obsolete flavor text');
 assert.ok(catalog.includes('Bergbau & Metall')&&catalog.includes('Baukategorie'));
+for(const item of ['coal','ironOre','goldOre','sulfur'])assert.ok(catalog.includes('class="mine-resource" data-resource="'+item+'"'),'mine card shows matching deposit/output symbol: '+item);
+assert.equal((catalog.match(/class="mine-resource"/g)||[]).length,4);
 console.log('PASS: complete building catalog, sprite previews, translated categories and current recipes');
 // Isolate the established economy test from the new optional enemy outpost.
 q.buildings.splice(1);q.workers.splice(8);
