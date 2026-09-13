@@ -2,6 +2,19 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Optionale gegnerische Turmangriffe
+
+- Im Pausenmenü separat einschaltbar; bei neuen und alten Spielständen zunächst aus. Die Verteidigungs-KI muss ebenfalls eingeschaltet sein. Abschalten beendet laufende Angriffe mit einem Rückweg statt mit Teleportation.
+- Alle 60 Simulationssekunden prüfen vorhandene gesunde, untätige gegnerische Schwertkämpfer/Bogenschützen nahe Türme. Garnisonen werden nicht ausgehoben, keine Soldaten oder Waffen erzeugt. Ein Trupp umfasst höchstens sechs erreichbare Feldsoldaten und benötigt mindestens einen Schwertkämpfer.
+- Ziele müssen höchstens acht Felder von einem beteiligten Feldsoldaten entfernt sein. Die eigene vereinfachte Stärkeabschätzung berücksichtigt Besatzung und Feldverteidiger im Fünffeldradius. Keine Sichtstrahlprüfung, kein historisch verifizierter KI-Algorithmus.
+- Soldaten erhalten wirkliche Laufaufträge. Schwertkämpfer verwenden die bestehende Besatzungs-/Eroberungslogik; Bogenschützen begleiten sie und kämpfen mit vorhandenen Geschossen gegen Feldsoldaten. Nach Eroberung kann der Schwertkämpfer einziehen; übrige Angreifer laufen zum Ausgangspunkt zurück.
+- Unter 30 % Gesundheit, bei zerstörtem/erobertem Ziel oder nach 90 Sekunden Einsatz erfolgt Rückzug ohne eigene Gegenangriffe. Ein unerreichbarer Rückweg lässt die Einheit stehen. Ausgangspunkt, Zielkoordinaten, Einsatzphase und Planungszeit werden gespeichert und validiert. Zielkoordinaten verhindern verwechselte Ziele nach Abriss anderer Gebäude.
+- Dies ist begrenzte Angriffsplanung mit einer endlichen Armee, **keine wirtschaftlich aufbauende Gegner-KI**. Gegnerische Rekrutierung, Nachschub, Aufklärungsgedächtnis, koordinierte Belagerungsformationen und Diplomatie bleiben offen. Keine Assets ersetzt.
+
+Referenz: [Originalhandbuch, 6.4](https://manualmachine.com/gamespc/thesettlersiv/1119087-user-manual/) beschreibt direkte Angriffe auf militärische Gebäude sowie Gruppen. Auswahlheuristik, Zahlenwerte und Zeitgrenzen oben sind eigene Spielregeln, keine Rekonstruktion der Original-KI.
+
+Prüfung: 29 Node-Testsuiten, separate Simulation/Strategie und Produktionsbuild bestanden. Isolierte Desktop- und 667×375-Touch-Browserläufe prüfen echte Annäherung, Eroberung/Besetzung, unveränderte Soldatenzahl sowie Menüschalter und Reload; beide Ansichten visuell geprüft. Ein dabei entdeckter Rückzug vor dem Einquartieren wurde korrigiert und als Regressionstest ergänzt. Persönliche Spielstände unangetastet. Der Gesamtausbau bleibt offen.
+
 ## Turmverteidigung und Kämpfe gegen Besatzungen
 
 - Bogenschützen können wie Schwertkämpfer eigene Türme besetzen und damit Gebiet sichern. Die bestehende Kapazitätsgrenze gilt für die gemischte Besatzung.
@@ -227,7 +240,7 @@ Datei-Import/-Export und reale mobile Hardwaregesten sind implementiert, aber ni
 - Frei liegende Waren, Handel zwischen Spielern, Esel und vollständige Verteilungs-/Stau-/Wegeregeln; eigene Lagerbaustufen. Mehrere priorisierte Lagerquellen sind implementiert.
 - Weitere Originalproduktionen, originale Abbauwahrscheinlichkeiten und Schwefelverwendung.
 - Weitere Soldaten, Hauptmänner, eigene Heiler-/Sanitätergrafiken und vollständige Behandlungsanimationen, vollständige Garnisons-/Turm-/Burg-/Kampfkraftregeln, originalgetreue Geschossregeln und Formationen. Mobile Feldheilung bis 75 % und Lazarett/Vollheilung sind implementiert, siehe oben.
-- Wirtschaftlich aufbauende Gegner-KI, Angriffsplanung, Diplomatie/Bündnisse.
+- Wirtschaftlich aufbauende Gegner-KI, umfassende Angriffs-/Belagerungsplanung und Diplomatie/Bündnisse. Optionale lokale Turmangriffe mit vorhandenen Truppen sind inzwischen ergänzt, siehe oben.
 - Völker mit eigenen Gebäuden, Berufen, Waren und Fähigkeiten; zusätzliche Spezialisten.
 - Religion, Alkoholketten, Tempel, Opfer, Mana und Wunder.
 - Schiffe, Häfen, Werften, Fahrzeuge, Kriegsmaschinen und Transport-/Landungsregeln.

@@ -7,6 +7,9 @@ export function parseSave(text,types,width=50,height=50){
   if(s.playerColor!==undefined&&!['red','blue','green','violet'].includes(s.playerColor))throw new Error('Ungültige Spielerfarbe.');
   if(s.saveName!==undefined&&(typeof s.saveName!=='string'||!s.saveName.trim()||s.saveName.length>48))throw new Error('Ungültiger Spielstandname.');
   const point=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.y>=0&&p.x<width&&p.y<height;
+  if(s.strategy?.enemyRaids!==undefined&&typeof s.strategy.enemyRaids!=='boolean')throw new Error('Ungültige Turmangriffs-KI.');
+  if(s.strategy?.raidClock!==undefined&&(!Number.isFinite(s.strategy.raidClock)||s.strategy.raidClock<0||s.strategy.raidClock>60))throw new Error('Ungültige Angriffsplanung.');
+  for(const w of s.workers||[])if(w.raid&&(!point(w.raid.home)||!point(w.raid.target)||!Number.isInteger(w.raid.target.x)||!Number.isInteger(w.raid.target.y)||!['attack','return'].includes(w.raid.stage)||!Number.isFinite(w.raid.age)||w.raid.age<0||w.raid.age>91))throw new Error('Ungültiger Turmangriff.');
   if(s.strategy?.tacticalAI!==undefined&&typeof s.strategy.tacticalAI!=='boolean')throw new Error('Ungültige Verteidigungs-KI.');
   if(s.strategy?.carrierReserve!==undefined&&(!Number.isInteger(s.strategy.carrierReserve)||s.strategy.carrierReserve<0||s.strategy.carrierReserve>50))throw new Error('Ungültige Trägerreserve.');
   if(s.journal!==undefined&&(!Array.isArray(s.journal)||s.journal.length>100||s.journal.some(e=>!e||typeof e.text!=='string'||e.text.length>300||!Number.isFinite(e.time)||e.time<0||!Number.isInteger(e.count)||e.count<1||e.count>999)))throw new Error('Ungültiges Meldungsjournal.');

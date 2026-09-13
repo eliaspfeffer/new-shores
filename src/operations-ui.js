@@ -7,6 +7,10 @@ export function initOperationsUI(api){
   const syncDefense=()=>{defense.textContent='Gegnerische Verteidigungs-KI: '+(strategy.state.tacticalAI!==false?'an':'aus');defense.setAttribute('aria-pressed',String(strategy.state.tacticalAI!==false));};
   defense.onclick=()=>{strategy.state.tacticalAI=strategy.state.tacticalAI===false;syncDefense();api.save();};
   document.querySelector('#power-button').after(defense);syncDefense();
+  const raids=document.createElement('button');raids.id='enemy-raids-toggle';raids.className='text-button';
+  raids.title='Vorhandene gegnerische Feldsoldaten greifen erreichbare nahe Türme an, wenn sie sich überlegen einschätzen. Keine zusätzlichen Soldaten. Benötigt Verteidigungs-KI.';
+  const syncRaids=()=>{raids.textContent='Gegnerische Turmangriffe: '+(strategy.state.enemyRaids?(strategy.state.tacticalAI===false?'pausiert (KI aus)':'an'):'aus');raids.setAttribute('aria-pressed',String(strategy.state.enemyRaids===true));};
+  raids.onclick=()=>{strategy.state.enemyRaids=strategy.state.enemyRaids!==true;syncRaids();if(!api.save())api.notify('Turmangriffe geändert, aber Speichern fehlgeschlagen');};defense.after(raids);syncRaids();
   const panel=document.createElement('section');panel.id='operations-building';panel.innerHTML='<section id="training-orders"><h3>Ausbildungswarteschlange</h3><p>8 Sekunden je Soldat. Waffen und Gold erst bei Abschluss; anschließend Weg über die Kaserne zum Sammelpunkt.</p><label>Einheit<select id="queue-type"><option value="swordsman">Schwertkämpfer</option><option value="archer">Bogenschütze</option><option value="medic">Sanitäter</option></select></label><label>Rang<select id="queue-rank"><option>1</option><option>2</option><option>3</option></select></label><label>Anzahl<input id="queue-count" type="number" min="1" max="20" value="1"></label><button id="enqueue-training">Ausbildung einreihen</button><p id="training-status"></p><div id="training-list"></div><h3>Sammelpunkt</h3><label>X<input id="rally-x" type="number" min="0" max="49"></label><label>Y<input id="rally-y" type="number" min="0" max="49"></label><button id="set-rally">Sammelpunkt setzen</button><button id="clear-rally">Am Kaserneneingang sammeln</button><p id="rally-status"></p></section><section id="tower-roster"><h3>Turmbesatzung</h3><p id="tower-count"></p><div id="tower-soldiers"></div></section><section id="production-order"><h3>Produktionsauftrag</h3><p>Weitere vollständige Produktionszyklen. Ein schon begonnener Zyklus zählt mit. 0 pausiert; vorhandene Waren werden weiter abgeholt.</p><label>Zyklen<input id="production-cycles" type="number" min="0" max="999" value="10"></label><button id="set-production-order">Auftrag setzen</button><button id="clear-production-order">Unbegrenzt produzieren</button><p id="production-order-status"></p></section><p id="operations-feedback" role="status"></p>';
   document.querySelector('#building-actions').after(panel);
   const q=s=>panel.querySelector(s),act=fn=>{const okay=fn();q('#operations-feedback').textContent=okay?(api.save()?'Auftrag gespeichert':'Geändert, aber Speichern fehlgeschlagen'):'Nicht möglich: Auswahl, Menge oder Erreichbarkeit prüfen';refresh();};
@@ -39,6 +43,7 @@ export function initOperationsUI(api){
   }
   function refresh(){
     syncDefense();
+    syncRaids();
     const b=api.building();panel.hidden=!b||(b.owner||1)!==1;
     if(document.activeElement!==reserveInput)reserveInput.value=strategy.state.carrierReserve||0;
     if(b){
