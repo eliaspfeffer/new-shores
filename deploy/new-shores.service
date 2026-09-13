@@ -1,0 +1,26 @@
+[Unit]
+Description=New Shores private game and cloud saves
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=new-shores
+Group=new-shores
+WorkingDirectory=/opt/new-shores
+EnvironmentFile=/etc/new-shores.env
+ExecStart=/usr/bin/node server/app.mjs
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+UMask=0077
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

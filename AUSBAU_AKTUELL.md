@@ -2,6 +2,17 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Privater Server, Konten, Insel-Freigaben und aufgeräumte Siedlerbedienung
+
+- Getrennter Dienst auf `openclaw`, HTTPS-Tailscale-Port 9444, eigene Datenbank/Rolle im vorhandenen PostgreSQL. Health-App bleibt auf ihrem bisherigen Port/Dienst und ihrer Datenbank. Kein öffentlicher Funnel, kein Clerk-/OMS-Credential-Recycling.
+- Eigene E-Mail-/Passwort-Konten, Registrierung, serverseitige Sitzungen und gesalzene scrypt-Passwort-Hashes. Der persönliche localhost:4176-Export ist im Konto als „Seenland · vom Mac übertragen“ vorhanden; die ursprüngliche Siedlung blieb pausiert und unverändert.
+- Serverinseln speichern/laden, Online-Autosync alle 30 Sekunden für explizit gebundene Inseln, manuell bestätigte Synchronisierung, Offline-Weiterarbeit, Konfliktstopp statt Überschreiben neuerer Fassungen, fünf vorherige Serverversionen und lokale Sicherung vor Inselwechsel. Lokale Imports/Neustart trennen die Serverbindung.
+- Einmalige Einladungscodes, sieben Tage gültig, Ansicht oder Bearbeitung, Besitzerübersicht mit entziehbaren Freigaben. **Asynchrones gemeinsames Weiterspielen, noch kein gleichzeitiger Echtzeit-Mehrspieler.** Freunde benötigen zusätzlich passend beschränkten Tailscale-Zugang.
+- Siedler-Unterbereiche Ausbilden/Finden/Befehle/Militär mit Symbolen; vorhandene Siedlergrafiken bleiben erhalten. Suche nach Namen/Beruf/Nummer, direkte Auswahl und Kamerafokus für Pionier, Geologe usw. Befehle abhängig von passender Auswahl; Langtexte unter Bedienungshilfe. Keine neue Rastergrafikfamilie oder Originalidentität behauptet.
+- **Weiter offen aus dem Server-/Freunde-Auftrag:** benachbartes Insel-Spawning auf gemeinsamer Karte, getrennte menschliche Spielerwirtschaften in synchroner Simulation, Freundschaft/Diplomatie, Gütersendungen zwischen Spielern, E-Mail-Verifizierung/-Passwortwiederherstellung und regelmäßige externe Datenbank-Backups. Registrierung/Freigaben ersetzen diese Systeme nicht.
+
+Betrieb und Grenzen: `SERVER_BETRIEB.md`. Prüfung: 32 Node-Tests, Simulation, Strategie, Build; echter PostgreSQL-API-Test mit isoliertem Testschema; Desktop-/667×375-Touch-Browserläufe für Registrierung/Login, Inseltransfer zwischen Geräten, Autosave-Konfliktstopp, Offline-Reload und Spezialistenmenü. Temporäre QA-Konten/Inseln anschließend entfernt. Kein Test hat den persönlichen Server-Spielstand verändert. Ältere Aussagen unten zu ausschließlich lokalen Spielständen werden durch diesen Abschnitt überholt.
+
 ## Anfängerkarte: erreichbare Startversorgung und Reparatur laufender Spiele
 
 - Fehlerursache: Die klassische Karte platzierte Stein nur an drei weit entfernten Felsgruppen. Anders als die neuen Seed-Karten besaß sie keine garantierte Steinversorgung innerhalb des Startterritoriums.

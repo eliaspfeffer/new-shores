@@ -30,6 +30,10 @@ const node=()=>({classList:{add(){},remove(){},toggle(){},contains(){return true
 const context={constructionLayers,createConstructionArt:()=>({has:()=>false}),constructionStage,workActivity,createSound:()=>({play(){},setEnabled(){}}),parseSave,createWorkforce,createExploration,goodsOrder,goodsNames,buildingNames,hasVisibleCargo,cargoPose,createGoodsArt:()=>({draw(){}}),wheelAction,demolitionRefund,createStrategy,recipes,extraBuildings,facing8,findPath,keyOf,roadStage,walkSpeed,Image:class{},document:{querySelector(k){if(!elements.has(k))elements.set(k,node());return elements.get(k)},querySelectorAll:()=>[],createElement:node,hidden:false},localStorage:{setItem:(k,v)=>storage.set(k,v),getItem:k=>storage.get(k)},addEventListener(){},requestAnimationFrame(){},setTimeout(){},innerWidth:1600,innerHeight:900,devicePixelRatio:1,console};
 context.document.addEventListener=()=>{};
 context.initAudioControls=()=>{};
+context.initCloud=()=>{};
+context.dispatchEvent=()=>{};
+context.Event=class{};
+context.initUnitMenu=()=>({refresh(){}});
 context.initSessionMenu=()=>({sync(){}});
 context.initOperationsUI=()=>({refresh(){}});
 context.ensureStarterSupply=ensureStarterSupply;

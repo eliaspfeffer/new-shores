@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {passwordHash,passwordMatches,emailAddress,token,digest,limiter} from '../server/security.mjs';
+const hash=await passwordHash('test-only-passphrase-123');
+assert.equal(await passwordMatches('test-only-passphrase-123',hash),true);
+assert.equal(await passwordMatches('wrong-password',hash),false);
+assert.equal(await passwordMatches('x'.repeat(129),hash),false);
+assert.notEqual(hash,await passwordHash('test-only-passphrase-123'));
+await assert.rejects(passwordHash('short'));
+assert.equal(emailAddress('Test@Example.com'),'test@example.com');
+assert.throws(()=>emailAddress('invalid'));
+assert.equal(digest(token()).length,64);
+const limit=limiter(2,60000);assert.equal(limit('a'),true);assert.equal(limit('a'),true);assert.equal(limit('a'),false);assert.equal(limit('b'),true);
+console.log('PASS: salted scrypt, constant-time match, input bounds, random tokens, rate limit');
