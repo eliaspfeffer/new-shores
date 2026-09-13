@@ -6,6 +6,7 @@ export const saveEntries=[
   {key:'new-shores-before-load',label:'Sicherung vor dem Laden'},
   {key:'new-shores-before-starter-help',label:'Sicherung vor der Starthilfe'},
   {key:'new-shores-before-cloud',label:'Sicherung vor dem Server-Inselwechsel'},
+  {key:'new-shores-before-conquest',label:'Sicherung vor den Eroberungsfolgen'},
   {key:'new-shores-autosave-backup',label:'Vorheriger Autosave'},
   {key:'new-shores-quicksave-backup',label:'Vorheriger Zwischenspeicher'},
 ];

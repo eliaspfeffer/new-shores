@@ -33,6 +33,7 @@ Keine Google-/Clerk-Verbindung und keine Wiederverwendung von OMS-Credentials. D
 - `/etc/new-shores.env` enthält nur eigene Spiel-Datenbank-Credentials, Modus 600. Nicht ausgeben oder ins Repository übernehmen.
 - `server/schema.sql` enthält idempotente Tabellenanlage. Die API hält die letzten fünf Versionen pro Insel in `island_history`. Ein separater regelmäßiger externer Datenbank-Backupjob wurde noch nicht eingerichtet.
 - Opt-in-Bergung nach Abriss benötigt Spielstandversion 7, sobald aktiviert oder Bodenwaren/Fracht vorhanden sind. Vor Laden solcher Inseln alte Offline-Clients vollständig schließen/aktualisieren. Der aktuelle Server akzeptiert weiterhin alte Versionen 1–6.
+- Optionale zivile Eroberungsfolgen benötigen Version 8. Server und Warenlieferungen erhalten diese Version; Client vor Laden vollständig aktualisieren. Der Sicherungsstand vor Einschalten liegt ausschließlich auf dem betreffenden Gerät in der Speicherbibliothek. Die Regel ist standardmäßig aus und verändert bestehende Serverinseln nicht automatisch.
 - Kontositzungen: zufällige 256-Bit-Tokens, nur gehasht in PostgreSQL, HttpOnly/Secure/SameSite=Strict-Cookies, 30 Tage. Origin-/Content-Type-Prüfung auf schreibenden APIs, Mengen-/Strukturprüfung und Anmelderatenbegrenzung.
 - `deploy/provision.mjs` ist ausdrücklich eine einmalige Bereitstellung; bricht bei vorhandener Datenbank/Rolle/Umgebungsdatei ab. Nicht für laufende Updates verwenden.
 

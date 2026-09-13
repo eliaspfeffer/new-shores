@@ -24,7 +24,7 @@ export function prepareDelivery(source,target,item,amount){
   if(!goodsOrder.includes(item)||!Number.isInteger(amount)||amount<1||amount>100)throw error(400,'Sendung: eine gültige Ware und 1 bis 100 Stück.');
   if(!Number.isSafeInteger(source.resources[item])||source.resources[item]<amount)throw error(409,'Nicht genug Waren im Hauptlager der Absenderinsel.');
   const place=deliverySpot(target,item,amount),outgoing=structuredClone(source),incoming=structuredClone(target);
-  outgoing.resources[item]-=amount;incoming.version=7;incoming.strategy??={};incoming.strategy.groundPiles??=[];
+  outgoing.resources[item]-=amount;incoming.version=Math.max(7,incoming.version);incoming.strategy??={};incoming.strategy.groundPiles??=[];
   let pile=incoming.strategy.groundPiles.find(p=>p.x===place.x&&p.y===place.y);if(!pile){pile={...place,goods:{}};incoming.strategy.groundPiles.push(pile);}pile.goods[item]=(pile.goods[item]||0)+amount;
   return {outgoing,incoming,place};
 }

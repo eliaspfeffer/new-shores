@@ -10,6 +10,8 @@ const {outgoing,incoming,place}=prepareDelivery(source,target,'stone',3);
 assert.equal(JSON.stringify([source,target]),before,'pure preparation never mutates either saved input');
 assert.equal(outgoing.resources.stone,7);assert.equal(incoming.resources.stone,0);assert.equal(incoming.strategy.groundPiles[0].goods.stone,3);assert.equal(incoming.version,7);
 assert.equal(parseSave(JSON.stringify(incoming),['storehouse']).version,7);
+const modern={...target,version:8,strategy:{...target.strategy,conquestLosses:true}};
+assert.equal(parseSave(JSON.stringify(prepareDelivery(source,modern,'stone',1).incoming),['storehouse']).version,8,'delivery never downgrades a newer game state');
 const owners=territoryOwners(incoming.terrain,incoming.buildings,incoming.strategy.claims);assert.equal(owners[place.y][place.x],1);
 const blocked=new Set(incoming.buildings.map(b=>keyOf(b.x,b.y))),entrance=b=>({x:b.x+.5,y:b.y+1.5});
 const goods=createGroundGoods({state:incoming.strategy,workers:incoming.workers,buildings:incoming.buildings,resources:()=>incoming.resources,ownerAt:(x,y)=>owners[y]?.[x]||0,entrance,obstacles:()=>blocked,routeTo:(a,b)=>findPath(a,b,incoming.terrain,blocked,new Map()),followRoute:w=>{const p=w.route?.[w.routeIndex++];if(p){w.x=p.x;w.y=p.y;}return w.routeIndex>=w.route.length;}});

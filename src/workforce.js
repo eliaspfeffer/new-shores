@@ -28,8 +28,8 @@ export function createWorkforce(api){
     }
     recruitmentClock+=dt;if(recruitmentClock<2)return;recruitmentClock=0;
     for(let i=0;i<buildings.length;i++){const b=buildings[i];if(!valid(b)||(!recipes[b.type]&&!['forester','hospital'].includes(b.type))||workers.some(w=>!w.dead&&w.employerIndex===i))continue;
-      if(workers.filter(w=>!w.dead&&!w.unit&&w.employerIndex===undefined).length<=2)break;
-      const w=workers.find(w=>!w.dead&&!w.unit&&w.employerIndex===undefined&&w.phase==='idle'&&!w.carry&&!w.manualTarget);if(!w)break;
+      if(workers.filter(w=>!w.dead&&(w.owner||1)===1&&!w.unit&&w.employerIndex===undefined).length<=2)break;
+      const w=workers.find(w=>!w.dead&&(w.owner||1)===1&&!w.unit&&w.employerIndex===undefined&&w.phase==='idle'&&!w.carry&&!w.manualTarget);if(!w)break;
       const p=entrance(b),route=p&&routeTo(w,p);if(!route)continue;
       const tool=checkoutTool(api.resources(),b.type);if(tool===false)continue;
       Object.assign(w,{employerIndex:i,profession:b.type,workTool:tool,phase:'staffTravel',role:b.type,task:null,route,routeIndex:0});b.workerId=w.id;
