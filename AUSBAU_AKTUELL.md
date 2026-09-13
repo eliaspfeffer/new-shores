@@ -2,6 +2,18 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Kartenwahl und reproduzierbare Seed-Landschaften
+
+- Vor einer neuen Siedlung stehen **Klassische Karte**, **Waldküste** und **Seenland** zur Auswahl. Die klassische Ausgangskarte bleibt unverändert. Die beiden neuen Typen erzeugen aus einem ganzzahligen Seed (0–4294967295) unterschiedliche Wald-/Felsverteilungen, Küsten und beim Seenland einen zusätzlichen See. „Neuen Seed würfeln“ wählt einen neuen Wert; gleicher Typ und Seed reproduzieren die Ausgangslandschaft. Nicht jeder Neustart würfelt automatisch.
+- Alle Karten bleiben 50 × 50 Felder groß. Hauptlager, Startarbeiter, Gegneraußenposten und die vier Bodenvorkommen behalten vorerst feste Ankerpositionen und Mengen. Freigehaltene Laufkorridore, Starterholz/-stein und erreichbare Ufer sichern die bestehende Wirtschafts- und Eroberungslogik. Die Korridore sind keine vorgefertigten Straßen; Laufspuren entstehen weiterhin durch Transporte.
+- Seed und Kartentyp stehen im Pausenmenü und werden zusammen mit den tatsächlichen Geländefeldern, Bäumen, Steinen und nun auch Landschaftsdetails gespeichert. Beim Laden wird die gespielte Welt übernommen, **nicht neu generiert**. Alte Spielstände ohne Kartenmetadaten bleiben lesbar und behalten ihre gespeicherte Landschaft.
+- Kartenwechsel läuft über „Speichern & Hauptmenü“, neue Auswahl und bestätigten Neustart. Der bisherige Stand bleibt unter der bestehenden Vor-dem-Laden-Sicherung erhalten. Ungültige Seeds verhindern den Start. Desktop und mobiles Querformat besitzen dieselben funktionalen Steuerelemente.
+- Beim visuellen Prüfen wurde die alte Ein-Küstenlinien-Annahme entdeckt: getrennte Seen wurden durch einen falschen Wasserstreifen über Land verbunden. Neue Karten zeichnen nun nur tatsächliche Land-Wasser-Grenzen. Bestehende eigene Texturen weiterverwendet, keine Rasterassets ersetzt; [visuell geprüfte Originalreferenz und verbleibende Grafikabweichungen](GRAPHICS_REFERENCE.md).
+
+Die Layouts sind eigene Generatorregeln, keine Originalkarten. Höhen/Gebirge, Planierung, natürliche weiche Uferübergänge, Größenwahl, Insel-/Schiffskarten, frei variierende Start-/Mineralpositionen, Karteneditor und vollständige Gefechtskonfiguration bleiben offen.
+
+Prüfung: 30 Node-Testsuiten, separate Simulation/Strategie und Produktionsbuild bestanden. 166 generierte Karten prüfen deterministische Unterschiede, freie Startanker, erreichbare Holz-/Steinvorräte, Vorkommen, Gegner und Angelufer. Isolierte Desktop-/667×375-Touch-Browserläufe bauen auf einer neuen Seed-Karte tatsächlich Holzfäller und Steinmetz, warten auf Warenlieferung, laden dieselbe Landschaft wieder und wechseln mit Sicherung auf einen anderen Kartentyp. Bestehende Speicherbibliothek-/Menüregressionen ebenfalls auf beiden Ansichten bestanden. Darstellung nach Uferkorrektur visuell geprüft; keine persönlichen Spielstände verwendet, keine Leistungsmessung oder echte iPhone-Hardwareprüfung.
+
 ## Optionale gegnerische Turmangriffe
 
 - Im Pausenmenü separat einschaltbar; bei neuen und alten Spielständen zunächst aus. Die Verteidigungs-KI muss ebenfalls eingeschaltet sein. Abschalten beendet laufende Angriffe mit einem Rückweg statt mit Teleportation.
@@ -245,7 +257,7 @@ Datei-Import/-Export und reale mobile Hardwaregesten sind implementiert, aber ni
 - Religion, Alkoholketten, Tempel, Opfer, Mana und Wunder.
 - Schiffe, Häfen, Werften, Fahrzeuge, Kriegsmaschinen und Transport-/Landungsregeln.
 - Dunkles Volk, Verderbnis, Morbus und zugehörige Gegenmaßnahmen.
-- Originalkampagnen, komplexe Missionsskripte, vollständige Gefechtskonfiguration, Kartenwahl/-editor, Schwierigkeit, Mehrspieler. Erste eigene Spielziele/Sieg-/Niederlagenzustände sind implementiert, siehe oben.
+- Originalkampagnen, komplexe Missionsskripte, vollständige Gefechtskonfiguration, Karteneditor, weitere Kartentypen/-größen, Schwierigkeit und Mehrspieler. Kartenwahl mit zwei Seed-Layouts sowie erste eigene Spielziele/Sieg-/Niederlagenzustände sind implementiert, siehe oben.
 - Eigene Musik und synthetische Arbeits-/Transport-/Bau-/Kampf-/Naturgeräusche samt Lautstärkereglern sind implementiert, siehe [AUDIO.md](AUDIO.md). Noch offen: vollständiger Original-Hörvergleich, Sprachaufnahmen, weitere Musikvarianten und Audio noch fehlender Spielsysteme; außerdem berufsspezifische Gebäudeanimationen und weitere Umweltgrafiken.
 - Vollständige deutsche Texte, weitere Original-Untermenüs, Formationspatrouillen und echte Mobilgeräteprüfung. Mehrteilige Patrouillen einschließlich punktweisem Löschen/Umsortieren und Umkehren sind implementiert, siehe oben.
 

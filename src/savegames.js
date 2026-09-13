@@ -1,4 +1,5 @@
 import {depotGoods,storageModes} from './storage.js';
+import {validMapConfig} from './map-generator.js';
 export function parseSave(text,types,width=50,height=50){
   if(typeof text!=='string'||text.length>8_000_000)throw new Error('Spielstand fehlt oder ist zu groß.');
   const s=JSON.parse(text);
@@ -7,6 +8,8 @@ export function parseSave(text,types,width=50,height=50){
   if(s.playerColor!==undefined&&!['red','blue','green','violet'].includes(s.playerColor))throw new Error('Ungültige Spielerfarbe.');
   if(s.saveName!==undefined&&(typeof s.saveName!=='string'||!s.saveName.trim()||s.saveName.length>48))throw new Error('Ungültiger Spielstandname.');
   const point=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.y>=0&&p.x<width&&p.y<height;
+  if(s.mapConfig!==undefined&&!validMapConfig(s.mapConfig))throw new Error('Ungültige Kartenkonfiguration.');
+  if(s.details!==undefined&&(!Array.isArray(s.details)||s.details.length>width*height||s.details.some(p=>!point(p)||![0,1,2].includes(p.type))))throw new Error('Ungültige Landschaftsdetails.');
   if(s.strategy?.enemyRaids!==undefined&&typeof s.strategy.enemyRaids!=='boolean')throw new Error('Ungültige Turmangriffs-KI.');
   if(s.strategy?.raidClock!==undefined&&(!Number.isFinite(s.strategy.raidClock)||s.strategy.raidClock<0||s.strategy.raidClock>60))throw new Error('Ungültige Angriffsplanung.');
   for(const w of s.workers||[])if(w.raid&&(!point(w.raid.home)||!point(w.raid.target)||!Number.isInteger(w.raid.target.x)||!Number.isInteger(w.raid.target.y)||!['attack','return'].includes(w.raid.stage)||!Number.isFinite(w.raid.age)||w.raid.age<0||w.raid.age>91))throw new Error('Ungültiger Turmangriff.');

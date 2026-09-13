@@ -1,5 +1,11 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 13. September: getrennte Ufer für Seed-Karten
+
+[Original-Kartenansicht der PC-Mission-CD](https://www.siedler4.com/grafik/mcd/screens/4.jpg), gefunden über Bildersuche und vollständig im Browser visuell betrachtet: türkisfarbenes Wasser, schmale sandgelbe Ufer, mehrere voneinander getrennte Wasserflächen. Nur Landschaftsreferenz, keine Fraktionsgebäude daraus abgeleitet. Die neuen Karten sind eigene Layouts; keinerlei Originalkarten oder Sprites extrahiert.
+
+Der bisherige Renderer verband den ersten Uferpunkt jeder Zeile zu einer einzigen Küste. Bei Seen entstand damit fälschlich ein Wasserstreifen über Land. Neue Seed-Karten zeichnen stattdessen nur tatsächliche Land-Wasser-Kanten getrennt, mit schmaler Sand-/Lichtkante und den vorhandenen eigenen Gras-/Wassertexturen. Die klassische Karte behält ihren bisherigen geglätteten Küstenrenderer. Neue Raster-Ufergrafiken, weiche Original-Terrainübergänge, Höhen und Wasseranimation bleiben offen.
+
 > Neuer Nachtrag: [Geologie, Figurenmenü und prozedurale Bau-/Arbeitsanimationen](AKTIVITAET_UPDATE.md). Vorhandene eigene Rastergrafiken weiterverwendet, Originalbild erneut betrachtet. Keine Behauptung vollständig verglichener Original-Animationsfolgen.
 
 > Neuerer UI-/Waren-/Erkundungsabgleich: [AUSBAU_AKTUELL.md](AUSBAU_AKTUELL.md). Schwarzer Erkundungsnebel und ein neues Warengrafikset sind inzwischen implementiert; ältere „offen“-Angaben unten beschreiben den früheren Stand.

@@ -31,6 +31,7 @@ context.document.addEventListener=()=>{};
 context.initAudioControls=()=>{};
 context.initSessionMenu=()=>({sync(){}});
 context.initOperationsUI=()=>({refresh(){}});
+context.initMapMenu=()=>({read:()=>({version:1,type:'classic',seed:0}),restore(){},refresh(){}});
 context.createJournal=()=>({add(){},list:()=>[],restore(){}});
 context.restoreCamera=(camera,view)=>{if(!view)return false;Object.assign(camera,view);return true;};
 context.colorForOwner=()=>({base:'#518de0',light:'#b0d7ff'});
