@@ -42,6 +42,7 @@ export function parseSave(text,types,width=50,height=50){
   }
   for(const b of s.buildings)if(b.patientId!==undefined&&!Number.isInteger(b.patientId))throw new Error('Ungültige Patientenkennung.');
   for(const b of s.buildings){
+    if(b.holdFire!==undefined&&typeof b.holdFire!=='boolean')throw new Error('Ungültiger Turmfeuer-Befehl.');
     if(b.recruitQueue!==undefined&&(b.type!=='barracks'||!Array.isArray(b.recruitQueue)||b.recruitQueue.length>20||b.recruitQueue.some(q=>!q||!['swordsman','archer','medic'].includes(q.type)||![1,2,3].includes(q.rank)||!Number.isInteger(q.count)||q.count<1||q.count>20||!Number.isFinite(q.progress)||q.progress<0||q.progress>8)))throw new Error('Ungültige Ausbildungswarteschlange.');
     if(b.rallyPoint!==undefined&&(b.type!=='barracks'||!point(b.rallyPoint)||!Number.isInteger(b.rallyPoint.x)||!Number.isInteger(b.rallyPoint.y)))throw new Error('Ungültiger Sammelpunkt.');
     if(b.productionRemaining!==undefined&&(!Number.isInteger(b.productionRemaining)||b.productionRemaining<0||b.productionRemaining>999))throw new Error('Ungültiger Produktionsauftrag.');

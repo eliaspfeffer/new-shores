@@ -1,4 +1,5 @@
 // Playable strategy layer. Balance values are prototype values, not original S4 constants.
+import {tickTowerDefenders,fightTowerDefender} from './tower-combat.js';
 import {updateEnemyTactics} from './enemy-tactics.js';
 import {createArmyOrders,freeCarrier,towerCapacity} from './army-orders.js';
 import {editedPatrol} from './patrol-edit.js';
@@ -72,6 +73,7 @@ export function createStrategy(api){
     for(const list of [trees,rocks])for(let i=list.length-1;i>=0;i--)if(dist(list[i],site)<3)list.splice(i,1);
     buildings.push({...site,type:'tower',name:'Red outpost',owner:2,progress:1,completed:true,hp:100,garrison:1});
     workers.push({id:nextId(),x:38.5,y:14.5,unit:'swordsman',owner:2,hp:55,phase:'guard',t:0});
+    workers.push({id:nextId(),x:37.5,y:15.5,unit:'archer',owner:2,hp:55,maxHp:55,phase:'garrison',garrisonIndex:buildings.length-1,t:0});
     recalculate();
   }
   function nextId(){return Math.max(-1,...workers.map(w=>w.id))+1;}
@@ -161,8 +163,8 @@ export function createStrategy(api){
         w.wait+=dt;const b=buildings[w.order?.building];
         if(isMilitary(w)&&b?.type==='hospital'&&own(b)){
           if(w.hp>=maxHealth(w)){w.phase='guard';w.order=null;toast('Soldat vollständig genesen');}return true;
-        }else if(w.unit==='swordsman'&&b?.type==='tower'){
-          if(!own(b)){if(w.combatStance==='march'){w.phase='guard';w.order=null;return true;}if(w.wait>=1.2){b.hp=(b.hp??100)-12;w.wait=0;if(b.hp<=0){b.owner=1;b.hp=100;b.garrison=0;api.onEvent?.('capture',b);toast('Outpost captured');recalculate();}}}
+        }else if(['swordsman','archer'].includes(w.unit)&&b?.type==='tower'){
+          if((b.owner||1)!==(w.owner||1)){if(w.unit!=='swordsman'||w.combatStance==='march'){w.phase='guard';w.order=null;return true;}if(fightTowerDefender(w,b,{workers,buildings,damage:damageUnit,onEvent:api.onEvent}))return true;if(w.combatStance==='march'){w.phase='guard';w.order=null;return true;}if(w.wait>=1.2){b.hp=(b.hp??100)-12;w.wait=0;if(b.hp<=0){b.owner=w.owner||1;b.hp=100;b.garrison=0;api.onEvent?.('capture',b);toast('Outpost captured');recalculate();}}}
           else {if((b.garrison||0)>=towerCapacity){w.phase='guard';w.order=null;toast('Turm voll: maximal '+towerCapacity+' Soldaten');return true;}b.garrison=(b.garrison||0)+1;w.garrisonIndex=buildings.indexOf(b);w.phase='garrison';recalculate();}
         }else if(w.unit==='geologist'){
           w.surveyStatus='Untersucht Boden · '+Math.min(100,Math.floor(w.wait/4*100))+' %';
@@ -213,10 +215,11 @@ export function createStrategy(api){
     if(r.deposit)b.miningEnergy--;else for(const [k,n] of Object.entries(r.inputs))b.buffer[k]-=n;
     if(b.productionRemaining>0)b.productionRemaining--;if(d)d.amount--;b.ready=b.type==='toolsmith'?b.activeTool:r.output;delete b.activeTool;b.outputAmount=d?1:r.amount;return true;
   }
-  function damageUnit(target,damage){if(target.dead)return;target.hp-=damage;if(target.hp<=0){target.hp=0;target.dead=true;api.onEvent?.('death',target);api.selected.delete(target.id);if(own(target))stock().people=Math.max(0,(stock().people||0)-1);}}
+  function damageUnit(target,damage){if(target.dead)return;target.hp-=damage;if(target.hp<=0){target.hp=0;target.dead=true;if(target.garrisonIndex!==undefined){const b=buildings[target.garrisonIndex];if(b)b.garrison=Math.max(0,(b.garrison||0)-1);delete target.garrisonIndex;recalculate();}api.onEvent?.('death',target);api.selected.delete(target.id);if(own(target))stock().people=Math.max(0,(stock().people||0)-1);}}
   const armyOrders=createArmyOrders({buildings,workers,state,stock,entrance,routeTo,recruit,terrain,visible:api.isSeen});
   function tick(dt){
     armyOrders.tick(dt);
+    tickTowerDefenders(dt,{workers,buildings,projectiles:state.projectiles??=[],onEvent:api.onEvent,isMilitary});
     for(const [index,b] of buildings.entries())if(b.type==='hospital'){
       b.healingActive=false;if(!own(b)||b.progress<1||b.stopped||!api.hasStaff?.(b))continue;
       const eligible=w=>alive(w)&&own(w)&&isMilitary(w)&&w.phase==='action'&&w.order?.building===index&&w.hp>0&&w.hp<maxHealth(w)&&dist(w,entrance(b)||b)<1.6;

@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {createStrategy} from '../src/strategy.js';
+import {parseSave} from '../src/savegames.js';
+const terrain=Array.from({length:50},()=>Array(50).fill('grass')),buildings=[{type:'storehouse',x:20,y:20,progress:1},{type:'tower',x:25,y:25,progress:1,owner:1,garrison:0,hp:100}],workers=[{id:1,x:25.5,y:26.5,unit:'archer',owner:1,hp:55,phase:'action',wait:0,order:{building:1}},{id:2,x:28,y:25,unit:'swordsman',owner:2,hp:100,phase:'guard'}],stock={people:1};
+const strategy=createStrategy({terrain,buildings,workers,trees:[],rocks:[],resources:()=>stock,selected:new Set(),hud(){},toast(){},entrance:b=>({x:b.x+.5,y:b.y+1.5}),routeTo:()=>[],followRoute:()=>true});
+workers[1].x=40;strategy.tickWorker(workers[0],.1);assert.equal(workers[0].garrisonIndex,1);assert.equal(buildings[1].garrison,1);assert.equal(strategy.ownerAt(29,25),1);workers[1].x=28;
+strategy.tick(.01);assert.equal(strategy.state.projectiles.length,1);assert.equal(workers[1].hp,100,'projectile damage delayed');
+strategy.tick(.5);assert.equal(workers[1].hp,93);
+buildings[1].holdFire=true;strategy.tick(2);assert.equal(strategy.state.projectiles.length,0);assert.equal(workers[1].hp,93);
+assert(strategy.releaseOne(buildings[1],1));assert.equal(buildings[1].garrison,0);strategy.tick(2);assert.equal(strategy.state.projectiles.length,0);
+const defender={id:3,unit:'swordsman',owner:2,hp:55,phase:'garrison',garrisonIndex:1,x:25.5,y:26.5},attacker={id:4,unit:'swordsman',owner:1,hp:150,phase:'action',order:{building:1},wait:0,x:25.5,y:26.5};
+workers.splice(0,workers.length,defender,attacker);buildings[1].owner=2;buildings[1].garrison=1;
+strategy.tickWorker(attacker,1.2);assert.equal(defender.hp,45);assert.equal(attacker.hp,141);assert.equal(buildings[1].hp,100);assert.equal(buildings[1].owner,2);
+attacker.combatStance='march';attacker.phase='action';attacker.order={building:1};strategy.tickWorker(attacker,1.2);assert.equal(defender.hp,45,'march never assaults');
+attacker.combatStance='defend';attacker.phase='action';attacker.order={building:1};
+for(let i=0;i<25;i++){strategy.tick(1.2);strategy.tickWorker(attacker,1.2);}
+assert(defender.dead);assert.equal(defender.garrisonIndex,undefined);assert.equal(buildings[1].owner,1);assert.equal(attacker.garrisonIndex,1);assert.equal(buildings[1].garrison,1);
+const saved={version:6,buildings,workers,resources:stock,roads:[],strategy:strategy.state};assert(parseSave(JSON.stringify(saved),['storehouse','tower']));
+const bad=JSON.parse(JSON.stringify(saved));bad.buildings[1].holdFire='yes';assert.throws(()=>parseSave(JSON.stringify(bad),['storehouse','tower']));
+console.log('PASS: archer occupation/territory, real delayed tower arrows, ceasefire, release, defender duel, march protection, casualties, capture, occupation and saves');

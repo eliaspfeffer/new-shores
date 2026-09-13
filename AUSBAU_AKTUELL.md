@@ -2,6 +2,19 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Turmverteidigung und Kämpfe gegen Besatzungen
+
+- Bogenschützen können wie Schwertkämpfer eigene Türme besetzen und damit Gebiet sichern. Die bestehende Kapazitätsgrenze gilt für die gemischte Besatzung.
+- Stationierte Bogenschützen schießen echte, zeitlich fliegende Geschosse auf nahe gegnerische Feldsoldaten. Schäden entstehen erst beim Einschlag; tote oder inzwischen einquartierte Ziele werden verworfen.
+- Im Turmmenü lässt sich das automatische Feuer einstellen und wieder freigeben. Bereits fliegende Pfeile bleiben unterwegs. Einstellung und Abklingzeit bleiben gespeichert.
+- Beim Sturm eines gegnerischen Turms kämpfen Schwertkämpfer zuerst gegen die tatsächlich vorhandenen Besatzungsmitglieder. Verteidiger schlagen zurück; Verluste reduzieren Besatzung und Territorialwirkung. Erst danach greift die bisherige Gebäude-Eroberungsphase. Der Sieger kann anschließend einziehen.
+- Der reine Marschbefehl löst keinen Sturmangriff aus. Bogenschützen können Türme besetzen und von außen unterstützen, führen in dieser Annäherung aber keine Sturmangriffe aus.
+- Neue Spiele enthalten einen tatsächlichen Bogenschützen im gegnerischen Startturm. Alte Spielstände werden nicht um zusätzliche Einheiten ergänzt: historische, nur als Zähler gespeicherte Besatzungen behalten ihre bisherige vereinfachte Gebäude-Verteidigung.
+
+Referenz: [Originalhandbuch, Kapitel 13.2.1–13.2.2](https://manualmachine.com/gamespc/thesettlersiv/1119087-user-manual/) beschreibt die Besetzung durch Schwertkämpfer/Bogenschützen und den geschützten Fernkampf aus Türmen. Reichweite fünf Felder, Schussabstand 1,5 Sekunden, Schadenswerte und die verbleibende Gebäude-HP-Phase sind eigene Annäherungen. Keine originalidentische Belagerungssimulation, keine Burgen/großen Türme, keine Sichtstrahlprüfung und keine neue Garnisonsgrafik.
+
+Prüfung: 28 Node-Testsuiten, separate Simulation/Strategie, Produktionsbuild und isolierte Desktop-/Touch-Browserprüfungen für tatsächlichen Pfeilschaden, Feuerpause und Reload. Der Sturmtest prüft Verteidigerverlust, Gegenwehr, Marschschutz, Eroberung und anschließende Besetzung. Darstellung visuell geprüft; persönliche Spielstände nicht benutzt. Der Gesamtauftrag bleibt unvollständig.
+
 ## Gegnerische taktische Verteidigung
 
 Lazarett und Vollheilung waren bereits implementiert; dieser Lauf ergänzt stattdessen die bislang passiven gegnerischen Feldsoldaten.
