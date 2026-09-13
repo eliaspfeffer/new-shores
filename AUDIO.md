@@ -1,4 +1,21 @@
-# Audio – Stand 12. September 2026
+# Audio – Stand 13. September 2026
+
+## Neue echte Aufnahmen (CC0, keine Original-Siedler-Dateien)
+
+Acht kurze MP3-Dateien ersetzen die synthetischen Profile für Holzhacken, Bau-/Werkstatthammer, Stein-/Minen-/Schmiedehämmer, Baumfall sowie Jubel bei Bauabschluss und Geologenfund. Holz/Metall verwenden jeweils zwei wechselnde Varianten. Die Zuordnung ist eine eigene klangliche Annäherung, kein vollständiger Original-Hörvergleich. Übrige Klänge und Musik bleiben synthetisch.
+
+Prüfung dieses Updates: 37 Node-Testdateien, Simulation, Strategie und Build bestanden. Isolierte Desktop-/667×375-Touch-Läufe prüfen acht dekodierte Aufnahmen, fünf Sample-Hörproben (kein Oszillatorersatz), Signal am Audiobus, Lautstärkenspeicherung, Mute/Resume, einen Kontext und erneutes Laden/Decodieren im Offline-Modus. Bau-/Bevölkerungs-/Steintransport-Kernloop ebenfalls auf beiden Größen geprüft. Screenshots des Tonmenüs visuell geprüft. Keine Behauptung eines subjektiven Hörvergleichs oder Tests auf echter iPhone-Hardware.
+
+Quellen und Bearbeitung sind in [assets/audio/SOURCES.md](assets/audio/SOURCES.md) dokumentiert: rubberduck (Holz/Metall), kheetor (Baumfall), Sadiquecat (selbst eingesprochener „Yippee“-Ruf). Alle drei Quellseiten weisen ausdrücklich CC0 aus. Keine Originalspiel-Aufnahmen oder ungeklärten YouTube-Meme-Reuploads.
+
+Pause → Musik & Geräusche → Ton einschalten: anschließend fünf Hörprobe-Buttons. Acht Dateien werden einmalig in denselben Audiokontext dekodiert und wiederverwendet. Kein Autoplay, keine zusätzliche Audioinstanz, weiterhin maximal 32 Stimmen insgesamt. Gestaffelte Ereignis-Drosselung; Jubel frühestens alle drei Sekunden je Ereignistyp. Lade-/Dekodierfehler behalten synthetische Ersatzklänge und werden im Tonmenü angezeigt. Alle Assets sind im Build/Offline-Cache enthalten; kein Kontakt zu Quellplattformen beim Spielen. Musik und Natur sind unabhängig regelbar.
+
+Die folgenden Abschnitte beschreiben den vorherigen Synthese-Grundstand; die Aussagen „keine Downloads“ und „keine externen Audio-Abhängigkeiten“ werden durch die oben dokumentierten, lokal mitgelieferten CC0-Aufnahmen ergänzt.
+
+## Demo-/YouTube-Recherche
+
+- Historische Siedler-IV-Demo: https://www.ausgamers.com/files/download/438/settlers-4-demo ; am Prüftag Wartungsseite, Download nicht geprüft. https://forest.watch.impress.co.jp/article/2001/05/09/game130.html dokumentiert die damalige Demo. Keine kostenlose offizielle Vollversion oder Freigabe der Original-Sounds zur Einbettung nachgewiesen; keine Demo ausgeführt oder Originalassets übernommen.
+- Gefundene YouTube-Treffer: https://www.youtube.com/watch?v=U_Rhq4uBga8 (Holzhammer, Beschreibung verweist für Nutzung auf Patreon), https://www.youtube.com/watch?v=THk80t-jagY (Yippee-Reupload, ohne eindeutige Einzelquelle). Nicht verwendet. Stattdessen explizit freigegebene Aufnahmen direkt von den Autoren bezogen.
 
 ## Referenz und Grenze
 

@@ -10,6 +10,11 @@ for(const mobile of [false,true]){
  await page.locator('#audio-settings').evaluate(el=>el.open=true);
  await page.locator('#sound-button').scrollIntoViewIfNeeded();await page.click('#sound-button');
  await page.waitForFunction(()=>window.audioContexts[0]?.state==='running');
+ await page.waitForFunction(()=>document.querySelector('#audio-sample-status')?.textContent==='8 Aufnahmen bereit · CC0');
+ await page.evaluate(()=>{window.recordedAudio=[];const a=window.audioContexts[0],make=a.createBufferSource.bind(a);a.createBufferSource=()=>{const n=make(),start=n.start.bind(n);n.start=(...args)=>{if(n.buffer&&!n.loop)window.recordedAudio.push({duration:n.buffer.duration,peak:Math.max(...n.buffer.getChannelData(0).subarray(0,10000).map(Math.abs))});return start(...args);};return n;};});
+ await page.getByLabel('Musik',{exact:true}).fill('0');await page.getByLabel('Natur',{exact:true}).fill('0');
+ for(const kind of ['chop','build','anvil','fall','complete']){await page.locator('[data-audio-preview="'+kind+'"]').scrollIntoViewIfNeeded();await page.click('[data-audio-preview="'+kind+'"]');}
+ assert.equal(await page.evaluate(()=>window.recordedAudio.length),5,'real decoded recordings, not oscillator fallback');
  await page.waitForFunction(()=>{const a=window.audioContexts[0].probe,d=new Float32Array(a.fftSize);a.getFloatTimeDomainData(d);return d.some(v=>Math.abs(v)>.001);});
  await page.getByLabel('Musik',{exact:true}).fill('22');
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('new-shores-audio')).music),.22);
@@ -21,9 +26,11 @@ for(const mobile of [false,true]){
  await page.waitForFunction(()=>window.audioContexts[0]?.state==='suspended');
  await page.evaluate(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));});
  await page.waitForFunction(()=>window.audioContexts[0]?.state==='running');
- await page.reload();await page.waitForSelector('#game-screen.active');
+ await page.reload();await page.waitForSelector('#game-screen.active');await page.click('#pause-button');
  assert.equal(await page.evaluate(()=>window.audioContexts.length),0,'no autoplay on reload');
  assert.equal(await page.getByLabel('Musik',{exact:true}).inputValue(),'22');
- assert.deepEqual(errors,[]);console.log('PASS audio '+(mobile?'mobile':'desktop')+': unlock, volume persistence, mute/resume, single context, safe reload');await context.close();
+ await page.locator('#audio-settings').evaluate(el=>el.open=true);await page.locator('#sound-button').scrollIntoViewIfNeeded();await page.click('#sound-button');await page.waitForFunction(()=>document.querySelector('#audio-sample-status')?.textContent==='8 Aufnahmen bereit · CC0');
+ if(await page.evaluate(()=>Boolean(navigator.serviceWorker))){await page.evaluate(()=>navigator.serviceWorker.ready);await context.setOffline(true);await page.reload();await page.waitForSelector('#game-screen.active');await page.click('#pause-button');await page.locator('#audio-settings').evaluate(el=>el.open=true);await page.locator('#sound-button').scrollIntoViewIfNeeded();await page.click('#sound-button');await page.waitForFunction(()=>document.querySelector('#audio-sample-status')?.textContent==='8 Aufnahmen bereit · CC0');await context.setOffline(false);}
+ assert.deepEqual(errors,[]);console.log('PASS audio '+(mobile?'mobile':'desktop')+': eight decoded recordings, five sample previews, signal, volume persistence, mute/resume, one context, reload and offline');await context.close();
 }
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

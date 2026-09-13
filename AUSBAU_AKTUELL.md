@@ -1,5 +1,9 @@
 # Aktueller Ausbau – 13. September 2026
 
+## Aufgenommene Geräusche statt Synthese für Holz, Hammer und Jubel
+
+Acht kurze, mitgelieferte CC0-Aufnahmen ersetzen acht bisherige Effektprofile: Holzhacken, Bauen, Handwerk, Stein-/Bergbau, Schmiede, Baumfall, Bauabschluss und Geologenfund. Zwei Varianten je Holz-/Hammerfamilie, zurückhaltende Lautstärken, wiederverwendete Audiopuffer, Ereignis-Drosselung, fünf Hörproben im Tonmenü, Offline-Cache und synthetischer Ersatz bei Ladefehlern. Herkunft und Zuschnitt: [AUDIO.md](AUDIO.md), [Quellen](assets/audio/SOURCES.md). Keine Original-Siedler-IV-Aufnahmen; übrige Effekte, Musik, vollständiger Original-Hörvergleich und echte iPhone-Hörprüfung bleiben offen. Spielstände unverändert.
+
 ## Bauabstände, feste Rohstoffarbeiter und Wohnhäuser
 
 - Neue Bauplätze halten Abstand zu Gebäuden, Bäumen und Felsen; große Wohnhäuser benötigen mehr Raum. Bestehende Bauten/Bäume werden nicht verschoben oder entfernt. Förster halten die Abstände beim Neupflanzen ein. Die Starthilfe prüft auch ergänzte Rohstoffplätze gegen dieselben Regeln.
