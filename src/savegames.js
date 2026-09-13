@@ -8,6 +8,7 @@ export function parseSave(text,types,width=50,height=50){
   if(s.playerColor!==undefined&&!['red','blue','green','violet'].includes(s.playerColor))throw new Error('Ungültige Spielerfarbe.');
   if(s.saveName!==undefined&&(typeof s.saveName!=='string'||!s.saveName.trim()||s.saveName.length>48))throw new Error('Ungültiger Spielstandname.');
   const point=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.y>=0&&p.x<width&&p.y<height;
+  if(s.strategy?.starterHelpUsed!==undefined&&typeof s.strategy.starterHelpUsed!=='boolean')throw new Error('Ungültige Starthilfe.');
   if(s.mapConfig!==undefined&&!validMapConfig(s.mapConfig))throw new Error('Ungültige Kartenkonfiguration.');
   if(s.details!==undefined&&(!Array.isArray(s.details)||s.details.length>width*height||s.details.some(p=>!point(p)||![0,1,2].includes(p.type))))throw new Error('Ungültige Landschaftsdetails.');
   if(s.strategy?.enemyRaids!==undefined&&typeof s.strategy.enemyRaids!=='boolean')throw new Error('Ungültige Turmangriffs-KI.');

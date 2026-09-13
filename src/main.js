@@ -2,6 +2,7 @@ import {mobile,initMobile,initOffline} from './mobile.js';
 import {generateMap} from './map-generator.js';
 import {initMapMenu} from './map-menu.js';
 import {shoreEdges} from './shoreline.js';
+import {ensureStarterSupply} from './starter-supply.js';
 let mapConfig={version:1,type:'classic',seed:0},mapMenu=null,classicDetails=[];
 import {initBuildingSettings} from './building-settings.js';
 let buildingSettings=null;
@@ -152,6 +153,7 @@ function prepareNewMap(config){
   }
   mapConfig={...config};mapMenu?.refresh();
 }
+function starterSupply(){return ensureStarterSupply({terrain,buildings,trees,rocks,roads,workers,ownerAt:strategy.ownerAt});}
 function iso(x,y){return {x:(x-y)*TILE_W/2*camera.zoom+camera.x,y:(x+y)*TILE_H/2*camera.zoom+camera.y}}
 function screenToGrid(sx,sy){const x=(sx-camera.x)/camera.zoom,y=(sy-camera.y)/camera.zoom;return {x:Math.floor(y/TILE_H+x/TILE_W),y:Math.floor(y/TILE_H-x/TILE_W)}}
 function diamond(x,y,fill,stroke){const p=iso(x,y),w=TILE_W/2*camera.zoom,h=TILE_H/2*camera.zoom;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+w,p.y+h);ctx.lineTo(p.x,p.y+h*2);ctx.lineTo(p.x-w,p.y+h);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=Math.max(1,camera.zoom);ctx.stroke();}}
@@ -475,7 +477,7 @@ document.querySelector('#power-button').onclick=()=>{ecoMode=!ecoMode;document.q
 document.querySelector('#restart-button').onclick=()=>{try{const config=mapMenu.read();if(!config){toast("Neustart abgebrochen: ungültiger Karten-Seed");return;}if(!confirm('Neue Siedlung beginnen? Die aktuelle wird als Sicherung aufbewahrt.'))return;if(!save())return;localStorage.setItem('new-shores-before-load',localStorage.getItem('new-shores-save'));sessionStorage.setItem('new-shores-new-options',JSON.stringify({map:config,color:newPlayerColor,mode:document.querySelector('#scenario-select').value}));active=false;localStorage.removeItem('new-shores-save');sessionStorage.setItem('new-shores-fresh-start','1');location.reload()}catch{toast('Neustart abgebrochen: Sicherheitskopie konnte nicht gespeichert werden.');}};
 document.querySelector('#help-button').onclick=()=>document.querySelector('#help-modal').classList.remove('hidden');
 document.querySelector('#close-help').onclick=()=>document.querySelector('#help-modal').classList.add('hidden');
-addEventListener('resize',resize);initWorld();strategy.init();exploration.update(buildings,workers);makeTools();initCommandSidebar();initSaveSlots();initDetails();updateHud();requestAnimationFrame(loop);
+addEventListener('resize',resize);initWorld();strategy.init();starterSupply();exploration.update(buildings,workers);makeTools();initCommandSidebar();initSaveSlots();initDetails();updateHud();requestAnimationFrame(loop);
 routeControls=initRouteControls({workers,selected:selectedWorkers,buildings,getBuilding:()=>inspectedBuilding,strategy,save,toast});
 initMobile({panel:showCommandPanel,reset:()=>{selectedTool='inspect';commandMode=false;settingArea=false;},zoom:factor=>zoomAt({x:innerWidth/2,y:innerHeight/2},factor),save:()=>{if(active)save();}});initOffline();
 if(import.meta.env.DEV)globalThis.__newShores={constructionArt,constructionLayers,workforce,particles,getBuildSites,strategy,selectedWorkers,constructionStage,workActivity,terrain,buildings,roads,trees,rocks,details,workers,get resources(){return resources},get camera(){return camera}};
@@ -646,6 +648,18 @@ function resumeAutomatically(){
 }
 const restoreAutosave=document.createElement('button');restoreAutosave.id='restore-autosave';restoreAutosave.textContent='Vorherigen Autosave wiederherstellen';restoreAutosave.onclick=()=>{const text=localStorage.getItem('new-shores-autosave-backup');if(!text)return toast('Noch keine Autosave-Sicherung vorhanden');restoreSnapshot(text);};document.querySelector('#restore-backup').after(restoreAutosave);
 mapMenu=initMapMenu({current:()=>mapConfig});
+const starterHelp=document.createElement('button');starterHelp.id='starter-supply-help';starterHelp.className='text-button';starterHelp.textContent='Einmalige Starthilfe: Holz & Stein im eigenen Gebiet';
+starterHelp.onclick=()=>{
+  if(strategy.state.starterHelpUsed)return toast('Die einmalige Starthilfe wurde bereits verwendet.');
+  if(!confirm('Fehlende erreichbare Startrohstoffe auf freien eigenen Feldern ergänzen? Dazu mindestens 14 Bretter, 6 Stein und je eine Axt, Spitzhacke, Säge und Hammer für Holzfäller, Steinmetz, Sägewerk und Förster bereitstellen. Dein Aufbau bleibt erhalten. Einmal je Spielstand.'))return;
+  if(!save())return;
+  try{localStorage.setItem('new-shores-before-starter-help',localStorage.getItem('new-shores-save'));}catch{return toast('Starthilfe abgebrochen: Sicherung fehlgeschlagen');}
+  const oldTrees=trees.slice(),oldRocks=rocks.slice(),result=starterSupply();if(result.sites.length<2){trees.splice(0,trees.length,...oldTrees);rocks.splice(0,rocks.length,...oldRocks);return toast('Nicht genug freie, erreichbare eigene Bauflächen. Bitte Platz nahe dem Hauptlager schaffen; Starthilfe bleibt verfügbar.');}
+  for(const [k,n] of Object.entries({planks:14,stone:6,axe:1,pickaxe:1,hammer:1,saw:1}))resources[k]=Math.max(resources[k]||0,n);
+  strategy.state.starterHelpUsed=true;exploration.update(buildings,workers);buildSitesKey='';updateHud();
+  const text=result.sites.map(s=>(s.type==='quarry'?'Steinmetz':'Holzfäller')+'-Bauplatz: '+s.plot.x+', '+s.plot.y).join(' · ');
+  toast(text);starterHelp.textContent='Starthilfe verwendet · '+text;save();
+};document.querySelector('#save-button').after(starterHelp);
 try{const options=JSON.parse(sessionStorage.getItem('new-shores-new-options')||'null');if(options){mapMenu.restore(options.map);if(['red','blue','green','violet'].includes(options.color))playerColor=newPlayerColor=options.color;if(scenarios[options.mode]){document.querySelector('#scenario-select').value=options.mode;document.querySelector('#scenario-description').textContent=scenarios[options.mode].description;}sessionStorage.removeItem('new-shores-new-options');}}catch{}
 sessionMenu=initSessionMenu({
   parse:text=>parseSave(text,['storehouse',...Object.keys(buildDefs)]),

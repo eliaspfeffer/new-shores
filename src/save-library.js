@@ -4,6 +4,7 @@ export const saveEntries=[
   {key:'new-shores-quicksave',label:'Zwischenspeicher',writable:true},
   ...[1,2,3].map(n=>({key:'new-shores-slot-'+n,label:'Speicherplatz '+n,writable:true})),
   {key:'new-shores-before-load',label:'Sicherung vor dem Laden'},
+  {key:'new-shores-before-starter-help',label:'Sicherung vor der Starthilfe'},
   {key:'new-shores-autosave-backup',label:'Vorheriger Autosave'},
   {key:'new-shores-quicksave-backup',label:'Vorheriger Zwischenspeicher'},
 ];
