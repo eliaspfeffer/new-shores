@@ -2,7 +2,7 @@
 const woodHammer=[new URL('../assets/audio/wood-hammer-1.mp3',import.meta.url).href,new URL('../assets/audio/wood-hammer-2.mp3',import.meta.url).href];
 const woodHit=[new URL('../assets/audio/wood-hit-1.mp3',import.meta.url).href,new URL('../assets/audio/wood-hit-2.mp3',import.meta.url).href];
 const metalHammer=[new URL('../assets/audio/metal-hammer-1.mp3',import.meta.url).href,new URL('../assets/audio/metal-hammer-2.mp3',import.meta.url).href];
-const cheer=[new URL('../assets/audio/cheer.mp3',import.meta.url).href];
+const cheer=[new URL('../assets/audio/cheer-1.mp3',import.meta.url).href,new URL('../assets/audio/cheer-2.mp3',import.meta.url).href,new URL('../assets/audio/cheer-3.mp3',import.meta.url).href];
 export const sampleEffects={
   chop:{files:woodHit,gain:.28,cooldown:.32},
   build:{files:woodHammer,gain:.3,cooldown:.25},

@@ -1,5 +1,7 @@
 # Audio – Stand 13. September 2026
 
+Yippee-Update: Die drei Rufe der Quellaufnahme sind anhand ihrer Stillepausen getrennt (Details in SOURCES.md). Drei wechselnde Einzeldateien statt des bisherigen einzelnen Ausschnitts, weiterhin nur ein Ruf pro Ereignis. Insgesamt jetzt zehn dekodierte Aufnahmen. Der Yippee-Hörprobebutton wechselt beim erneuten Abspielen nach der Dreisekunden-Sperre zum nächsten Ruf.
+
 ## Neue echte Aufnahmen (CC0, keine Original-Siedler-Dateien)
 
 Acht kurze MP3-Dateien ersetzen die synthetischen Profile für Holzhacken, Bau-/Werkstatthammer, Stein-/Minen-/Schmiedehämmer, Baumfall sowie Jubel bei Bauabschluss und Geologenfund. Holz/Metall verwenden jeweils zwei wechselnde Varianten. Die Zuordnung ist eine eigene klangliche Annäherung, kein vollständiger Original-Hörvergleich. Übrige Klänge und Musik bleiben synthetisch.

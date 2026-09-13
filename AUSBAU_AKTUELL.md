@@ -1,5 +1,7 @@
 # Aktueller Ausbau – 13. September 2026
 
+Yippee-Nachtrag: Drei einzelne Rufe aus der Original-CC0-Quellaufnahme an den Stillepausen getrennt. Bauabschluss/Geologenfund und Hörprobe spielen jeweils eine wechselnde Variante; keine Dreierfolge. Quellen/Schnittzeiten in assets/audio/SOURCES.md; bestehende Spielstände unverändert.
+
 ## Aufgenommene Geräusche statt Synthese für Holz, Hammer und Jubel
 
 Acht kurze, mitgelieferte CC0-Aufnahmen ersetzen acht bisherige Effektprofile: Holzhacken, Bauen, Handwerk, Stein-/Bergbau, Schmiede, Baumfall, Bauabschluss und Geologenfund. Zwei Varianten je Holz-/Hammerfamilie, zurückhaltende Lautstärken, wiederverwendete Audiopuffer, Ereignis-Drosselung, fünf Hörproben im Tonmenü, Offline-Cache und synthetischer Ersatz bei Ladefehlern. Herkunft und Zuschnitt: [AUDIO.md](AUDIO.md), [Quellen](assets/audio/SOURCES.md). Keine Original-Siedler-IV-Aufnahmen; übrige Effekte, Musik, vollständiger Original-Hörvergleich und echte iPhone-Hörprüfung bleiben offen. Spielstände unverändert.
