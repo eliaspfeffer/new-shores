@@ -27,7 +27,7 @@ export function createWorkforce(api){
       if(w.phase==='staffExit'&&door&&api.moveInside(w,door,dt)){w.phase='staffWait';w.workCarry=null;w.inside=false;b.outputInTransit=false;}
     }
     recruitmentClock+=dt;if(recruitmentClock<2)return;recruitmentClock=0;
-    for(let i=0;i<buildings.length;i++){const b=buildings[i];if(!valid(b)||(!recipes[b.type]&&!['forester','hospital'].includes(b.type))||workers.some(w=>!w.dead&&w.employerIndex===i))continue;
+    for(let i=0;i<buildings.length;i++){const b=buildings[i];if(!valid(b)||(!recipes[b.type]&&!['forester','hospital','woodcutter','quarry'].includes(b.type))||workers.some(w=>!w.dead&&(w.employerIndex===i||w.task===b)))continue;
       if(workers.filter(w=>!w.dead&&(w.owner||1)===1&&!w.unit&&w.employerIndex===undefined).length<=2)break;
       const w=workers.find(w=>!w.dead&&(w.owner||1)===1&&!w.unit&&w.employerIndex===undefined&&w.phase==='idle'&&!w.carry&&!w.manualTarget);if(!w)break;
       const p=entrance(b),route=p&&routeTo(w,p);if(!route)continue;
@@ -36,6 +36,6 @@ export function createWorkforce(api){
     }
   }
   function beforeDemolish(index){for(const w of workers){if(w.employerIndex===index)release(w,false);else if(w.employerIndex>index)w.employerIndex--;}}
-  function status(b){const w=workers.find(w=>!w.dead&&w.employerIndex===buildings.indexOf(b));return !w?'Kein Facharbeiter / Werkzeug':w.phase==='fieldTravel'?'Unterwegs zum Arbeitsort':w.phase==='fieldReturn'?'Kehrt zum Betrieb zurück':w.phase==='fieldWork'?({sow:'Sät aus',harvest:'Erntet Getreide',plant:'Pflanzt einen Baum',fish:'Angelt am Ufer'}[w.outdoorJob?.kind]||'Arbeitet draußen'):w.phase==='fieldWait'?'Wartet auf Ernte, freien Arbeitsort oder Abholung':w.phase==='staffTravel'?'Facharbeiter unterwegs':w.phase==='staffEnter'?'Bringt Vorräte an den Arbeitsplatz':w.phase==='staffExit'?'Bringt Waren zum Ausgang':w.phase==='staffWait'?'Facharbeiter wartet am Eingang':'Facharbeiter arbeitet';}
+  function status(b){const w=workers.find(w=>!w.dead&&w.employerIndex===buildings.indexOf(b));return !w?'Kein Facharbeiter / Werkzeug':w.phase==='fieldTravel'?'Unterwegs zum Arbeitsort':w.phase==='fieldReturn'?'Kehrt zum Betrieb zurück':w.phase==='fieldWork'?({chop:'Fällt einen Baum',quarry:'Baut Stein ab',sow:'Sät aus',harvest:'Erntet Getreide',plant:'Pflanzt einen Baum',fish:'Angelt am Ufer'}[w.outdoorJob?.kind]||'Arbeitet draußen'):w.phase==='fieldWait'?'Wartet auf Ernte, freien Arbeitsort oder Abholung':w.phase==='staffTravel'?'Facharbeiter unterwegs':w.phase==='staffEnter'?'Bringt Vorräte an den Arbeitsplatz':w.phase==='staffExit'?'Bringt Waren zum Ausgang':w.phase==='staffWait'?'Facharbeiter wartet am Eingang':'Facharbeiter arbeitet';}
   return {update,hasStaff,beforeDemolish,release,status};
 }

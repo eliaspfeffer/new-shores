@@ -9,7 +9,7 @@ import {parseSave} from '../src/savegames.js';
 import {extraBuildings} from '../src/strategy.js';
 import {sendDelivery} from './deliveries.mjs';
 
-export const saveTypes=['storehouse','woodcutter','forester','sawmill','house','quarry','farm','mill','bakery','fisher','warehouse','tower','hospital',...Object.keys(extraBuildings)];
+export const saveTypes=['largehouse','storehouse','woodcutter','forester','sawmill','house','quarry','farm','mill','bakery','fisher','warehouse','tower','hospital',...Object.keys(extraBuildings)];
 const root=resolve(fileURLToPath(new URL('../dist',import.meta.url)));
 const uuid=value=>/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value||'');
 const fail=(status,message)=>Object.assign(new Error(message),{status});

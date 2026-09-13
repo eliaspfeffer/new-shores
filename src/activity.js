@@ -5,7 +5,7 @@ export function constructionStage(progress) {
 }
 export function workActivity(w, buildings, recipes, depositFor, canPlant=()=>true) {
   if (w.dead) return null;
-  if(w.phase==='fieldWork')return buildings[w.employerIndex]?.productionRemaining===0?null:w.outdoorJob?.kind==='harvest'?'harvest':w.outdoorJob?.kind==='fish'?'fish':'dig';
+  if(w.phase==='fieldWork')return buildings[w.employerIndex]?.productionRemaining===0?null:['chop','quarry','harvest','fish'].includes(w.outdoorJob?.kind)?w.outdoorJob.kind:'dig';
   if (w.unit === 'geologist' && w.phase === 'action') return 'survey';
   if (w.unit === 'pioneer' && w.phase === 'action') return 'dig';
   if (w.phase === 'working' && !w.task?.stopped && !(w.gather&&w.task?.productionRemaining===0)) return w.gather?.type === 'woodcutter' ? 'chop' : w.gather ? 'quarry' : w.task?.progress < 1 ? 'build' : null;

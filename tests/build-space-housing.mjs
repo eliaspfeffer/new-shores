@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {buildingClearance,groundDeposit} from '../src/build-space.js';
+import {housingCapacity,finishHousing,updateHousing} from '../src/housing.js';
+const p={x:10,y:10};
+assert.match(buildingClearance(p,'house',[{x:11,y:11}],[],[]),/Abstand/);
+assert.match(buildingClearance(p,'house',[],[{x:10,y:11}],[]),/Bäume/);
+assert.match(buildingClearance(p,'largehouse',[{x:12,y:10}],[],[]),/Abstand/);
+assert.equal(buildingClearance(p,'house',[{x:12,y:10}],[],[]),'');
+assert.ok(groundDeposit(p,[{x:12,y:10}]));
+assert.equal(groundDeposit(p,[{x:14,y:10}]),undefined);
+const resources={beds:12,people:8},workers=[{id:21}],house={...p,type:'largehouse',progress:1},old={type:'house',progress:1,completed:true};
+assert.equal(housingCapacity(old),4);finishHousing(house,resources);assert.equal(resources.beds,24);
+updateHousing(2,[old,house],workers,resources,()=>null);assert.equal(workers.length,1,'blocked entrance waits');
+for(let i=0;i<12;i++)updateHousing(2,[old,house],workers,resources,()=>({x:10.5,y:11.5}));
+assert.equal(resources.people,20);assert.equal(workers.length,13);assert.equal(house.spawnRemaining,0);assert.equal(workers[1].id,22);assert.equal(workers[1].phase,'manual');assert.equal(workers[1].route[0].y,11.5);
+updateHousing(2,[JSON.parse(JSON.stringify(house))],workers,resources,()=>({x:10.5,y:11.5}));assert.equal(workers.length,13,'reload never grants twice');
+console.log('PASS: building/tree clearance, mining ground, housing capacity, sequential exits, blocked door and reload');

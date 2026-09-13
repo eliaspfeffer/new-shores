@@ -1,11 +1,12 @@
 // Outdoor production is performed by the assigned worker, never by a building timer.
 export function createOutdoor(api){
   const {terrain,buildings,trees,rocks,roads,workers,routeTo,entrance,followRoute}=api;
-  const handles=b=>['farm','forester','fisher'].includes(b.type);
+  const handles=b=>['farm','forester','fisher','woodcutter','quarry'].includes(b.type);
   const free=(x,y,shore=false)=>(terrain[y]?.[x]==='grass'||shore&&terrain[y]?.[x]==='shore')&&!api.occupied?.(x,y)&&![...trees,...rocks,...roads,...buildings].some(o=>o.x===x&&o.y===y);
   const reserved=(x,y,w)=>workers.some(o=>o!==w&&o.outdoorJob?.x===x&&o.outdoorJob?.y===y);
   function sites(b,w){
     const a=b.area||b,result=[];b.fields??=[];
+    if(['woodcutter','quarry'].includes(b.type))return (b.type==='woodcutter'?trees:rocks).filter(o=>Math.abs(o.x-a.x)+Math.abs(o.y-a.y)<=3&&!reserved(o.x,o.y,w)&&(b.type==='quarry'?o.amount>0:o.age===undefined||o.age>=120)).map(o=>({x:o.x,y:o.y,kind:b.type==='woodcutter'?'chop':'quarry'})).sort((a,b)=>Math.hypot(a.x-w.x,a.y-w.y)-Math.hypot(b.x-w.x,b.y-w.y));
     for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){
       const x=a.x+dx,y=a.y+dy;if(!free(x,y,b.type==='fisher')||reserved(x,y,w))continue;
       const field=buildings.flatMap(o=>o.fields||[]).find(f=>f.x===x&&f.y===y);
@@ -24,9 +25,9 @@ export function createOutdoor(api){
     if(!w.phase.startsWith('field')){w.phase='fieldWait';w.inside=false;w.route=null;w.workCarry=null;b.outputInTransit=false;b.work=0;}
     if(w.phase==='fieldWait'){
       w.outdoorRetry=(w.outdoorRetry||0)-dt;if(b.ready||b.productionRemaining===0||w.outdoorRetry>0)return true;w.outdoorRetry=3;
-      for(const job of sites(b,w)){const route=routeTo(w,{x:job.x+.5,y:job.y+.5});if(!route)continue;
+      for(const job of sites(b,w)){const target=['chop','quarry'].includes(job.kind)?entrance(job):{x:job.x+.5,y:job.y+.5};const route=target&&routeTo(w,target);if(!route)continue;
         // Confirm the return path before committing to an outdoor job.
-        const door=entrance(b);if(!door||!routeTo({x:job.x+.5,y:job.y+.5},door))continue;
+        const door=entrance(b);if(!door||!routeTo(target,door))continue;
         w.outdoorJob=job;w.route=route;w.routeIndex=0;w.phase='fieldTravel';break;
       }
     }
@@ -35,11 +36,13 @@ export function createOutdoor(api){
       if(b.productionRemaining===0)return true;
       const j=w.outdoorJob;if(!j){w.phase='fieldWait';return true;}
       w.outdoorTime=(w.outdoorTime||0)+dt;
-      if(w.outdoorTime<(j.kind==='fish'?12:j.kind==='harvest'?6:5))return true;
+      if(w.outdoorTime<(['chop','quarry','fish'].includes(j.kind)?12:j.kind==='harvest'?6:5))return true;
       if(j.kind==='plant'&&free(j.x,j.y)){trees.push({x:j.x,y:j.y,age:0,v:((j.x*17+j.y*31)%100)/100});if(b.productionRemaining>0)b.productionRemaining--;}
       if(j.kind==='sow'&&free(j.x,j.y)&&!buildings.some(o=>o.fields?.some(f=>f.x===j.x&&f.y===j.y)))b.fields.push({x:j.x,y:j.y,age:0});
       if(j.kind==='harvest'){const i=b.fields.findIndex(f=>f.x===j.x&&f.y===j.y&&f.age>=35);if(i>=0){b.fields.splice(i,1);w.workCarry='grain';}}
       if(j.kind==='fish')w.workCarry='fish';
+      if(j.kind==='chop'){const i=trees.findIndex(t=>t.x===j.x&&t.y===j.y&&(t.age===undefined||t.age>=120));if(i>=0){const [source]=trees.splice(i,1);w.workCarry='wood';api.harvested?.('chop',source);}}
+      if(j.kind==='quarry'){const source=rocks.find(t=>t.x===j.x&&t.y===j.y&&t.amount>0);if(source){source.initialAmount??=source.amount;source.amount--;w.workCarry='stone';api.harvested?.('quarry',source);if(source.amount<=0)rocks.splice(rocks.indexOf(source),1);}}
       if(w.workCarry&&b.productionRemaining>0)b.productionRemaining--;
       w.phase='fieldReturn';w.route=null;w.outdoorJob=null;
     }

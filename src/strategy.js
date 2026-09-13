@@ -214,7 +214,7 @@ export function createStrategy(api){
     if(b.type==='toolsmith'&&!b.activeTool)b.activeTool=toolTypes.includes(b.toolChoice)?b.toolChoice:nextTool(stock());
     b.work=(b.work||0)+dt;if(b.work<r.cycle)return true;b.work=0;
     if(r.deposit)b.miningEnergy--;else for(const [k,n] of Object.entries(r.inputs))b.buffer[k]-=n;
-    if(b.productionRemaining>0)b.productionRemaining--;if(d)d.amount--;b.ready=b.type==='toolsmith'?b.activeTool:r.output;delete b.activeTool;b.outputAmount=d?1:r.amount;return true;
+    if(b.productionRemaining>0)b.productionRemaining--;if(d){d.initialAmount??=d.amount;d.amount--;}b.ready=b.type==='toolsmith'?b.activeTool:r.output;delete b.activeTool;b.outputAmount=d?1:r.amount;return true;
   }
   function damageUnit(target,damage){if(target.dead)return;target.hp-=damage;if(target.hp<=0){target.hp=0;target.dead=true;if(target.garrisonIndex!==undefined){const b=buildings[target.garrisonIndex];if(b)b.garrison=Math.max(0,(b.garrison||0)-1);delete target.garrisonIndex;recalculate();}api.onEvent?.('death',target);api.selected.delete(target.id);if(own(target))stock().people=Math.max(0,(stock().people||0)-1);}}
   const armyOrders=createArmyOrders({buildings,workers,state,stock,entrance,routeTo,recruit,terrain,visible:api.isSeen});

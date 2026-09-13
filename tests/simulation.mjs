@@ -1,9 +1,11 @@
+import {housingCapacity,finishHousing,updateHousing} from '../src/housing.js';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import {findPath,keyOf,roadStage,walkSpeed} from '../src/navigation.js';
 import {createStrategy,recipes,extraBuildings,facing8} from '../src/strategy.js';
 import {wheelAction,demolitionRefund} from '../src/interaction.js';
+import {buildingClearance,groundDeposit} from '../src/build-space.js';
 import {lostCivilianBuildings,collapseCivilian} from '../src/conquest-losses.js';
 import {createExploration} from '../src/exploration.js';
 import {createWorkforce} from '../src/workforce.js';
@@ -41,6 +43,7 @@ context.initOperationsUI=()=>({refresh(){}});
 context.ensureStarterSupply=ensureStarterSupply;
 context.createGroundGoods=createGroundGoods;
 context.pileTotal=pileTotal;
+Object.assign(context,{housingCapacity,finishHousing,updateHousing,buildingClearance,groundDeposit});
 Object.assign(context,{lostCivilianBuildings,collapseCivilian});
 context.initMapMenu=()=>({read:()=>({version:1,type:'classic',seed:0}),restore(){},refresh(){}});
 context.createJournal=()=>({add(){},list:()=>[],restore(){}});
@@ -62,7 +65,7 @@ const source=fs.readFileSync(new URL('../src/main.js',import.meta.url),'utf8').r
 vm.runInContext(source+`;globalThis.qa={workforce,exploration,growTree,nearby,workers,buildings,trees,rocks,traffic,trailEdges,terrain,updateWorkers,save,load,runProduction,strategy,selectedWorkers,placementReason,getBuildSites,hitBuilding,iso,setWorkingArea,demolishBuilding,getResources:()=>resources};`,context);
 const q=context.qa;
 const catalog=elements.get('.tool-dock').innerHTML;
-assert.equal((catalog.match(/class="building-preview"/g)||[]).length,25,'every buildable building has its in-game preview');
+assert.equal((catalog.match(/class="building-preview"/g)||[]).length,26,'every buildable building has its in-game preview');
 assert.ok(!catalog.includes('undefined'),'all buildings have names, art and descriptions');
 assert.ok(catalog.includes('1 Mehl + 1 Wasser → 2 Brot.'),'menu describes actual strategy recipe, not obsolete flavor text');
 assert.ok(catalog.includes('Bergbau & Metall')&&catalog.includes('Baukategorie'));
@@ -77,7 +80,7 @@ assert.deepEqual(q.workers.map(w=>[w.x,w.y]),initial,'idle workers must not orbi
 q.trees.splice(0,q.trees.length,{x:29,y:25,v:.2});q.rocks.splice(0);
 q.buildings.push({type:'woodcutter',name:'Test woodcutter',x:27,y:25,progress:.02});
 const timber=q.getResources().wood;
-for(let i=0;i<2400;i++){q.updateWorkers(.1);if(i%10===0)q.runProduction(1);}
+for(let i=0;i<2400;i++){q.workforce.update(.1);q.updateWorkers(.1);if(i%10===0)q.runProduction(1);}
 assert.equal(q.buildings[1].progress,1,'construction completes');
 assert.equal(q.trees.length,0,'worker harvests tree');
 assert.ok(q.getResources().wood>timber,'timber delivered');

@@ -1,6 +1,7 @@
+import {buildingClearance,groundDeposit} from './build-space.js';
 import {findPath,keyOf} from './navigation.js';
 // Only add resources to free, owned ground. Never remove or move existing objects.
-export function ensureStarterSupply({terrain,buildings,trees,rocks,roads,workers,ownerAt}){
+export function ensureStarterSupply({terrain,buildings,trees,rocks,roads,workers,deposits=[],ownerAt}){
   const home=buildings[0],result={addedTrees:0,addedStone:0,sites:[]};if(!home)return result;
   const occupied=new Set([...buildings,...trees,...rocks,...roads,...workers.filter(w=>!w.dead).map(w=>({x:Math.floor(w.x),y:Math.floor(w.y)})),...buildings.flatMap(b=>b.fields||[])].map(p=>keyOf(p.x,p.y)));
   for(const w of workers)if(!w.dead)for(const p of [...(w.route||[]),w.workSite,w.outdoorJob,w.manualTarget].filter(Boolean))occupied.add(keyOf(Math.floor(p.x),Math.floor(p.y)));
@@ -17,15 +18,15 @@ export function ensureStarterSupply({terrain,buildings,trees,rocks,roads,workers
   for(const [type,list] of [['quarry',rocks],['woodcutter',trees]]){
     let found=null;
     for(const plot of plots){
-      if(!free(plot))continue;
+      if(!free(plot)||groundDeposit(plot,deposits)||buildingClearance(plot,type,[...buildings,...reserved],trees,rocks))continue;
       const base=obstacles();base.add(keyOf(plot.x,plot.y));
       const doors=adjacent(plot).filter(p=>owned(p)&&!base.has(keyOf(p.x,p.y))&&route(start,p,base));if(!doors.length)continue;
       const nearby=list.find(p=>owned(p)&&(type==='quarry'?p.amount>0:p.age===undefined||p.age>=120)&&Math.abs(p.x-plot.x)+Math.abs(p.y-plot.y)<=3&&adjacent(p).some(q=>owned(q)&&!base.has(keyOf(q.x,q.y))&&route(doors[0],q,base)));
       if(nearby){found={type,plot,resource:{x:nearby.x,y:nearby.y},added:false};break;}
     }
     if(!found)for(const plot of plots){
-      if(!free(plot))continue;
-      const candidates=adjacent(plot).filter(free);
+      if(!free(plot)||groundDeposit(plot,deposits)||buildingClearance(plot,type,[...buildings,...reserved],trees,rocks))continue;
+      const candidates=[];for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){const p={x:plot.x+dx,y:plot.y+dy};if(Math.hypot(dx,dy)>=2&&Math.abs(dx)+Math.abs(dy)<=3&&free(p)&&![...buildings,...reserved].some(b=>Math.hypot(b.x-p.x,b.y-p.y)<(b.type==='largehouse'?3:2)))candidates.push(p);}
       for(const resource of candidates){
         const blocked=obstacles();blocked.add(keyOf(plot.x,plot.y));blocked.add(keyOf(resource.x,resource.y));
         const door=adjacent(plot).find(p=>owned(p)&&!blocked.has(keyOf(p.x,p.y))&&route(start,p,blocked));
@@ -38,7 +39,7 @@ export function ensureStarterSupply({terrain,buildings,trees,rocks,roads,workers
     }
     if(found&&type==='woodcutter'&&found.added){
       for(let dy=-3;dy<=3&&result.addedTrees<8;dy++)for(let dx=-3;dx<=3&&result.addedTrees<8;dx++){
-        const p={x:found.plot.x+dx,y:found.plot.y+dy};if(!free(p)||!dx&&!dy||Math.abs(dx)+Math.abs(dy)>3)continue;
+        const p={x:found.plot.x+dx,y:found.plot.y+dy};if(!free(p)||Math.hypot(dx,dy)<2||[...buildings,...reserved].some(b=>Math.hypot(b.x-p.x,b.y-p.y)<(b.type==='largehouse'?3:2))||Math.abs(dx)+Math.abs(dy)>3)continue;
         const blocked=obstacles();blocked.add(keyOf(found.plot.x,found.plot.y));blocked.add(keyOf(p.x,p.y));
         const door=adjacent(found.plot).find(q=>owned(q)&&!blocked.has(keyOf(q.x,q.y))&&route(start,q,blocked));
         if(!door||![...trees.filter(t=>Math.abs(t.x-found.plot.x)+Math.abs(t.y-found.plot.y)<=3),p].every(t=>adjacent(t).some(q=>owned(q)&&!blocked.has(keyOf(q.x,q.y))&&route(door,q,blocked))))continue;

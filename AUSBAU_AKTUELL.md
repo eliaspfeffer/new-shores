@@ -1,5 +1,19 @@
 # Aktueller Ausbau – 13. September 2026
 
+## Bauabstände, feste Rohstoffarbeiter und Wohnhäuser
+
+- Neue Bauplätze halten Abstand zu Gebäuden, Bäumen und Felsen; große Wohnhäuser benötigen mehr Raum. Bestehende Bauten/Bäume werden nicht verschoben oder entfernt. Förster halten die Abstände beim Neupflanzen ein. Die Starthilfe prüft auch ergänzte Rohstoffplätze gegen dieselben Regeln.
+- Geologisches Minengelände blockiert normale Gebäude auch vor Entdeckung und nach Erschöpfung. Passende Minen benötigen weiterhin einen entdeckten passenden Fund. Felsen sind deckend; Oberflächenstein und mineralische Aufbauten schrumpfen durch Abbau, festes Grundgestein bleibt. Keine neue Höhenkarte.
+- Ein erfolgreicher Gebäudeauftrag wechselt sofort zurück zu Auswählen. Fehlversuche behalten die Auswahl. Wege bleiben wiederholt platzierbar.
+- Holzfäller und Steinmetz haben jetzt wie die bestehenden Minen/Fischer einen festen Facharbeiter mit ausgechecktem Werkzeug. Sie arbeiten draußen und bringen Waren zum Betrieb; Träger holen sie ab. Alte laufende Ernteaufträge werden beendet. Zwei Zivilisten bleiben für Logistik verfügbar; Personal-/Werkzeugmangel bleibt eine echte Voraussetzung.
+- Eingelaufene Pfade beschleunigen jetzt alle laufenden Siedler, nicht nur Träger: bestehende Stufen etwa +12,5 % und +28,6 %. Keine zusätzliche Beschleunigung der Produktion.
+- Minen zeigen nur bei realer Facharbeiterproduktion eine bewegte Fördermechanik und Erzladung. Eigenständige prozedurale Animation, keine vollständig nachgebildete Original-Innenraumsequenz.
+- Kleines Wohnhaus: 4 Plätze und künftig 4 Auszüge. Neues großes Wohnhaus: 12 Plätze/12 Auszüge, eigene Dreistufengrafik. Je zwei Spielsekunden kommt ein Bewohner aus dem Eingang, sofern dieser frei und Platz vorhanden ist. Anzeige im Gebäudekontext nennt verbleibende Auszüge und Bevölkerung/Plätze. Abriss/Eroberung berücksichtigen die jeweilige Größe. **Eigene Mengenbalance**, nicht die Originalwerte 10/20/50; mittleres Haus bleibt offen.
+- Fertige alte Wohnhäuser bleiben unverändert (bisher 4 Plätze, einmalig 2 Bewohner). Keine erneute Bevölkerungszuteilung beim Laden. Neue Auszugswarteschlangen und dauerhafte Außenarbeiten werden in Version 9 gespeichert; alte Versionen bleiben lesbar.
+- Geprüft: Simulation, Strategie, 36 Node-Testdateien, Produktionsbuild; isolierte Desktop-/667×375-Touch-Browserläufe für Bauabschluss, Auszug, festen Steinmetz, Steinabbau/-lieferung und Reload. Persönlicher Spielstand unverändert.
+
+Grafikquellen und Grenzen: [Residenz- und Minenreferenz](assets/RESIDENCES_PROMPT.md). Der Imagegen-Workflow lieferte nur die neue große Residenz samt Baustufen; bestehende Grafikfamilien wurden erhalten.
+
 Minenkarten zeigen jetzt zusätzlich zu den Baukosten das vorhandene Warensymbol mit Namen für Kohle, Eisenerz, Golderz bzw. Schwefel. Die Zuordnung kommt direkt aus dem jeweiligen Produktionsrezept; Geologenfund und geförderte Ware sind damit im Baumenü erkennbar. Keine neuen Assets oder Änderungen an Spielständen/Produktion.
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.

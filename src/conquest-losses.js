@@ -1,3 +1,4 @@
+import {housingCapacity} from './housing.js';
 import {demolitionRefund} from './interaction.js';
 import {goodsOrder,hasVisibleCargo} from './goods.js';
 import {rerouteStorageAfterDemolition} from './storage.js';
@@ -35,6 +36,6 @@ export function collapseCivilian(b,api){
   buildings.splice(index,1);
   rerouteStorageAfterDemolition(workers,index,buildings,entrance,routeTo);
   drop(b,goods);
-  if(b.type==='house'&&b.completed&&(b.owner||1)===1)resources.beds=Math.max(0,resources.beds-4);
+  if(housingCapacity(b)&&b.completed&&(b.owner||1)===1)resources.beds=Math.max(0,resources.beds-housingCapacity(b));
   return true;
 }
