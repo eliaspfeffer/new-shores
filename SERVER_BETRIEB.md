@@ -22,7 +22,8 @@ Keine Google-/Clerk-Verbindung und keine Wiederverwendung von OMS-Credentials. D
 - Vor Server-Inselwechsel wird eine lokale Sicherung angelegt, erreichbar in der Speicherbibliothek. Beim Laden lokaler Slots/Importe oder Neustart wird die Serverbindung getrennt, damit kein fremder lokaler Stand unbemerkt hochgeladen wird.
 - Besitzer können einmalige, sieben Tage gültige Einladungscodes mit „Ansehen“ oder „Mitbauen“ vergeben. Bereits angenommene Freigaben lassen sich entziehen. Der Code ist eine Zugriffsberechtigung und gehört nur an gewünschte Empfänger.
 - Registrierung allein gewährt weder Tailscale-Zugang noch Zugriff auf fremde Inseln. Netzwerkfreigaben müssen getrennt so eingerichtet werden, dass Freunde nur den Spieldienst erreichen. Keine Health-App-Freigabe wurde eingerichtet.
-- **Mitbauen bedeutet aktuell abwechselnd an derselben gespeicherten Insel arbeiten.** Noch keine servergesteuerte Echtzeit-Simulation, gleichzeitig steuerbaren getrennten Völker/Wirtschaften, automatisch benachbarte Inseln, Freundschaft/Diplomatie oder Gütergeschenke zwischen Spielern.
+- **Mitbauen bedeutet aktuell abwechselnd an derselben gespeicherten Insel arbeiten.** Noch keine servergesteuerte Echtzeit-Simulation, gleichzeitig steuerbaren getrennten Völker/Wirtschaften, automatisch benachbarte Inseln oder Freundschaft/Diplomatie.
+- Warenlieferungen: Empfänger schaltet im Kontomenü Lieferungen ein und gibt dem Absender eine Einladung. Der Absender kann aus seiner eigenen gebundenen Insel 1–100 Waren senden. Auf der Zielinsel landen diese als abholbare Bodenwaren; danach die neue Serverfassung laden. Änderungen beider Inseln erfolgen atomar mit Historie und wiederholbarer Auftragskennung. Unklare Versandantworten über „Offene Sendung abschließen“ klären; nicht Browserdaten löschen. Keine Schiffe, Reisezeiten oder Echtzeit-Simulation.
 
 ## Betrieb
 
@@ -38,6 +39,8 @@ Keine Google-/Clerk-Verbindung und keine Wiederverwendung von OMS-Credentials. D
 Updates: lokal Tests und Build ausführen, nur `dist`, `src`, `server`, Paketdateien in die vorhandene Anwendung übertragen; `npm ci --omit=dev` bei Paketänderungen, danach ausschließlich `new-shores.service` neu starten. Alte gehashte Frontend-Assets während Service-Worker-Updates erhalten. Bestehende Offline-Installationen ggf. vollständig schließen und wieder öffnen.
 
 ## Verifikation
+
+`tests/deliveries.mjs` prüft Mengenbilanz, Platzierung und echte Abholung. `tests/server/deliveries.mjs` prüft im isolierten Schema Berechtigungen, Opt-in, parallele Wiederholungen, Historie, Rollback und Widerruf. `tests/browser/deliveries.cjs` prüft zwei Konten mit verlorener Versandantwort auf Desktop und mobilem Querformat; die exakt erfassten QA-Konten werden durch `tests/browser/cleanup-server.cjs` entfernt.
 
 `npm test`, `node tests/simulation.mjs`, `node tests/strategy.mjs`, `npm run build`.
 

@@ -2,6 +2,15 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Asynchrone Warenlieferungen zwischen Serverinseln
+
+- Konto & Inseln → Warenlieferungen: Besitzer können 1–100 Standardwaren aus ihrem Hauptlager an eine andere freigegebene Insel senden. Die Zielinsel muss Lieferungen ausdrücklich einschalten; eine angenommene Einladung ist zusätzlich erforderlich. Ansicht genügt zum Liefern, berechtigt aber nicht zum Abbuchen fremder Bestände.
+- Abbuchung, Ziel-Warenhaufen, beide Spielstandversionen und Historie werden in einer Datenbanktransaktion geändert. Eine gespeicherte Auftragskennung verhindert doppelte Buchungen bei Wiederholung nach Verbindungsabbruch.
+- Lieferplätze werden auf freiem, erreichbarem eigenem Gelände nahe dem Hauptlager gesucht. Empfängerbestände steigen erst nach echter Abholung und Lagerankunft durch Träger. Kein Platz oder unzureichender Bestand: keine Teilbuchung.
+- Empfänger müssen die neue Serverfassung laden. Ältere lokale Fassungen werden durch Versionskonflikte am Überschreiben gehindert. Ungeklärte Sendungen halten die Synchronisierung an und können sicher erneut geprüft werden. Die letzten Sendungen sind im Kontomenü einsehbar.
+- **Eigene asynchrone Geschenkregel, kein originalgetreuer Echtzeit-Handel:** Schiffe, Esel, Reisezeiten, Tauschangebote und gemeinsame Nachbarinseln bleiben offen. Lieferungen benötigen Netzwerk und erzeugen Spielstandversion 7.
+- Geprüft: 34 Node-Tests, Simulation, Strategie, Build, PostgreSQL-Transaktionstests sowie zwei getrennte Konten auf Desktop und 667×375-Touch. Absichtlich verlorene Versandantwort, einmalige Abbuchung, Empfänger-Konfliktschutz, physische Abholung und genau ein Beleg bestanden. Nur erfasste QA-Konten wurden anschließend entfernt.
+
 ## Bodenwaren: echte Bergung nach freiwilligem Abriss
 
 - Pausenmenü → „Abrissmaterial von Trägern bergen“. Standard bleibt **aus**, auch für bestehende Spiele. Nur künftige Abrisse wechseln zwischen bisheriger Sofortgutschrift und Bodenwaren. Bereits liegende Waren werden auch nach Ausschalten fertig abgeholt.
@@ -21,7 +30,7 @@ Referenz: [Originalhandbuch, Kapitel 6 und 8](https://manualmachine.com/gamespc/
 - Serverinseln speichern/laden, Online-Autosync alle 30 Sekunden für explizit gebundene Inseln, manuell bestätigte Synchronisierung, Offline-Weiterarbeit, Konfliktstopp statt Überschreiben neuerer Fassungen, fünf vorherige Serverversionen und lokale Sicherung vor Inselwechsel. Lokale Imports/Neustart trennen die Serverbindung.
 - Einmalige Einladungscodes, sieben Tage gültig, Ansicht oder Bearbeitung, Besitzerübersicht mit entziehbaren Freigaben. **Asynchrones gemeinsames Weiterspielen, noch kein gleichzeitiger Echtzeit-Mehrspieler.** Freunde benötigen zusätzlich passend beschränkten Tailscale-Zugang.
 - Siedler-Unterbereiche Ausbilden/Finden/Befehle/Militär mit Symbolen; vorhandene Siedlergrafiken bleiben erhalten. Suche nach Namen/Beruf/Nummer, direkte Auswahl und Kamerafokus für Pionier, Geologe usw. Befehle abhängig von passender Auswahl; Langtexte unter Bedienungshilfe. Keine neue Rastergrafikfamilie oder Originalidentität behauptet.
-- **Weiter offen aus dem Server-/Freunde-Auftrag:** benachbartes Insel-Spawning auf gemeinsamer Karte, getrennte menschliche Spielerwirtschaften in synchroner Simulation, Freundschaft/Diplomatie, Gütersendungen zwischen Spielern, E-Mail-Verifizierung/-Passwortwiederherstellung und regelmäßige externe Datenbank-Backups. Registrierung/Freigaben ersetzen diese Systeme nicht.
+- **Weiter offen aus dem Server-/Freunde-Auftrag:** benachbartes Insel-Spawning auf gemeinsamer Karte, getrennte menschliche Spielerwirtschaften in synchroner Simulation, Freundschaft/Diplomatie, Echtzeit-Handelsrouten, E-Mail-Verifizierung/-Passwortwiederherstellung und regelmäßige externe Datenbank-Backups. Asynchrone Gütersendungen sind oben beschrieben. Registrierung/Freigaben ersetzen diese Systeme nicht.
 
 Betrieb und Grenzen: `SERVER_BETRIEB.md`. Prüfung: 32 Node-Tests, Simulation, Strategie, Build; echter PostgreSQL-API-Test mit isoliertem Testschema; Desktop-/667×375-Touch-Browserläufe für Registrierung/Login, Inseltransfer zwischen Geräten, Autosave-Konfliktstopp, Offline-Reload und Spezialistenmenü. Temporäre QA-Konten/Inseln anschließend entfernt. Kein Test hat den persönlichen Server-Spielstand verändert. Ältere Aussagen unten zu ausschließlich lokalen Spielständen werden durch diesen Abschnitt überholt.
 

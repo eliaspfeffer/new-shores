@@ -7,6 +7,7 @@ import pg from 'pg';
 import {token,digest,emailAddress,passwordHash,passwordMatches,limiter} from './security.mjs';
 import {parseSave} from '../src/savegames.js';
 import {extraBuildings} from '../src/strategy.js';
+import {sendDelivery} from './deliveries.mjs';
 
 export const saveTypes=['storehouse','woodcutter','forester','sawmill','house','quarry','farm','mill','bakery','fisher','warehouse','tower','hospital',...Object.keys(extraBuildings)];
 const root=resolve(fileURLToPath(new URL('../dist',import.meta.url)));
@@ -45,8 +46,10 @@ export async function createApp({pool,origin,secure=true}){
         }
         const player=await session(req);if(!player)throw fail(401,'Bitte anmelden.');
         if(path==='/api/me'&&req.method==='GET')return json(200,player);
+        if(path==='/api/deliveries'&&req.method==='POST')return json(200,await sendDelivery(pool,player,await body(req),validate));
+        if(path==='/api/deliveries'&&req.method==='GET')return json(200,(await pool.query('SELECT g.id,g.item,g.amount,g.created_at,g.delivery_x,g.delivery_y,s.name source_name,t.name target_name,CASE WHEN t.owner_id=$1 THEN true ELSE false END incoming FROM goods_transfers g JOIN islands s ON s.id=g.source_id JOIN islands t ON t.id=g.target_id WHERE s.owner_id=$1 OR t.owner_id=$1 ORDER BY g.created_at DESC LIMIT 50',[player.id])).rows);
         if(path==='/api/logout'&&req.method==='POST'){const raw=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('ns_session='))?.slice(11);if(raw)await pool.query('DELETE FROM sessions WHERE hash=$1',[digest(raw)]);cookie(res,'',0);return json(200,{ok:true});}
-        if(path==='/api/islands'&&req.method==='GET')return json(200,(await pool.query(`SELECT i.id,i.name,i.revision,i.updated_at,CASE WHEN i.owner_id=$1 THEN 'owner' ELSE m.permission END permission FROM islands i LEFT JOIN island_members m ON m.island_id=i.id AND m.player_id=$1 WHERE i.owner_id=$1 OR m.player_id=$1 ORDER BY i.updated_at DESC`,[player.id])).rows);
+        if(path==='/api/islands'&&req.method==='GET')return json(200,(await pool.query(`SELECT i.id,i.name,i.revision,i.updated_at,i.accept_deliveries,CASE WHEN i.owner_id=$1 THEN 'owner' ELSE m.permission END permission FROM islands i LEFT JOIN island_members m ON m.island_id=i.id AND m.player_id=$1 WHERE i.owner_id=$1 OR m.player_id=$1 ORDER BY i.updated_at DESC`,[player.id])).rows);
         if(path==='/api/islands'&&req.method==='POST'){
           const data=await body(req),snapshot=validate(data.snapshot),id=randomUUID();
           if(Number((await pool.query('SELECT count(*) FROM islands WHERE owner_id=$1',[player.id])).rows[0].count)>=20)throw fail(409,'Maximal 20 Inseln pro Konto.');
@@ -58,9 +61,10 @@ export async function createApp({pool,origin,secure=true}){
             await client.query('INSERT INTO island_members VALUES($1,$2,$3) ON CONFLICT(island_id,player_id) DO UPDATE SET permission=EXCLUDED.permission',[inv.island_id,player.id,inv.permission]);await client.query('UPDATE invitations SET used_by=$2 WHERE hash=$1',[inv.hash,player.id]);await client.query('COMMIT');return json(200,{id:inv.island_id});
           }catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
         }
-        const match=path.match(/^\/api\/islands\/([^/]+)(?:\/(invite|members|history))?$/);
+        const match=path.match(/^\/api\/islands\/([^/]+)(?:\/(invite|members|history|deliveries))?$/);
         if(match){
           const island=await access(player,match[1]),action=match[2];
+          if(action==='deliveries'&&req.method==='POST'){if(island.permission!=='owner')throw fail(403,'Nur der Besitzer kann Lieferungen erlauben.');const data=await body(req);if(typeof data.enabled!=='boolean')throw fail(400,'Ungültige Lieferfreigabe.');await pool.query('UPDATE islands SET accept_deliveries=$2 WHERE id=$1',[island.id,data.enabled]);return json(200,{enabled:data.enabled});}
           if(!action&&req.method==='GET')return json(200,{id:island.id,name:island.name,revision:island.revision,snapshot:island.snapshot,permission:island.permission});
           if(action==='history'&&req.method==='GET')return json(200,(await pool.query('SELECT revision,created_at,snapshot FROM island_history WHERE island_id=$1 ORDER BY revision DESC LIMIT 5',[island.id])).rows);
           if(!action&&req.method==='PUT'){

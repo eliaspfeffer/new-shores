@@ -1,4 +1,5 @@
 // Playable strategy layer. Balance values are prototype values, not original S4 constants.
+import {territoryOwners} from './territory.js';
 import {tickTowerDefenders,fightTowerDefender} from './tower-combat.js';
 import {createEnemyRaids} from './enemy-raids.js';
 import {updateEnemyTactics} from './enemy-tactics.js';
@@ -79,9 +80,7 @@ export function createStrategy(api){
   }
   function nextId(){return Math.max(-1,...workers.map(w=>w.id))+1;}
   function recalculate(){
-    owners=terrain.map(row=>row.map(()=>0));const strengths=terrain.map(row=>row.map(()=>-Infinity));
-    const sources=[...buildings.filter(b=>b.progress>=1&&!b.destroyed&&(b.type==='storehouse'||b.type==='tower'&&b.garrison>0)).map(b=>({...b,r:b.type==='storehouse'?12:9})),...state.claims.map(c=>({...c,r:c.single?0:2.5,owner:1}))];
-    for(const b of sources)for(let y=Math.max(0,Math.floor(b.y-b.r));y<Math.min(terrain.length,b.y+b.r+1);y++)for(let x=Math.max(0,Math.floor(b.x-b.r));x<Math.min(terrain[y].length,b.x+b.r+1);x++){const power=b.r-dist(b,{x,y});if(power>=0&&power>strengths[y][x]){strengths[y][x]=power;owners[y][x]=b.owner||1;}}
+    owners=territoryOwners(terrain,buildings,state.claims);
   }
   function ownerAt(x,y){return owners[y]?.[x]||0;}
   function recruit(type,rank=1,barracks=null,options={}){

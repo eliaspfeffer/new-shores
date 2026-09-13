@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {randomUUID} from 'node:crypto';
+import pg from 'pg';
+import {sendDelivery} from '../../server/deliveries.mjs';
+import {parseSave} from '../../src/savegames.js';
+const admin=new pg.Pool({connectionString:process.env.DATABASE_URL}),schema='ns_delivery_test_'+randomUUID().replaceAll('-','');await admin.query('CREATE SCHEMA '+schema);
+const pool=new pg.Pool({connectionString:process.env.DATABASE_URL,options:'-c search_path='+schema});
+try{
+ await pool.query(await readFile(new URL('../../server/schema.sql',import.meta.url),'utf8'));
+ const a=randomUUID(),b=randomUUID(),sourceId=randomUUID(),targetId=randomUUID();for(const id of [a,b])await pool.query('INSERT INTO players(id,email,password_hash) VALUES($1,$2,$3)',[id,id+'@example.invalid','test-only']);
+ const snapshot={version:6,terrain:Array.from({length:50},()=>Array(50).fill('grass')),resources:{stone:10},buildings:[{type:'storehouse',x:25,y:25,progress:1}],roads:[],workers:[],trees:[],rocks:[],strategy:{claims:[]}};
+ await pool.query('INSERT INTO islands(id,owner_id,name,snapshot) VALUES($1,$2,$3,$4),($5,$6,$7,$8)',[sourceId,a,'A',snapshot,targetId,b,'B',snapshot]);
+ const data={id:randomUUID(),sourceId,targetId,revision:1,item:'stone',amount:3},validate=s=>parseSave(JSON.stringify(s),['storehouse']);
+ await assert.rejects(sendDelivery(pool,{id:a},data,validate),e=>e.status===404);
+ await pool.query("INSERT INTO island_members VALUES($1,$2,'view')",[targetId,a]);
+ await assert.rejects(sendDelivery(pool,{id:a},data,validate),e=>e.status===403);
+ await pool.query('UPDATE islands SET accept_deliveries=true WHERE id=$1',[targetId]);
+ await assert.rejects(sendDelivery(pool,{id:b},data,validate),e=>e.status===403);
+ const [first,retry]=await Promise.all([sendDelivery(pool,{id:a},data,validate),sendDelivery(pool,{id:a},data,validate)]);assert.equal(Number(first.replayed)+Number(retry.replayed),1);
+ const rows=(await pool.query('SELECT * FROM islands')).rows,source=rows.find(r=>r.id===sourceId),target=rows.find(r=>r.id===targetId);assert.equal(source.snapshot.resources.stone,7);assert.equal(target.snapshot.resources.stone,10);assert.equal(target.snapshot.strategy.groundPiles[0].goods.stone,3);assert.equal(source.revision,2);assert.equal(target.revision,2);
+ assert.equal(Number((await pool.query('SELECT count(*) FROM goods_transfers')).rows[0].count),1);assert.equal(Number((await pool.query('SELECT count(*) FROM island_history')).rows[0].count),2);
+ await assert.rejects(sendDelivery(pool,{id:a},{...data,amount:4},validate),e=>e.status===409);
+ await assert.rejects(sendDelivery(pool,{id:a},{...data,id:randomUUID()},validate),e=>e.status===409);
+ await assert.rejects(sendDelivery(pool,{id:a},{...data,id:randomUUID(),revision:2,amount:8},validate),e=>e.status===409);
+ const corrupt=s=>{throw Object.assign(Error('Injected validation failure'),{status:400});};await assert.rejects(sendDelivery(pool,{id:a},{...data,id:randomUUID(),revision:2},corrupt));
+ assert.equal((await pool.query('SELECT revision FROM islands WHERE id=$1',[sourceId])).rows[0].revision,2,'failed transaction changes neither island');
+ await pool.query('DELETE FROM island_members WHERE island_id=$1',[targetId]);await assert.rejects(sendDelivery(pool,{id:a},{...data,id:randomUUID(),revision:2},validate),e=>e.status===404);
+ assert.equal((await sendDelivery(pool,{id:a},data,validate)).replayed,true,'successful receipt remains idempotent after revocation');
+ console.log('PASS transactional delivery: ownership, invitation, opt-in, concurrent idempotency, two-island revisions/history, stale/overspend/invalid rejection, rollback and revocation');
+}finally{await pool.end();await admin.query('DROP SCHEMA '+schema+' CASCADE');await admin.end();}
