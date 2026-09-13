@@ -2,6 +2,18 @@
 
 Dieser Stand ergänzt und überholt Teile von STRATEGIE_AUSBAU.md, BEDIENUNG_UPDATE.md und dem historischen Feature-Audit. Der Gesamtauftrag „alles fertig“ ist **nicht abgeschlossen**. macOS-Verpackung und Leistungsmessungen wurden ausdrücklich ausgeklammert und nicht durchgeführt.
 
+## Bodenwaren: echte Bergung nach freiwilligem Abriss
+
+- Pausenmenü → „Abrissmaterial von Trägern bergen“. Standard bleibt **aus**, auch für bestehende Spiele. Nur künftige Abrisse wechseln zwischen bisheriger Sofortgutschrift und Bodenwaren. Bereits liegende Waren werden auch nach Ausschalten fertig abgeholt.
+- Gleiche Rückgabemengen wie bisher: verbautes Material anteilig, unbenutzte Waren/Werkzeuge vollständig. Standardwaren liegen am ehemaligen Gebäudeplatz statt sofort im Lager zu erscheinen. Nicht standardisierte/fractionale importierte Altbestände bleiben zur Erhaltung direkt gutgeschrieben; keine Bestände absichtlich gelöscht.
+- Bis zu zwei freie eigene Träger übernehmen reservierte Einzelwaren. Keine doppelte Reservierung der letzten Ware; sichtbare Fracht erst nach tatsächlicher Abholung. Wege und Lager müssen erreichbar sein und durch eigenes Territorium führen. Werkzeug-/Baustoffwaren gehen wie bisher ins Hauptlager, geeignete Produktionswaren ins nächste annehmende Lager.
+- Bestand wird am Haufen bei Abholung abgezogen und erst bei tatsächlicher Lagerankunft gutgeschrieben. Blockierte Rückwege warten mit Fracht; Lagerrückbau führt zur Neuplanung. Noch nicht abgeholte Aufträge lassen sich durch ein manuelles Ziel unterbrechen. Falls ein Bergungsträger stirbt, bleibt seine Ware am Standort liegen.
+- Haufen erscheinen mit den vorhandenen eigenen Warenbildern und Mengenanzeige; Anklicken ohne Einheitenauswahl nennt den Inhalt. Bauplatzprüfung, Förster-/Feldplanung und Starthilfe lassen Bodenwaren frei. Transportwege bilden Laufspuren. Pile-/Auftragsdaten werden mitgespeichert.
+- Aktive Bergungsregel, Haufen oder laufende Bergungsfrachten verwenden Spielstandversion **7**. Alte Versionen 1–6 bleiben lesbar; ältere Spielclients müssen aktualisiert werden, bevor sie Version 7 laden können. Ohne neue Zustände bleiben Speicherstände Version 6.
+- **Noch offen:** sonstige frei abgelegte Waren, Diebe, Handelsrouten/Esel und automatisch zerstörte Feindbetriebe nach Gebietsübernahme. Keine dieser Mechaniken durch kosmetische Haufen ersetzt. Eigene Begrenzung auf zwei Träger/eine Ware und der Opt-in-Schalter sind keine verifizierten Originalregeln.
+
+Referenz: [Originalhandbuch, Kapitel 6 und 8](https://manualmachine.com/gamespc/thesettlersiv/1119087-user-manual/) beschreibt automatische Träger und wiederverwendbare Materialien nach Gebäudeverlust; Bildabgleich in `GRAPHICS_REFERENCE.md`. Prüfung: 33 Node-Tests, Simulation/Strategie/Build, integrierte Mengenbilanz und Speichern mitten in Abholung/Rücktransport, blockierte Wege, Lagerrückbau, Reservierung, Tod/Neuzustellung. Desktop-/667×375-Touch-Kernloop über echten Abriss, Haufen, Umschalten, Reload und vollständige Lieferung bestanden. Persönliche Spielstände nicht verändert.
+
 ## Privater Server, Konten, Insel-Freigaben und aufgeräumte Siedlerbedienung
 
 - Getrennter Dienst auf `openclaw`, HTTPS-Tailscale-Port 9444, eigene Datenbank/Rolle im vorhandenen PostgreSQL. Health-App bleibt auf ihrem bisherigen Port/Dienst und ihrer Datenbank. Kein öffentlicher Funnel, kein Clerk-/OMS-Credential-Recycling.

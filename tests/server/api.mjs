@@ -35,6 +35,10 @@ try{
   assert.equal((await request(path,'PUT',{snapshot,revision:2},member.cookie)).status,200);
   assert.equal((await request(path+'/members','DELETE',{playerId:member.data.id},owner.cookie)).status,200);
   assert.equal((await request(path,'GET',undefined,member.cookie)).status,404);
+  const salvage={...snapshot,version:7,strategy:{physicalSalvage:true,groundPiles:[{x:26,y:25,goods:{stone:3}}]}};
+  assert.equal((await request(path,'PUT',{snapshot:salvage,revision:3},owner.cookie)).status,200);
+  assert.equal((await request(path,'GET',undefined,owner.cookie)).data.snapshot.strategy.groundPiles[0].goods.stone,3);
+  assert.equal((await request(path,'PUT',{snapshot:{...salvage,version:6},revision:4},owner.cookie)).status,400);
   assert.equal((await request('/logout','POST',{},owner.cookie)).status,200);
   assert.equal((await request('/me','GET',undefined,owner.cookie)).status,401);
   console.log('PASS PostgreSQL/API: registration, login, CSRF, private saves, CAS conflicts, history, validation, one-use invites, view/edit permission, revocation, logout');

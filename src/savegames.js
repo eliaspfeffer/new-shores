@@ -1,13 +1,16 @@
 import {depotGoods,storageModes} from './storage.js';
 import {validMapConfig} from './map-generator.js';
+import {validateGroundGoods} from './ground-goods.js';
 export function parseSave(text,types,width=50,height=50){
   if(typeof text!=='string'||text.length>8_000_000)throw new Error('Spielstand fehlt oder ist zu groß.');
   const s=JSON.parse(text);
   function check(value,depth=0){if(depth>16)throw new Error('Ungültige Datenstruktur.');if(value&&typeof value==='object')for(const [k,v] of Object.entries(value)){if(['__proto__','constructor','prototype'].includes(k))throw new Error('Ungültiger Datenschlüssel.');check(v,depth+1);}else if(typeof value==='number'&&!Number.isFinite(value))throw new Error('Ungültiger Zahlenwert.');}
-  check(s);if(!s||typeof s!=='object'||!Number.isInteger(s.version)||s.version<1||s.version>6)throw new Error('Diese Spielstandversion wird nicht unterstützt.');
+  check(s);if(!s||typeof s!=='object'||!Number.isInteger(s.version)||s.version<1||s.version>7)throw new Error('Diese Spielstandversion wird nicht unterstützt.');
   if(s.playerColor!==undefined&&!['red','blue','green','violet'].includes(s.playerColor))throw new Error('Ungültige Spielerfarbe.');
   if(s.saveName!==undefined&&(typeof s.saveName!=='string'||!s.saveName.trim()||s.saveName.length>48))throw new Error('Ungültiger Spielstandname.');
   const point=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.y>=0&&p.x<width&&p.y<height;
+  validateGroundGoods(s.strategy,s.workers,point);
+  if(s.version<7&&(s.strategy?.physicalSalvage||s.strategy?.groundPiles?.length||s.workers?.some(w=>['salvagePickup','salvageReturn'].includes(w.phase))))throw new Error('Bergungswaren benötigen Spielstandversion 7.');
   if(s.strategy?.starterHelpUsed!==undefined&&typeof s.strategy.starterHelpUsed!=='boolean')throw new Error('Ungültige Starthilfe.');
   if(s.mapConfig!==undefined&&!validMapConfig(s.mapConfig))throw new Error('Ungültige Kartenkonfiguration.');
   if(s.details!==undefined&&(!Array.isArray(s.details)||s.details.length>width*height||s.details.some(p=>!point(p)||![0,1,2].includes(p.type))))throw new Error('Ungültige Landschaftsdetails.');

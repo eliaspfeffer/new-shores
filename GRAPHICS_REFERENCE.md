@@ -1,5 +1,9 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 13. September: Bodenwaren / Bergung
+
+[PC-Screenshot mit Maya-Figuren und Warenhaufen](https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc756m.jpg) erneut im isolierten Browser vollständig visuell betrachtet: flach gestapelte gelbbraune Hölzer, graue Stein-/dunkle Kohlehaufen und kleine helle Waren liegen dicht bei den Figuren auf dem Boden. Nur allgemeine Warenanordnung übernommen, keine Maya-Figuren oder Fraktionsgebäude als römische Vorlagen verwendet. Die Haufen im Prototyp benutzen die bestehenden eigenen Waren-/Werkzeugatlanten unverändert, in kleinen versetzten Stapeln mit Mengenanzeige. Kein Ausschnitt aus dem Originalbild und keine neue Rastergrafikfamilie. Tiefensortierung und Darstellung im Desktop-/Touch-Spiel überprüft; vollständiger warenweiser Originalvergleich bleibt offen.
+
 ## Nachtrag 13. September: getrennte Ufer für Seed-Karten
 
 [Original-Kartenansicht der PC-Mission-CD](https://www.siedler4.com/grafik/mcd/screens/4.jpg), gefunden über Bildersuche und vollständig im Browser visuell betrachtet: türkisfarbenes Wasser, schmale sandgelbe Ufer, mehrere voneinander getrennte Wasserflächen. Nur Landschaftsreferenz, keine Fraktionsgebäude daraus abgeleitet. Die neuen Karten sind eigene Layouts; keinerlei Originalkarten oder Sprites extrahiert.

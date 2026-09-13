@@ -2,7 +2,7 @@
 export function createOutdoor(api){
   const {terrain,buildings,trees,rocks,roads,workers,routeTo,entrance,followRoute}=api;
   const handles=b=>['farm','forester','fisher'].includes(b.type);
-  const free=(x,y,shore=false)=>(terrain[y]?.[x]==='grass'||shore&&terrain[y]?.[x]==='shore')&&![...trees,...rocks,...roads,...buildings].some(o=>o.x===x&&o.y===y);
+  const free=(x,y,shore=false)=>(terrain[y]?.[x]==='grass'||shore&&terrain[y]?.[x]==='shore')&&!api.occupied?.(x,y)&&![...trees,...rocks,...roads,...buildings].some(o=>o.x===x&&o.y===y);
   const reserved=(x,y,w)=>workers.some(o=>o!==w&&o.outdoorJob?.x===x&&o.outdoorJob?.y===y);
   function sites(b,w){
     const a=b.area||b,result=[];b.fields??=[];

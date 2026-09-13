@@ -43,6 +43,7 @@ export function tickStorageTransfer(w,dt,buildings,resources,entrance,routeTo,fo
 export function rerouteStorageAfterDemolition(workers,index,buildings,entrance,routeTo){
   for(const b of buildings){if(b.storageSource===index)b.storageSource=0;else if(b.storageSource>index)b.storageSource--;if(b.storageSources){b.storageSources=b.storageSources.filter(i=>i!==index).map(i=>i>index?i-1:i);b.storageSource=b.storageSources[0]??0;}}
   for(const w of workers){
+    if(w.phase==='salvageReturn'){if(w.storageIndex>=index){w.storageIndex=0;w.route=null;w.salvageRouteClock=0;}continue;}
     if(w.storageIndex===index){w.storageIndex=0;const home=entrance(buildings[0]);w.route=home&&routeTo(w,home);w.routeIndex=0;if(!w.route)w.phase='recoverCargo';}
     else if(w.storageIndex>index)w.storageIndex--;
   }
