@@ -188,3 +188,38 @@ assert.equal(q.strategy.state.groundPiles.length,0);assert.equal(q.getResources(
 vm.runInContext('processConquestLosses()',context);assert.equal(q.getResources().coal,context.conquestBefore.coal+3);
 q.strategy.restore();assert.equal(q.strategy.state.conquestLosses,false,'new game does not inherit destructive rule');
 console.log('PASS: integrated opt-in hostile civilian collapse, unchanged immediate stock, version 8 reload, real recovery and no duplicate salvage');
+
+// A blocked first job must not starve reachable jobs; returning carriers no longer
+// reserve a producer's next output batch. Test without touching a real save.
+vm.runInContext(`
+  buildings.length=0;workers.length=0;
+  const blockedOutput={type:'sawmill',x:3,y:3,progress:1,ready:'planks'};
+  const reachableOutput={type:'sawmill',x:8,y:8,progress:1,ready:'planks'};
+  buildings.push(blockedOutput,reachableOutput);
+  const free={id:900,phase:'idle'},returning={id:901,task:reachableOutput,phase:'inbound',carry:'planks',carryAmount:2};workers.push(free,returning);
+  const originalTaskRoute=taskRoute;
+  taskRoute=(task,w)=>task===blockedOutput?null:[{x:8.5,y:9.5}];
+  globalThis.dispatchChecks={reachable:pickTask(free)?.task===reachableOutput};
+  returning.phase='outbound';dispatchChecks.reserved=pickTask(free)===null;
+  returning.dead=true;dispatchChecks.deadReleased=pickTask(free)?.task===reachableOutput;
+  taskRoute=originalTaskRoute;
+`,context);
+assert(context.dispatchChecks.reachable,'skip blocked head job and permit second carrier during return trip');
+assert(context.dispatchChecks.reserved,'never double-assign an uncollected batch');
+assert(context.dispatchChecks.deadReleased,'dead workers do not reserve work');
+console.log('PASS: reachable job fallback, concurrent return/pickup and live pickup reservation');
+
+vm.runInContext(`
+  trees.length=0;rocks.length=0;buildings.length=0;workers.length=0;strategy.state.groundPiles=[];
+  for(const row of terrain)row.fill('grass');
+  resources={wood:0,stone:0,planks:0,people:20,beds:20};
+  buildings.push({type:'storehouse',x:10,y:10,progress:1});
+  for(let i=0;i<6;i++)buildings.push({type:'sawmill',x:13+i*2,y:13,progress:1,completed:true,ready:'planks',outputAmount:2});
+  for(let id=0;id<20;id++)workers.push({id,x:10.5,y:11.5,phase:'idle',role:'carrier',t:0,task:null});
+  updateWorkers(.1);globalThis.parallelPickups=workers.filter(w=>w.phase==='outbound').length;
+  for(let i=0;i<1000;i++)updateWorkers(.1);
+`,context);
+assert.equal(context.parallelPickups,6,'all available output jobs receive a free carrier in the same update');
+assert.equal(q.getResources().planks,12,'parallel carriers deliver every batch exactly once');
+assert(q.workers.every(w=>w.phase==='idle'),'workers rest only after available jobs are finished');
+console.log('PASS: 20 civilians, six simultaneous real routed pickups, exact cargo delivery and idle completion');

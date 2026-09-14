@@ -339,6 +339,10 @@ Datei-Import/-Export und reale mobile Hardwaregesten sind implementiert, aber ni
 
 ## Referenzen und neue Grafiken
 
+Transport-/Zoomkorrektur vom 14. September 2026: Unerreichbare erste Bau-/Abholaufträge blockieren keine weiteren erreichbaren Aufträge mehr. Träger auf dem Rückweg reservieren nicht die nächste Produktionscharge; tote Träger ebenfalls nicht. Direkte Werkstattversorgung verwendet dieselbe Freigabe. Facharbeiter/Spezialisten behalten ihre Aufgaben; ohne Waren/Bauaufträge bleiben freie Siedler stehen. Integrationstest: 20 Zivilisten, sechs gleichzeitige echte Abholrouten, exakt zwölf Bretter ausgeliefert. Vorhandene Speicherstände unverändert ladbar.
+
+Renderer: begrenzte Größenstufen für bestehende Naturbilder statt wiederholtem Verkleinern des großen Atlas, keine Objektzeichnung auf nie erkundeten Feldern, halbierte Iteration über isometrische Diagonalen. Keine neuen Grafiken oder geänderte Simulation. Reproduzierbarer Vergleich `tests/browser/render-zoom.cjs` gegen `f4416bf`, 844×390 / 200 Figuren / 40 Render-Aufrufe: Zoom 0,5 vorher Median 2,1 ms / P95 2,5 ms, danach 1,0 / 1,4 ms; Zeichenaufrufe 40360 → 20400. Zoom 1,15: 0,8 → 0,7 ms Median. Das sind CPU-Aufrufzeiten in Desktop-Chromium, keine vollständigen GPU-/iPhone-Frametimes; reale Safari-Prüfung bleibt offen. Screenshots beider Zoomstufen visuell geprüft, Touch-/Offline-/Desktop-Regressionsprüfung bestanden.
+
 Mobile Referenzpass vom 14. September 2026 umgesetzt: kompakte Kontextbuttons, näherer neuer Startausschnitt und Siedlungszentrierung, ruhigeres Gras und interpolierte Nebelkanten. Details und verbleibende Grafikabweichungen: [MOBILE.md](MOBILE.md), [GRAPHICS_REFERENCE.md](GRAPHICS_REFERENCE.md). Keine Änderung der Welt oder vorhandener Spielstände; kein vollständiger Original-Grafikersatz.
 
 - Der Nutzer-Screenshot wurde erneut visuell betrachtet: Minikarte oben links, Gold-/Steinrahmen, Gebäudebilder in zwei Spalten, Waren unter dem Baubereich, schwarze unerkundete Fläche und getrennte rote Besitzgrenze.

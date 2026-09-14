@@ -194,7 +194,7 @@ export function createStrategy(api){
           const dest=entrance(b);if(!dest)continue;
           const candidates=[];if(home&&source?.[item]>0)candidates.push({point:home,source});
           if(!construction)for(const depot of buildings)if(depot.type==='warehouse'&&own(depot)&&depot.progress>=1&&!depot.stopped&&depot.stored?.[item]>0){const p=entrance(depot);if(p)candidates.push({point:p,source:depot.stored});}
-          if(!construction&&api.directSupply)for(const producer of buildings)if(producer!==b&&own(producer)&&producer.progress>=1&&!producer.outputInTransit&&producer.ready===item&&!workers.some(o=>o.task===producer)){const p=entrance(producer);if(p)candidates.push({point:p,producer});}
+          if(!construction&&api.directSupply)for(const producer of buildings)if(producer!==b&&own(producer)&&producer.progress>=1&&!producer.outputInTransit&&producer.ready===item&&!workers.some(o=>!o.dead&&o.task===producer&&o.phase!=='inbound')){const p=entrance(producer);if(p)candidates.push({point:p,producer});}
           const routes=candidates.map(c=>({...c,pickup:routeTo(w,c.point),delivery:routeTo(c.point,dest)})).filter(c=>c.pickup&&c.delivery).sort((a,b)=>(a.pickup.length+a.delivery.length)-(b.pickup.length+b.delivery.length));
           const chosen=routes[0];if(!chosen)continue;const {pickup,delivery}=chosen;
           // Reserve stock now; cargo is not rendered until reaching storage.
