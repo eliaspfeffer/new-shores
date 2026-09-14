@@ -14,3 +14,11 @@ https://settler.eliaspfeffer.de {
 http://settler.eliaspfeffer.de {
     redir https://settler.eliaspfeffer.de{uri} permanent
 }
+
+# Accept the plural spelling but keep one origin for cookies and local saves.
+https://settlers.eliaspfeffer.de {
+    redir https://settler.eliaspfeffer.de{uri} permanent
+}
+http://settlers.eliaspfeffer.de {
+    redir https://settler.eliaspfeffer.de{uri} permanent
+}

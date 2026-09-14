@@ -1,5 +1,6 @@
 import {mobile,initMobile,initOffline} from './mobile.js';
 import './comic-menu.css';
+import {initTitleMenu} from './title-menu.js';
 import {createSettlerSpacing} from './settler-spacing.js';
 
 function createThumbAPI(){
@@ -153,7 +154,7 @@ buildDefs.largehouse={name:'Großes Wohnhaus',icon:'⌂',wood:10,stone:12,copy:'
 buildDefs.warehouse={name:'Lagerhaus',icon:'⌂',wood:5,stone:4,copy:'Eigenes Warenlager. Verkürzt Transporte zwischen Betrieben.'};
 buildDefs.hospital={name:'Lazarett',icon:'♧',wood:3,stone:3,copy:'Ein Heiler versorgt verwundete Soldaten am Eingang nacheinander bis zur vollen Gesundheit.'};
 const strategy=createStrategy({outdoor,workers,buildings,terrain,trees,rocks,routeTo,entrance,followRoute,toast,hasWater,resources:()=>resources,priority:()=>priorityOrder,selected:selectedWorkers,hud:updateHud,isVisible:(x,y)=>exploration.sees(x,y),isSeen:(x,y)=>exploration.seen(x,y),directSupply:true,tacticalAI:true,hasStaff:b=>workforce.hasStaff(b),onEvent:audibleEvent,dropTool:(w,item)=>groundGoods?.drop(w,{[item]:1})});
-const workforce=createWorkforce({outdoor,workers,buildings,recipes,entrance,routeTo,followRoute,moveInside:(w,p,dt)=>moveWorker(w,p.x,p.y,dt),canWork:b=>b.productionRemaining===0||b.type==='toolsmith'&&b.toolOrderMode&&!b.activeTool&&!Object.values(b.toolOrders||{}).some(n=>n>0)?false:recipes[b.type]?.deposit?Boolean(strategy.depositFor(b)):b.type==='forester'?Boolean(findPlantSite(b)):b.type==='fisher'?hasWater(b):true,resources:()=>resources});
+const workforce=createWorkforce({outdoor,workers,buildings,recipes,miningState:strategy.state,entrance,routeTo,followRoute,moveInside:(w,p,dt)=>moveWorker(w,p.x,p.y,dt),canWork:b=>b.productionRemaining===0||b.type==='toolsmith'&&b.toolOrderMode&&!b.activeTool&&!Object.values(b.toolOrders||{}).some(n=>n>0)?false:recipes[b.type]?.deposit?Boolean(strategy.depositFor(b)):b.type==='forester'?Boolean(findPlantSite(b)):b.type==='fisher'?hasWater(b):true,resources:()=>resources});
 let quest=0;
 const quests=[
   'Unsere Siedler brauchen Holz. Baue einen Holzfäller in der Nähe des Waldes.',
@@ -372,6 +373,7 @@ function inspect(g){
   if(r?.deposit)copy=`Lieblingsessen: ${goodsNames[minePreferences[b.type]]} (10 Förderungen), anderes Essen: 2 Förderungen. Pro Förderung 1 ${goodsNames[r.output]}.`;
   if(b.type==='toolsmith')copy='Schmiedet das gewählte Werkzeug aus Kohle und Eisen. Die Auswahl gilt ab dem nächsten Werkstück.';
   if(professionTools[b.type])copy+=' Benötigt: '+goodsNames[professionTools[b.type]]+'.';
+  if(['coalmine','ironmine'].includes(b.type))copy+=' Bergbaureserve: Der erste Facharbeiter dieses Minentyps erhält einmalig eine Start-Spitzhacke. Weitere Minen brauchen geschmiedete oder zurückgegebene Werkzeuge. Nahrung und ein erreichbares Vorkommen bleiben erforderlich.';
   if(b.progress<1)copy+=' Baustelle: Waren werden angeliefert, ein Bauarbeiter errichtet das Gebäude.';
 
 
@@ -775,3 +777,4 @@ unitMenu=initUnitMenu({workers,selected:selectedWorkers,names:unitNames,art:unit
   camera.x+=innerWidth/2-p.x;camera.y+=innerHeight/2-p.y;document.documentElement.classList.remove('mobile-panel');updateHud();
 }});
 initCloud({capture:()=>hasSession&&save(),validate:s=>parseSave(JSON.stringify(s),['storehouse',...Object.keys(buildDefs)]),notify:toast,pause:()=>{if(active){paused=true;document.querySelector('#pause-modal').classList.remove('hidden');}}});
+initTitleMenu();

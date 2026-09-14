@@ -7,4 +7,11 @@ export function checkoutTool(stock,profession){
   stock[item]--;return item;
 }
 export function returnTool(stock,item){if(item){const key=typeof item==='string'?item:'tools';stock[key]=(stock[key]||0)+1;}}
+// One earmarked founding tool for each essential mine, never consumed by a quarry
+// or a gold mine first. Flags travel with the save; no reload/demolition farming.
+export function checkoutWorkshopTool(stock,profession,state){
+  const flag={coalmine:'coalStarterToolUsed',ironmine:'ironStarterToolUsed'}[profession];
+  if(flag&&!state[flag]){state[flag]=true;return 'pickaxe';}
+  return checkoutTool(stock,profession);
+}
 export function nextTool(stock){return toolTypes.reduce((best,key)=>(stock[key]||0)<(stock[best]||0)?key:best,'hammer');}

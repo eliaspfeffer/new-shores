@@ -1,5 +1,9 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag: breites Startmenü mit Dialogen
+
+Auf Nutzerwunsch die vorhandene Comic-Holzkarte zur breiten Zweispalten-Navigation umgebaut: Titel links, große Aktionen rechts; Spielziel, Farbe und Karte im Dialog „Neue Siedlung“. Die angehängte eigene Laptop-Ansicht dient als direkte Layout-Fehlerreferenz, die bereits dokumentierten Gameloft-Holztafeln bleiben die Stilreferenz. Keine Rastergrafikfamilie geändert, keine Originalassets extrahiert. Hauptmenü und laufendes Spiel bei 894×612, 1400×900 und 844×390 visuell geprüft, Hauptmenü zusätzlich bei 390×844 funktional geprüft. Kontraste der Dialogfelder nach der ersten Sichtprüfung korrigiert. Keine Behauptung pixelidentischer Originalmenüs.
+
 ## Nachtrag 14. September: freundliche Comic-Menüoberflächen
 
 Referenzsuche nach „The Settlers Gameloft iPhone menu buttons“: [mobile MobyGames-Galerie](https://www.mobygames.com/game/54165/the-settlers/) als Versionshinweis. Visuell erneut vollständig betrachtet wurden die Nutzerbilder 1 (Gameloft-Startmenü mit hellen Holztafeln) und 7 (mobile Militärgebäude, plastische Rundknöpfe). Umgesetzt als eigene CSS-Oberflächen: helle Holzkarte, dunkle Konturen, warme Druckknöpfe, Pergamentdialoge und kräftigere mobile Rundknöpfe. Keine Originalsprites kopiert, keine Rastergrafiken verändert. Der Redesign-Skill wurde für gezielte Oberflächen-/Kontrastkorrekturen im bestehenden CSS verwendet; Nutzerreferenzen haben Vorrang vor allgemeinen Stilvorgaben.

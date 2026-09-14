@@ -16,6 +16,8 @@ try{
   assert.equal((await request('/register','POST',{email:'large@example.com',password:'x'.repeat(5000)})).status,413);
   assert.equal((await request('/register','POST',{email:'test@example.com',password:'test-only-password-123'},'','https://evil.example')).status,403);
   const owner=await request('/register','POST',{email:'test@example.com',password:'test-only-password-123'});assert.equal(owner.status,200);
+  const retry=await request('/register','POST',{email:'test@example.com',password:'test-only-password-123'});assert.equal(retry.status,200);assert.equal(retry.data.id,owner.data.id);
+  const mismatch=await request('/register','POST',{email:'test@example.com',password:'different-password-123'});assert.equal(mismatch.status,409);assert.ok(mismatch.data.error.includes('ursprünglichen Passwort'));assert.equal(mismatch.cookie,undefined);
   const member=await request('/register','POST',{email:'friend@example.com',password:'test-only-password-123'},'','https://settler.eliaspfeffer.de');assert.equal(member.status,200);
   assert.equal((await request('/login','POST',{email:'test@example.com',password:'wrong-password'})).status,401);
   const login=await request('/login','POST',{email:'test@example.com',password:'test-only-password-123'});assert.equal(login.status,200);

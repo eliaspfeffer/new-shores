@@ -13,7 +13,7 @@ const {chromium}=require('playwright');const {randomUUID}=require('node:crypto')
   await p.locator('#cloud-logout').click();await p.locator('#cloud-auth').waitFor({state:'visible'});
   await p.locator('[name=email]').fill(email);await p.locator('[name=password]').fill(password);await p.locator('#cloud-auth [value=login]').click();await p.locator('#cloud-account').waitFor({state:'visible'});
   await p.screenshot({path:'/tmp/new-shores-auth-'+(mobile?'mobile':'desktop')+'.png'});
-  await p.locator('#cloud-close').click();await p.locator('#new-game').click();await p.locator('#world').waitFor({state:'visible'});
+  await p.locator('#cloud-close').click();await p.locator('#open-new-settlement').click();await p.locator('#new-game').click();await p.locator('#world').waitFor({state:'visible'});
   assert.deepEqual(errors,[]);console.log('PASS '+(mobile?'mobile':'desktop')+': visible account entry, registration, secure session, logout/login and game start');await context.close();
  }
 }finally{await browser.close();cleanup(ids);}})().catch(e=>{console.error(e);process.exitCode=1;});

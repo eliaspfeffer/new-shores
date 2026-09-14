@@ -44,9 +44,11 @@ export async function createApp({pool,origin,origins=[origin],secure=true}){
           authBusy++;try{
           let player=(await pool.query('SELECT * FROM players WHERE email=$1',[email])).rows[0];
           if(path==='/api/register'){
-            if(player)throw fail(409,'Registrierung nicht möglich. Bitte anmelden.');
-            let hash;try{hash=await passwordHash(data.password);}catch(e){throw fail(400,e.message);}player={id:randomUUID(),email};
-            await pool.query('INSERT INTO players(id,email,password_hash) VALUES($1,$2,$3)',[player.id,email,hash]);
+            // Retrying a successful registration with the same credentials is safe.
+            // Never overwrite the password or data of an existing account.
+            if(player){if(!await passwordMatches(data.password,player.password_hash))throw fail(409,'Für diese E-Mail besteht bereits ein Konto. Bitte mit dem ursprünglichen Passwort anmelden. Dein Konto und deine Inseln bleiben unverändert.');}
+            else{let hash;try{hash=await passwordHash(data.password);}catch(e){throw fail(400,e.message);}player={id:randomUUID(),email};
+            await pool.query('INSERT INTO players(id,email,password_hash) VALUES($1,$2,$3)',[player.id,email,hash]);}
           }else if(!await passwordMatches(data.password,player?.password_hash||dummy)||!player)throw fail(401,'E-Mail oder Passwort stimmt nicht.');
           const raw=token();await pool.query('DELETE FROM sessions WHERE expires_at<now()');
           await pool.query("INSERT INTO sessions VALUES($1,$2,now()+interval '30 days')",[digest(raw),player.id]);cookie(res,raw,30*86400);return json(200,{id:player.id,email:player.email});

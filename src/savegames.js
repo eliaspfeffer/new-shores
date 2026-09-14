@@ -10,6 +10,7 @@ export function parseSave(text,types,width=50,height=50){
   if(s.saveName!==undefined&&(typeof s.saveName!=='string'||!s.saveName.trim()||s.saveName.length>48))throw new Error('Ungültiger Spielstandname.');
   const point=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.y>=0&&p.x<width&&p.y<height;
   validateGroundGoods(s.strategy,s.workers,point);
+  for(const key of ['coalStarterToolUsed','ironStarterToolUsed'])if(s.strategy?.[key]!==undefined&&typeof s.strategy[key]!=='boolean')throw new Error('Ungültige Bergbaureserve.');
   if(s.strategy?.conquestLosses!==undefined&&typeof s.strategy.conquestLosses!=='boolean')throw new Error('Ungültige Eroberungsregel.');
   if(s.strategy?.conquestLosses&&s.version<8)throw new Error('Eroberungsfolgen benötigen Spielstandversion 8.');
   if(s.version<7&&(s.strategy?.physicalSalvage||s.strategy?.groundPiles?.length||s.workers?.some(w=>['salvagePickup','salvageReturn'].includes(w.phase))))throw new Error('Bergungswaren benötigen Spielstandversion 7.');

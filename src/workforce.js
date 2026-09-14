@@ -1,6 +1,6 @@
 // Permanent workshop staff are real settlers; two civilians remain available for logistics.
 import {productionInputs} from './nutrition.js';
-import {checkoutTool,returnTool} from './tools.js';
+import {checkoutTool,returnTool,checkoutWorkshopTool} from './tools.js';
 export function createWorkforce(api){
   const {workers,buildings,recipes,entrance,routeTo,followRoute}=api;
   let recruitmentClock=0;
@@ -31,7 +31,7 @@ export function createWorkforce(api){
       if(workers.filter(w=>!w.dead&&(w.owner||1)===1&&!w.unit&&w.employerIndex===undefined).length<=2)break;
       const w=workers.find(w=>!w.dead&&(w.owner||1)===1&&!w.unit&&w.employerIndex===undefined&&w.phase==='idle'&&!w.carry&&!w.manualTarget);if(!w)break;
       const p=entrance(b),route=p&&routeTo(w,p);if(!route)continue;
-      const tool=checkoutTool(api.resources(),b.type);if(tool===false)continue;
+      const tool=api.miningState?checkoutWorkshopTool(api.resources(),b.type,api.miningState):checkoutTool(api.resources(),b.type);if(tool===false)continue;
       Object.assign(w,{employerIndex:i,profession:b.type,workTool:tool,phase:'staffTravel',role:b.type,task:null,route,routeIndex:0});b.workerId=w.id;
     }
   }

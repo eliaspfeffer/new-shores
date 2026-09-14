@@ -1,5 +1,17 @@
 # New Shores: privates Repository, automatisches Deployment und Domain
 
+## Update: Domain, Gerätewechsel und Bergbau
+
+`settler.eliaspfeffer.de` liefert gültiges HTTPS; die ebenfalls auf diesen Server zeigende Schreibweise `settlers.eliaspfeffer.de` erhält ein eigenes Zertifikat und leitet unter Erhalt des Pfads auf die Singular-Adresse weiter. Beide HTTPS-Verbindungen wurden am 14. September überprüft. Die früher dokumentierte ausstehende DNS/TLS-Prüfung ist damit erledigt.
+
+Die Layoutwahl erfolgt nach primärem Zeiger, Hover und Touch-Fähigkeit. Alte `mobile=0/1`-Links ändern das nicht mehr. Nur für absichtliche Vorschauen gibt es `ui=mobile` bzw. `ui=desktop`. Laptop-Hauptmenü mit breiter Zweispaltenkarte; neue Siedlung in eigenem Dialog. Keine neuen Grafikassets.
+
+Registrierung mit bereits vorhandenem Konto und identischem Passwort stellt eine Sitzung her. Ein anderes Passwort überschreibt niemals das vorhandene Konto. Ohne ursprüngliches Passwort ist weiterhin keine Selbstbedienungs-Wiederherstellung möglich.
+
+Gerätewechsel: eine lokale Welt einmal als neue Serverinsel sichern; anschließend „Speichern & Gerätewechsel“. Das alte Gerät pausiert und sendet für diese Bindung keine weiteren automatischen Updates. Auf dem anderen Gerät mit demselben Konto anmelden und diese Insel laden. Bei Rückkehr ebenfalls die neueste Serverinsel laden. Veraltete Schreibversuche bleiben durch Revisionsvergleich geschützt. Keine gleichzeitige Echtzeitsimulation.
+
+Bergbaureserve: Beim ersten Anwerben eines Kohleminenarbeiters und eines Eisenminenarbeiters stellt die Siedlung je eine zweckgebundene Spitzhacke bereit. Je Typ einmal; `coalStarterToolUsed` und `ironStarterToolUsed` werden mit dem Spielstand gespeichert und validiert. Gilt auch für ältere Spielstände ohne diese Flags. Das Werkzeug wird anschließend normal getragen, bei Freistellung zurückgegeben und bei Verlust nicht unbegrenzt ersetzt. Keine Änderung der Nahrung-, Erz-, Kohle- oder Eisenrezepte.
+
 ## DNS bei Porkbun
 
 Für `eliaspfeffer.de` nur diesen neuen Host setzen (keine bestehenden anderen Hosts ändern):
