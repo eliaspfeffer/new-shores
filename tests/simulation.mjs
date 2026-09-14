@@ -1,4 +1,5 @@
 import {housingCapacity,finishHousing,updateHousing} from '../src/housing.js';
+import {createSettlerSpacing} from '../src/settler-spacing.js';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
@@ -59,7 +60,7 @@ Object.assign(context,{initRouteControls:()=>({refresh(){}}),drawPatrolRoutes(){
 context.buildingContext=buildingContext;
 Object.assign(context,{scenarios,createScenario,objectives,advanceScenario});
 Object.assign(context,{chooseStorage,rerouteStorageAfterDemolition,depotGoods,tickStorageTransfer});
-context.sessionStorage={getItem:()=>null};
+context.sessionStorage={getItem:()=>null};context.createSettlerSpacing=createSettlerSpacing;
 vm.createContext(context);
 const source=fs.readFileSync(new URL('../src/main.js',import.meta.url),'utf8').replace(/^import .*\n/gm,'').replaceAll('import.meta.env.DEV','false').replace(/new URL\([^\n]+?import.meta.url\).href/g,"'test-image.png'");
 vm.runInContext(source+`;globalThis.qa={routeTo,workforce,exploration,growTree,nearby,workers,buildings,trees,rocks,traffic,trailEdges,terrain,updateWorkers,save,load,runProduction,strategy,selectedWorkers,placementReason,getBuildSites,hitBuilding,iso,setWorkingArea,demolishBuilding,getResources:()=>resources};`,context);
@@ -91,7 +92,10 @@ console.log('PASS: complete building catalog, sprite previews, translated catego
 q.buildings.splice(1);q.workers.splice(8);
 const initial=q.workers.map(w=>[w.x,w.y]);
 for(let i=0;i<1200;i++)q.updateWorkers(.1);
-assert.deepEqual(q.workers.map(w=>[w.x,w.y]),initial,'idle workers must not orbit');
+const settledPositions=q.workers.map(w=>[w.x,w.y]);
+assert.ok(settledPositions.some((p,i)=>p[0]!==initial[i][0]||p[1]!==initial[i][1]),'idle settlers choose sub-tile standing positions');
+for(let i=0;i<100;i++)q.updateWorkers(.1);
+assert.deepEqual(q.workers.map(w=>[w.x,w.y]),settledPositions,'settled workers must not orbit');
 q.trees.splice(0,q.trees.length,{x:29,y:25,v:.2});q.rocks.splice(0);
 q.buildings.push({type:'woodcutter',name:'Test woodcutter',x:27,y:25,progress:.02});
 const timber=q.getResources().wood;

@@ -1,5 +1,13 @@
 # Aktueller Ausbau – 13. September 2026
 
+## Nachtrag 14. September: flächiges Scrollen, Standplätze und Comic-Menüs
+
+Die gesamte Startansicht scrollt jetzt, auch bei Mausrad/Touch auf dem Hintergrund neben der Menükarte. Kein eigener Scrollbereich mehr innerhalb der Karte. Helle Holz-/Pergamentflächen, kräftigere Konturen und plastische Knöpfe nach den mobilen Nutzerreferenzen; bestehende Weltgrafiken bleiben unverändert (siehe GRAPHICS_REFERENCE.md).
+
+Freie Siedler wählen nahe, versetzte Standplätze mit Abstand statt alle in derselben Feldmitte zu warten. Räumliche Nachbarschaftssuche und reservierte Ziele vermeiden eine vollständige Paarprüfung; keine endlosen Zufallsbewegungen. Arbeitsplätze, Fracht, Innenräume, Wasser und Hindernisse werden respektiert, Pioniere behalten ihre Sonderregel. Positionen werden wie bisher gespeichert, keine Migration. Laufende Figuren können sich weiterhin passieren; dies ist keine harte Kollisionssimulation und auf vollständig eingeengtem Gelände kann kein freier Standplatz garantiert werden.
+
+Geprüft: 20 gestapelte Siedler lösen sich auf und stehen anschließend still; aktive Aufgaben unverändert. Simulation, Strategie, alle 38 Testdateien und Produktionsbuild bestanden. Isolierte Browserprüfungen für Mausrad und echte Touch-Ereignisse neben der Karte, Spielstart und versetzte Standplätze in 894×612 und 844×390; aktive Arbeit nach echtem Reload auf Desktop und mobil weiterhin bestanden. Der vorher gemeldete individuelle Reload-Stillstand bleibt ohne betroffenen Spielstand ungeklärt.
+
 ## Nachtrag 14. September: Pionier-Wege und Reload-Prüfung
 
 Pioniere können Wald- und Steinressourcen durchqueren und diese Felder als Arbeitsziel erreichen. Gebäude und Wasser bleiben Hindernisse; normale Träger behalten ihre bisherigen Wegregeln. Ressourcen und bestehende Spielstände bleiben unverändert.

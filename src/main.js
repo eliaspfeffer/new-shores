@@ -1,4 +1,6 @@
 import {mobile,initMobile,initOffline} from './mobile.js';
+import './comic-menu.css';
+import {createSettlerSpacing} from './settler-spacing.js';
 
 function createThumbAPI(){
   const ownWorkers=()=>workers.filter(w=>!w.dead&&(w.owner||1)===1);
@@ -309,6 +311,7 @@ function pickTask(w){
 }
 function deliveryAmount(item){return item==='food'?3:2}
 function followRoute(w,dt){const point=w.route?.[w.routeIndex];if(!point)return true;if(moveWorker(w,point.x,point.y,dt))w.routeIndex++;return w.routeIndex>=w.route.length}
+const spaceSettlers=createSettlerSpacing({workers,terrain,blocked:obstacles,move:moveWorker});
 function updateWorkers(dt){
   for(const w of workers){
     if(groundGoods?.tick(w,dt))continue;
@@ -343,6 +346,7 @@ function updateWorkers(dt){
       returnTool(resources,w.jobTool);delete w.jobTool;delete w.carryAmount;w.carry=null;w.task=null;w.route=null;w.phase='idle';w.rest=8+w.id;w.role='carrier';
     }
   }
+  spaceSettlers(dt);
 }
 function loop(t){if(document.hidden||!active||mobile.enabled&&innerHeight>innerWidth){last=t;requestAnimationFrame(loop);return}const frameMs=paused?250:ecoMode?42:33;if(last&&t-last<frameMs){requestAnimationFrame(loop);return}const dt=Math.min(.066,(t-last)/1000||0);last=t;update(dt);render();requestAnimationFrame(loop)}
 function toast(msg){journal.add(msg,elapsed);if(active&&!document.hidden)sound.play('notice',.2);document.querySelectorAll('.toast').forEach(x=>x.remove());const el=document.createElement('div');el.className='toast';el.textContent=msg;game.append(el);setTimeout(()=>el.remove(),2200)}
@@ -392,7 +396,7 @@ function makeTools(){
 function gridSprite(image,col,row,cols,rows,p,size){if(!image.complete||!image.naturalWidth)return false;const sw=image.naturalWidth/cols,sh=image.naturalHeight/rows,z=camera.zoom;ctx.drawImage(image,col*sw,row*sh,sw,sh,p.x-size*z/2,p.y-size*z*.92,size*z,size*z);return true;}
 function drawWorker(w){
   if(w.dead||w.garrisonIndex!==undefined||!exploration.sees(w.x,w.y))return;
-const activity=workActivity(w,buildings,recipes,b=>strategy.depositFor(b),b=>Boolean(findPlantSite(b)));const p=iso(w.x,w.y),z=camera.zoom,moving=['salvagePickup','salvageReturn','enemyMove','healTravel','patrol','outbound','inbound','relocating','supply','command','manual','staffTravel','staffEnter','staffExit','fieldTravel','fieldReturn','recoverCargo'].includes(w.phase);
+const activity=workActivity(w,buildings,recipes,b=>strategy.depositFor(b),b=>Boolean(findPlantSite(b)));const p=iso(w.x,w.y),z=camera.zoom,moving=spaceSettlers.moving(w)||['salvagePickup','salvageReturn','enemyMove','healTravel','patrol','outbound','inbound','relocating','supply','command','manual','staffTravel','staffEnter','staffExit','fieldTravel','fieldReturn','recoverCargo'].includes(w.phase);
   const row=w.unit?strategy.isMilitary(w)?2:3:moving?Math.floor((w.t||0)*5)%2:0;
   groundShadow(p,5);
   if(selectedWorkers.has(w.id)||inspectedWorker===w.id){ctx.strokeStyle=colorForOwner(w.owner,playerColor).light;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(p.x,p.y,10*z,5*z,0,0,Math.PI*2);ctx.stroke();}

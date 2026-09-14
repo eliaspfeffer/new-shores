@@ -1,5 +1,11 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 14. September: freundliche Comic-Menüoberflächen
+
+Referenzsuche nach „The Settlers Gameloft iPhone menu buttons“: [mobile MobyGames-Galerie](https://www.mobygames.com/game/54165/the-settlers/) als Versionshinweis. Visuell erneut vollständig betrachtet wurden die Nutzerbilder 1 (Gameloft-Startmenü mit hellen Holztafeln) und 7 (mobile Militärgebäude, plastische Rundknöpfe). Umgesetzt als eigene CSS-Oberflächen: helle Holzkarte, dunkle Konturen, warme Druckknöpfe, Pergamentdialoge und kräftigere mobile Rundknöpfe. Keine Originalsprites kopiert, keine Rastergrafiken verändert. Der Redesign-Skill wurde für gezielte Oberflächen-/Kontrastkorrekturen im bestehenden CSS verwendet; Nutzerreferenzen haben Vorrang vor allgemeinen Stilvorgaben.
+
+Startansicht und laufendes Spiel in 894×612 und 844×390 visuell geprüft; schwache Textkontraste im ersten Durchgang korrigiert. Bestehendes Landschaftstitelbild bleibt erhalten. Weitere Spezialdialoge und sämtliche Originalsymbole sind nicht vollständig neu gestaltet; kein pixelidentischer Nachbau.
+
 ## Nachtrag 14. September: mobile Daumen-Menüs
 
 Die 30 vom Nutzer angehängten Screenshots der Gameloft-Handyfassung wurden als direkte UI-Referenz visuell betrachtet. Anordnung, Kategorien, Pergamentblätter, Waren-Seiten und Kontextbefehle sind in [MOBILE_REFERENCE_AUDIT.md](MOBILE_REFERENCE_AUDIT.md) einzeln den Bildern zugeordnet. Keine Änderungen an Rastergrafikfamilien, keine kopierten Original-Sprites, keine Vermischung mit der Desktop-Seitenleiste. Neue eigene CSS-Rahmen und kleine SVG-Befehlssymbole; vorhandene Gebäude-/Waren-/Einheitenatlanten bleiben erhalten. Vollständige Originalsymbol-Abdeckung, zusätzliche Berufe und das Startmenü bleiben offen.

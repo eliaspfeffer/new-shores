@@ -1,0 +1,29 @@
+/* Own CSS artwork based on the user's Gameloft mobile menu references. */
+#title-screen{overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;background-attachment:fixed;padding:28px clamp(18px,7vw,110px) 50px}
+#title-screen .title-scrim{position:fixed;pointer-events:none}
+#title-screen .title-card{position:relative;inset:auto;transform:none;width:min(540px,100%);max-height:none;overflow:visible;margin:0;text-shadow:none;padding:24px;color:#51341f;border:4px solid #684126;border-radius:24px 19px 26px 18px;background:repeating-linear-gradient(2deg,#e4bd7c44 0 2px,transparent 2px 17px),linear-gradient(100deg,#f8e6b3,#edce91 60%,#f9e7bb);box-shadow:inset 0 0 0 3px #fff0c7,inset 0 -7px #c29153,0 7px 0 #38281b,0 12px 28px #18220b66}
+#title-screen h1{font-family:Georgia,serif;letter-spacing:-.065em;line-height:.88;font-size:clamp(48px,7vw,84px);margin:6px 0 24px;color:#fff3cf;filter:drop-shadow(2px 3px 0 #59331d);-webkit-text-stroke:1px #654123}
+#title-screen h1 span{color:#e6a63d}#title-screen .eyebrow,#title-screen .subtitle{color:#684124}
+#title-screen label,#title-screen legend{font-weight:750}#title-screen fieldset{background:#fff4cd66;border:2px solid #b8894d;border-radius:12px}
+#title-screen .scenario-picker,#title-screen #scenario-description,#title-screen #map-options,#title-screen #map-options-error{color:#51341f}
+#title-screen #map-options select,#title-screen #map-options input,#title-screen #map-options button{background:#fff0c9;color:#51341f;border:2px solid #a2733f;border-radius:10px}
+.modal-card #scenario-progress{color:#593b21}
+#title-screen select,#title-screen input{background:#fff0c9;color:#51341f;border:2px solid #a2733f;border-radius:10px;min-height:44px;max-width:100%;padding:8px 12px;box-shadow:inset 0 2px 3px #8f592c25}
+#title-screen button,.modal-card button:not(.modal-close){border:2px solid #714625;border-radius:12px;background:linear-gradient(#fff1bd,#e5b365);color:#573519;box-shadow:inset 0 2px #fff7db,0 3px 0 #774825;font-weight:750;min-height:44px}
+#title-screen .wood-button{background:repeating-linear-gradient(2deg,transparent 0 9px,#ae703922 9px 11px),linear-gradient(#ffdf92,#df9e4e);letter-spacing:.02em;min-width:0;width:100%;text-shadow:0 1px #fff4cc;padding:14px}
+#title-screen .text-button{padding:8px 14px;text-decoration:none}#title-screen button:disabled{opacity:.5}
+#title-screen .title-note{position:relative;inset:auto;color:#fff1cb;margin-top:24px}
+.modal-card{background:radial-gradient(at 20% 10%,#fff4d5,#e9cc91);color:#523821;border:4px solid #80562d;border-radius:22px;box-shadow:inset 0 0 0 3px #ffedbb,0 6px 0 #44321e,0 15px 45px #17200c77}
+.modal-card h2,.modal-card .help-copy p,.modal-card .text-button{color:#593b21}.modal-card h2{font-family:Georgia,serif}
+.mobile .thumb-button,.mobile .thumb-choice .thumb-icon{border:3px solid #665846;background:radial-gradient(ellipse at 35% 16%,#fffdee 0%,#f8eac6 32%,#d0b579 68%,#a47c42 100%);color:#674525;box-shadow:inset 0 0 0 2px #fff4d2,inset 0 -5px 3px #94713d88,0 3px 0 #393126,0 4px 7px #15200d66}
+.mobile .thumb-button small{color:#583f25;font-weight:800;text-shadow:0 1px #fff7dd;font-size:10px}
+.mobile .thumb-button svg{filter:drop-shadow(0 1px 0 #fff5d0)}
+.mobile .thumb-sheet[open]{border:4px solid #80562d;border-radius:22px;background:radial-gradient(at 20% 10%,#fff4d5,#e9cc91);box-shadow:inset 0 0 0 3px #ffedbb,0 5px 0 #44321e}
+.mobile .thumb-caption{border:2px solid #80562d;background:linear-gradient(#fff3ce,#e6c382);font-weight:800}
+#game-screen .round-button,#game-screen .command-tabs button,#game-screen .category-buttons button{border:2px solid #77532c;border-radius:10px;background:linear-gradient(#f8e5ad,#bd914d);color:#50391f;box-shadow:inset 0 1px 0 #fff5d8,0 2px 0 #453622;font-weight:800}
+#game-screen .round-button{border-radius:50%}
+#game-screen .command-tabs button.active,#game-screen .category-buttons button.active{background:linear-gradient(#eab655,#f8db8e);box-shadow:inset 0 2px 4px #78512866}
+#title-screen button:active,.mobile .thumb-button:active,.modal-card button:active{transform:translateY(2px);box-shadow:inset 0 2px 4px #85562744}
+#title-screen :focus-visible,.modal-card :focus-visible{outline:3px solid #547749;outline-offset:3px}
+@media(hover:hover){#title-screen button:not(:disabled):hover,.mobile .thumb-button:not(:disabled):hover{filter:brightness(1.08)}}
+@media(max-height:500px){#title-screen{padding-top:14px}#title-screen .title-card{padding:18px}#title-screen h1{font-size:48px;margin-bottom:14px}}
