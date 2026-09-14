@@ -38,4 +38,10 @@ Die jetzige Node-/PostgreSQL-Konto-API wird durch einen reinen Vercel-Frontend-U
 
 ## Menübild
 
-Der in diesem Durchlauf mit dem eingebauten Imagegen erzeugte Holztafel-/Schildentwurf ist eine Vorschau, kein eingebauter Menü-Screenshot. Referenz: Nutzerbild der Gameloft-Handyfassung. Vier große Tafeln für Start, Spiel laden, Anmeldung/Registrierung, Einstellungen; eigenes New-Sh ores-Segelwappen. Desktop und Handy-Querformat teilen dieselbe Komposition. Bestehende Grafikdateien unverändert.
+Der in diesem Durchlauf mit dem eingebauten Imagegen erzeugte Holztafel-/Schildentwurf ist eine Vorschau, kein eingebauter Menü-Screenshot. Referenz: Nutzerbild der Gameloft-Handyfassung. Vier große Tafeln für Start, Spiel laden, Anmeldung/Registrierung, Einstellungen; eigenes New-Shores-Segelwappen. Desktop und Handy-Querformat teilen dieselbe Komposition. Bestehende Grafikdateien unverändert.
+
+## Verifikation am 14. September 2026
+
+Simulation, Strategie, alle 39 Node-Testdateien und Produktionsbuild bestanden. Registrierung, Abmelden, erneutes Anmelden und Spielstart auf 844 × 390 sowie 1400 × 900 im Browser geprüft; ausschließlich erzeugte QA-Konten anschließend entfernt. Automatischer Build und Aktivierung nach GitHub-Push nachgewiesen. Das Release-Elternverzeichnis braucht Durchtritt für den getrennten Laufzeitbenutzer (751); Schlüsselverzeichnis bleibt 700. Alte Releases werden noch nicht automatisch bereinigt: Speicherplatz regelmäßig prüfen.
+
+Domain-DNS und öffentlich gültiges TLS-Zertifikat waren bei Abschluss noch nicht verifiziert. Der vorhandene ältere Caddy meldet außerdem einen Fehler beim ZeroSSL-Fallback; nach dem DNS-Eintrag muss die Zertifikatsausstellung erneut geprüft werden. Ein Live-Service-Worker-Wechsel zwischen zwei Browserfassungen wurde nicht gesondert automatisiert getestet.
