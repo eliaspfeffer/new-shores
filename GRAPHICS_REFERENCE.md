@@ -76,3 +76,11 @@ Baustufen-Update vom 12. September 2026: [Quellen, neu generierte Bildpaare, Pr�
 4. Neue Assets in einer einheitlichen Familie anfertigen, bestehende Varianten nicht löschen.
 5. Im Spiel bei gleicher Zoomstufe vergleichen und Ausschnitte/Transparenz/Tiefensortierung prüfen.
 6. Nur tatsächlich überarbeitete Gruppen als erledigt markieren; unbekannte Details nicht als originalgetreu ausgeben.
+
+## Mobile Referenzpass · 14. September 2026
+
+Visuell geprüft: die acht vom Nutzer bereitgestellten Vergleichsbilder, insbesondere mobile Militärbefehle (Bild 4), Gebäudeaktionen (6/7) und die eigene Safari-Ansicht (1). Versionsabgleich durch Suche: [Gamelofts offizieller iPhone/iPod-Touch-Trailer](https://www.youtube.com/watch?v=6XsLoy_XwgY), [Pocket Gamer zur mobilen Veröffentlichung](https://www.pocketgamer.com/the-settlers-iphone/gameloft-brings-the-settlers-to-iphone/). Keine PC-Fraktionsgrafik als mobile Gebäudereferenz ausgegeben.
+
+Implementiert ausschließlich mobil: nähere Standardkamera (1,15), Rückkehr zur Siedlung, kompakte runde Kontextbefehle mit Beschriftung, schmalere Ressourcenleiste, einmalig geglättete und kontrastärmere Darstellung der vorhandenen Grastextur sowie niedrig aufgelöste, interpolierte Nebelmaske ohne Abhängigkeit vom Canvas-Blurfilter. Keine Rasterassets ersetzt oder aus Originalbildern ausgeschnitten. Simulation, Weltgeometrie und gespeicherte Kameras bleiben erhalten.
+
+Noch offen: fraktionsspezifische mobile Architektur, abwechslungsreichere Wald-/Felsgruppen, weitere natürliche Geländeübergänge und echte iPhone-/Safari-Hardwareprüfung. Der Renderpass ist keine vollständige grafische Übereinstimmung mit dem Original.

@@ -339,6 +339,8 @@ Datei-Import/-Export und reale mobile Hardwaregesten sind implementiert, aber ni
 
 ## Referenzen und neue Grafiken
 
+Mobile Referenzpass vom 14. September 2026 umgesetzt: kompakte Kontextbuttons, näherer neuer Startausschnitt und Siedlungszentrierung, ruhigeres Gras und interpolierte Nebelkanten. Details und verbleibende Grafikabweichungen: [MOBILE.md](MOBILE.md), [GRAPHICS_REFERENCE.md](GRAPHICS_REFERENCE.md). Keine Änderung der Welt oder vorhandener Spielstände; kein vollständiger Original-Grafikersatz.
+
 - Der Nutzer-Screenshot wurde erneut visuell betrachtet: Minikarte oben links, Gold-/Steinrahmen, Gebäudebilder in zwei Spalten, Waren unter dem Baubereich, schwarze unerkundete Fläche und getrennte rote Besitzgrenze.
 - [Zusätzlich betrachteter Original-Screenshot](https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc756m.jpg): PC-Ansicht mit Maya-Figuren; als Referenz für allgemeine UI-Anordnung und unterscheidbare Holz-/Stein-/Kohlewaren, nicht als römische Figurenreferenz verwendet.
 - [Originalhandbuch](https://www.mogelpower.de/manuals/Die_Siedler_IV_Handbuch.pdf), Abschnitte Spielmenü und Militär: Menüstruktur, verschiedene Soldatenstärken und Gold für höherwertige Rekrutierung. Die konkreten Balancezahlen dieser Implementierung sind eigene Annäherungen.

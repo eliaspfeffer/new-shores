@@ -1,5 +1,14 @@
 # Mobile Querformat-Version
 
+## Referenz-Überarbeitung · 14. September 2026
+
+- Neue mobile Partien starten bei Zoom 1,15; gespeicherte Kameras werden nicht überschrieben. Der Hausknopf rechts zentriert das eigene Hauptlager und stellt den näheren Ausschnitt her. Pinch/Zoom reichen mobil jetzt bis 1,85.
+- Fünf runde Übersichtsbuttons statt sieben dauerhaft sichtbarer Befehle und großem Rahmen. Bei ausgewählten Siedlern erscheinen Ziel/Halt; bei Gebäuden verfügbare Details/Betrieb/Arbeitsbereich/Abriss. Übersicht kehrt zur normalen Leiste zurück. Abriss bleibt durch den bisherigen Dialog mit Rückgabe abgesichert.
+- Weniger kleinteiliges Gras aus vorhandener Textur, weich interpolierter Nebel ohne Canvas-Filterabhängigkeit. Desktop, Grafikdateien und Spielstände unverändert.
+- Geprüft durch `tests/browser/mobile.cjs` und `tests/browser/mobile-reference.cjs`: native emulierte Touchgesten, Gebäudeknöpfe, Menü-Rückwege, gespeicherte Kamera, Offline-Neustart, kurze Querformatansichten und Desktop-Abgrenzung. Keine echte iPhone-Hardwareprüfung.
+
+Aktueller Server-Link: https://hermes.tailee79a6.ts.net:9444/?mobile=1 (Tailscale erforderlich). Die nachstehenden ursprünglichen Mac-Hosting-Angaben beschreiben die lokale Alternative, nicht diesen Server. Bestehende Server-Spielstände können über „Konto & Inseln“ synchronisiert werden; Offline-Stände bleiben gerätelokal.
+
 Die gleiche vollständige Simulation mit eigener Touch-Oberfläche, kein verkürzter Demo-Modus. `/?mobile=1` erzwingt die mobile Ansicht; Geräte mit primärer Touch-Eingabe erhalten sie automatisch. Desktop ohne diesen Parameter bleibt unverändert.
 
 ## iPhone starten

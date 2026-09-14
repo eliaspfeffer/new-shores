@@ -30,3 +30,19 @@
 .mobile #building-actions button,.mobile .unit-buttons button:not(.unit-card){min-height:44px;font-size:12px}.mobile select,.mobile input{font-size:16px}
 .mobile .title-card{top:50%;left:8%;transform:translateY(-50%);width:75%;max-height:95dvh;overflow:auto}.mobile .title-card h1{font-size:48px;line-height:.9;margin:5px 0}.mobile .title-card .eyebrow,.mobile .subtitle,.mobile .title-note{display:none}.mobile .title-card .wood-button{padding:10px 18px;font-size:14px}.mobile #scenario-description{margin:4px 0;font-size:12px}
 .mobile.mobile-portrait #rotate-device{display:flex;position:fixed;inset:0;z-index:100;align-items:center;justify-content:center;flex-direction:column;background:#283823;color:#eed9a5;text-align:center;padding:30px}.mobile #rotate-device span{font-size:72px}.mobile #rotate-device p{line-height:1.6}
+
+/* Mobile reference layout: unobstructed map, compact round context commands. */
+.mobile #mobile-controls{gap:6px;padding:0 0 19px;border:0;border-radius:0;background:none;max-width:calc(100vw - 130px)}
+.mobile #mobile-controls button{flex:0 0 48px;width:48px;height:48px;min-height:48px;padding:0;border-radius:50%;font-size:8px;background:radial-gradient(at 35% 20%,#c3b67fbf,#65734dbd 68%,#323d2dcc);box-shadow:0 2px 4px #15220d66}
+.mobile #mobile-controls button[hidden]{display:none}
+.mobile #mobile-controls button span{font-size:23px;line-height:25px}
+.mobile #mobile-controls button:focus-visible{outline:3px solid #fff4ae;outline-offset:3px}
+.mobile #mobile-context-label{position:absolute;bottom:0;left:50%;transform:translateX(-50%);min-width:150px;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;background:#e1d09bcf;color:#342b1a;border:1px solid #887747;border-radius:6px 6px 0 0;padding:1px 18px;font-size:11px;line-height:14px;pointer-events:none}
+.mobile #mobile-resources .resource-bar{height:44px;background:#25291ce8;border-radius:0 0 15px 15px;border-width:1px;gap:4px;padding:0 4px}
+.mobile #mobile-resources .resource strong{font-size:12px}
+.mobile #mobile-resources .resource img{max-width:26px;max-height:26px}
+.mobile #mobile-map{top:52px}
+.mobile #mobile-zoom{top:104px;gap:3px}
+.mobile #mobile-map,.mobile #mobile-zoom button,.mobile #clear-selection,.mobile #help-button{width:44px;height:44px;border-width:2px;font-size:21px}
+.mobile #mobile-zoom #mobile-center{font-size:25px}
+.mobile .quest-panel{top:50px}
