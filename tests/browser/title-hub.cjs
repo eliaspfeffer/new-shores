@@ -2,7 +2,7 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
 (async()=>{const browser=await chromium.launch({channel:'chrome',headless:true});try{
  for(const [width,height,mobile] of [[894,612,false],[1400,900,false],[844,390,true],[390,844,true]]){
   const context=await browser.newContext({viewport:{width,height},hasTouch:mobile,isMobile:mobile});const p=await context.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
-  await p.goto((process.env.NEW_SHORES_URL||'http://localhost:5176')+'/?mobile='+(mobile?'0':'1'));
+  await p.goto((process.env.NEW_SHORES_URL||'http://localhost:5176')+'/?mobile='+(mobile?'0':'1'),{waitUntil:'domcontentloaded'});
   await p.locator('.title-hub').waitFor();assert.equal(await p.locator('html').evaluate(e=>e.classList.contains('mobile')),mobile);
   assert.ok(await p.locator('#title-screen').evaluate(e=>e.scrollHeight<=e.clientHeight+1),'main menu needs no scroll');
   await p.screenshot({path:'/tmp/title-hub-'+width+'.png'});

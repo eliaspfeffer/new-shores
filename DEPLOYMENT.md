@@ -12,6 +12,8 @@ Gerätewechsel: eine lokale Welt einmal als neue Serverinsel sichern; anschließ
 
 Bergbaureserve: Beim ersten Anwerben eines Kohleminenarbeiters und eines Eisenminenarbeiters stellt die Siedlung je eine zweckgebundene Spitzhacke bereit. Je Typ einmal; `coalStarterToolUsed` und `ironStarterToolUsed` werden mit dem Spielstand gespeichert und validiert. Gilt auch für ältere Spielstände ohne diese Flags. Das Werkzeug wird anschließend normal getragen, bei Freistellung zurückgegeben und bei Verlust nicht unbegrenzt ersetzt. Keine Änderung der Nahrung-, Erz-, Kohle- oder Eisenrezepte.
 
+Verifiziert: alle 41 Node-Testdateien, Simulation/Strategie, Produktionsbuild und isolierte PostgreSQL/API-Tests. Auf öffentlichem HTTPS mit zwei getrennten Browserkontexten: Registrierung, sichere Wiederholung, falsches Passwort abgewiesen, Welt PC → Handy → PC mit übernommenem Kartenstand und auf dem Handy geänderter Spielerfarbe. Temporäre QA-Konten samt Testinseln entfernt. Öffentliche Menüprüfung bei 894×612, 1400×900, 844×390, 390×844. Schnelle Klicks auf gerade neu aufgebaute Insel-Listen bleiben bis zum Ende der Aktualisierung gesperrt. Keine quantitative FPS-Messung oder echte Handy-Hardwaremessung; Layout-Erkennung und Browserabläufe getestet.
+
 ## DNS bei Porkbun
 
 Für `eliaspfeffer.de` nur diesen neuen Host setzen (keine bestehenden anderen Hosts ändern):
