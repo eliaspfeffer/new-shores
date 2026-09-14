@@ -9,12 +9,14 @@ await admin.query('CREATE SCHEMA '+schema);
 const pool=new pg.Pool({connectionString:process.env.DATABASE_URL,options:'-c search_path='+schema});let server;
 try{
   await pool.query(await readFile(new URL('../../server/schema.sql',import.meta.url),'utf8'));
-  const origin='http://localhost:18791';server=await createApp({pool,origin,secure:false});await new Promise(r=>server.listen(18791,'127.0.0.1',r));
+  const origin='http://localhost:18791';server=await createApp({pool,origin,origins:[origin,'https://settler.eliaspfeffer.de'],secure:false});await new Promise(r=>server.listen(18791,'127.0.0.1',r));
   const request=async(path,method='GET',data,cookie='',sentOrigin=origin)=>{const res=await fetch('http://127.0.0.1:18791/api'+path,{method,headers:{'Content-Type':'application/json',Origin:sentOrigin,Cookie:cookie},body:data===undefined?undefined:JSON.stringify(data)});return {status:res.status,data:await res.json(),cookie:res.headers.get('set-cookie')?.split(';')[0]};};
   assert.equal((await request('/me')).status,401);
+  const headers=await fetch('http://127.0.0.1:18791/api/me');assert.ok(headers.headers.get('content-security-policy').includes("frame-ancestors 'none'"));
+  assert.equal((await request('/register','POST',{email:'large@example.com',password:'x'.repeat(5000)})).status,413);
   assert.equal((await request('/register','POST',{email:'test@example.com',password:'test-only-password-123'},'','https://evil.example')).status,403);
   const owner=await request('/register','POST',{email:'test@example.com',password:'test-only-password-123'});assert.equal(owner.status,200);
-  const member=await request('/register','POST',{email:'friend@example.com',password:'test-only-password-123'});assert.equal(member.status,200);
+  const member=await request('/register','POST',{email:'friend@example.com',password:'test-only-password-123'},'','https://settler.eliaspfeffer.de');assert.equal(member.status,200);
   assert.equal((await request('/login','POST',{email:'test@example.com',password:'wrong-password'})).status,401);
   const login=await request('/login','POST',{email:'test@example.com',password:'test-only-password-123'});assert.equal(login.status,200);
   const snapshot={version:6,resources:{wood:20,planks:20,stone:20},buildings:[{type:'storehouse',x:25,y:25,progress:1}],roads:[],workers:[]};

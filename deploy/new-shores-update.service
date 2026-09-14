@@ -1,0 +1,26 @@
+[Unit]
+Description=Build and safely deploy private New Shores main
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=new-shores-deploy
+Group=new-shores-deploy
+WorkingDirectory=/var/lib/new-shores-deploy
+ExecStart=/usr/local/libexec/new-shores-pull-build
+ExecStartPost=+/usr/local/libexec/new-shores-activate
+TimeoutStartSec=15min
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/new-shores-deploy /opt
+InaccessiblePaths=/etc/new-shores.env /run/docker.sock
+NoNewPrivileges=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+CPUQuota=100%
+MemoryMax=1G
+TasksMax=128
+UMask=0022

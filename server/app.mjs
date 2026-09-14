@@ -14,10 +14,11 @@ const root=resolve(fileURLToPath(new URL('../dist',import.meta.url)));
 const uuid=value=>/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value||'');
 const fail=(status,message)=>Object.assign(new Error(message),{status});
 const name=value=>typeof value==='string'&&value.trim()?value.trim().slice(0,48):'Meine Insel';
-export async function createApp({pool,origin,secure=true}){
+export async function createApp({pool,origin,origins=[origin],secure=true}){
+  const allowedOrigins=new Set(origins);let authBusy=0,apiBusy=0;
   const authLimit=limiter(20,15*60_000),apiLimit=limiter(240,60_000);
   const dummy=await passwordHash(token());
-  async function body(req){let data='';for await(const chunk of req){data+=chunk;if(Buffer.byteLength(data)>8_100_000)throw fail(413,'Anfrage zu groß.');}try{return JSON.parse(data||'{}');}catch{throw fail(400,'Ungültige Anfrage.');}}
+  async function body(req,max=8_100_000){let data='';for await(const chunk of req){data+=chunk;if(Buffer.byteLength(data)>max)throw fail(413,'Anfrage zu groß.');}try{return JSON.parse(data||'{}');}catch{throw fail(400,'Ungültige Anfrage.');}}
   const cookie=(res,value,age)=>res.setHeader('Set-Cookie',`ns_session=${value}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${age}${secure?'; Secure':''}`);
   async function session(req){const raw=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('ns_session='))?.slice(11);
     if(!raw)return null;return (await pool.query('SELECT p.id,p.email FROM sessions s JOIN players p ON p.id=s.player_id WHERE s.hash=$1 AND s.expires_at>now()',[digest(raw)])).rows[0]||null;}
@@ -25,16 +26,22 @@ export async function createApp({pool,origin,secure=true}){
   const validate=s=>{try{return parseSave(JSON.stringify(s),saveTypes);}catch(e){throw fail(400,e.message);}};
   return http.createServer(async(req,res)=>{
     res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','same-origin');res.setHeader('X-Frame-Options','DENY');
+    res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
+    res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=(), payment=(), usb=()');
     const json=(status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
     try{
       const url=new URL(req.url,origin),path=url.pathname;
       if(path.startsWith('/api/')){
+        if(apiBusy>=8)throw fail(429,'Server ausgelastet. Kurz warten.');
+        apiBusy++;let released=false;const release=()=>{if(!released){released=true;apiBusy--;}};res.once('finish',release);res.once('close',release);
         if(!apiLimit(req.socket.remoteAddress))throw fail(429,'Zu viele Anfragen. Kurz warten.');
-        if(!['GET','HEAD'].includes(req.method)&&(req.headers.origin!==origin||!req.headers['content-type']?.startsWith('application/json')))throw fail(403,'Anfrage nur aus dem Spiel erlaubt.');
+        if(!['GET','HEAD'].includes(req.method)&&(!allowedOrigins.has(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json')))throw fail(403,'Anfrage nur aus dem Spiel erlaubt.');
         if(path==='/api/health'&&req.method==='GET'){await pool.query('SELECT 1');return json(200,{ok:true});}
         if(['/api/login','/api/register'].includes(path)&&req.method==='POST'){
-          const data=await body(req);let email;try{email=emailAddress(data.email);}catch(e){throw fail(400,e.message);}
+          const data=await body(req,4096);let email;try{email=emailAddress(data.email);}catch(e){throw fail(400,e.message);}
           if(!authLimit('ip:'+req.socket.remoteAddress)||!authLimit('email:'+email))throw fail(429,'Zu viele Anmeldeversuche. In 15 Minuten erneut versuchen.');
+          if(authBusy>=2)throw fail(429,'Anmeldung ausgelastet. Kurz warten.');
+          authBusy++;try{
           let player=(await pool.query('SELECT * FROM players WHERE email=$1',[email])).rows[0];
           if(path==='/api/register'){
             if(player)throw fail(409,'Registrierung nicht möglich. Bitte anmelden.');
@@ -43,6 +50,7 @@ export async function createApp({pool,origin,secure=true}){
           }else if(!await passwordMatches(data.password,player?.password_hash||dummy)||!player)throw fail(401,'E-Mail oder Passwort stimmt nicht.');
           const raw=token();await pool.query('DELETE FROM sessions WHERE expires_at<now()');
           await pool.query("INSERT INTO sessions VALUES($1,$2,now()+interval '30 days')",[digest(raw),player.id]);cookie(res,raw,30*86400);return json(200,{id:player.id,email:player.email});
+          }finally{authBusy--;}
         }
         const player=await session(req);if(!player)throw fail(401,'Bitte anmelden.');
         if(path==='/api/me'&&req.method==='GET')return json(200,player);
@@ -90,7 +98,7 @@ export async function createApp({pool,origin,secure=true}){
       const relative=decodeURIComponent(path==='/'?'/index.html':path);const file=resolve(root,'.'+relative);if(!file.startsWith(root+'/'))throw fail(404,'Nicht gefunden.');
       let info;try{info=await stat(file);}catch{throw fail(404,'Nicht gefunden.');}if(!info.isFile())throw fail(404,'Nicht gefunden.');
       const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.mp3':'audio/mpeg'};
-      res.writeHead(200,{'Content-Type':types[extname(file)]||'application/octet-stream','Cache-Control':path.startsWith('/assets/')?'public, max-age=31536000, immutable':'no-cache'});res.end(req.method==='HEAD'?undefined:await readFile(file));
+      res.writeHead(200,{'Content-Type':types[extname(file)]||'application/octet-stream','Cache-Control':/\/assets\/.+-[\w-]{8,}\.[\w]+$/.test(path)?'public, max-age=31536000, immutable':'no-cache'});res.end(req.method==='HEAD'?undefined:await readFile(file));
     }catch(e){if(!res.headersSent)json(e.status||(['23505'].includes(e.code)?409:500),{error:e.status?e.message:e.code==='23505'?'Eintrag bereits vorhanden.':'Anfrage fehlgeschlagen. Bitte erneut versuchen.'});else res.end();}
   });
 }
@@ -98,6 +106,7 @@ if(process.argv[1]===fileURLToPath(import.meta.url)){
   if(!process.env.DATABASE_URL||!process.env.APP_ORIGIN)throw new Error('DATABASE_URL und APP_ORIGIN erforderlich');
   const pool=new pg.Pool({connectionString:process.env.DATABASE_URL,max:5});
   await pool.query(await readFile(new URL('./schema.sql',import.meta.url),'utf8'));
-  const server=await createApp({pool,origin:process.env.APP_ORIGIN,secure:process.env.NODE_ENV!=='test'});
+  const server=await createApp({pool,origin:process.env.APP_ORIGIN,origins:(process.env.APP_ORIGINS||process.env.APP_ORIGIN).split(',').map(x=>x.trim()),secure:process.env.NODE_ENV!=='test'});
+  server.requestTimeout=30000;server.headersTimeout=10000;server.maxRequestsPerSocket=1000;
   server.listen(Number(process.env.PORT||8791),'127.0.0.1',()=>console.log('New Shores server ready'));
 }

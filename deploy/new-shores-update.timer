@@ -1,0 +1,8 @@
+[Unit]
+Description=Check private GitHub main for New Shores updates
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=2min
+RandomizedDelaySec=20s
+[Install]
+WantedBy=timers.target

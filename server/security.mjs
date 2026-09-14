@@ -21,5 +21,5 @@ export async function passwordMatches(password,hash){
 }
 export function limiter(max,windowMs){
   const entries=new Map();return key=>{const now=Date.now();if(entries.size>10000)for(const [k,v] of entries)if(v.until<now)entries.delete(k);
-    let entry=entries.get(key);if(!entry||entry.until<now){entry={count:0,until:now+windowMs};entries.set(key,entry);}return ++entry.count<=max;};
+    let entry=entries.get(key);if(!entry&&entries.size>=20000)return false;if(!entry||entry.until<now){entry={count:0,until:now+windowMs};entries.set(key,entry);}return ++entry.count<=max;};
 }

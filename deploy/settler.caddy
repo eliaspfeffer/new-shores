@@ -1,0 +1,16 @@
+https://settler.eliaspfeffer.de {
+    encode zstd gzip
+    request_body {
+        max_size 8100KB
+    }
+    reverse_proxy 127.0.0.1:8791
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        -Server
+    }
+}
+# The existing Caddy HTTPS listener is internally on 8443 behind HAProxy:443.
+# Explicit redirect avoids advertising that internal port.
+http://settler.eliaspfeffer.de {
+    redir https://settler.eliaspfeffer.de{uri} permanent
+}

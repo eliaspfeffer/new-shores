@@ -47,10 +47,14 @@ export function initMobile({panel,reset,zoom,save,center,context,thumbApi}){
   const help=document.createElement('p');help.textContent='Mobil: Ein Finger verschiebt die Karte, zwei Finger zoomen. „Markieren“ schaltet auf Auswahlrahmen per Ziehen um. Einheit antippen, dann „Ziel“ und das Ziel antippen. Gebäude antippen öffnet seine Einstellungen. Menüs mit „Zur Karte“ schließen.';const oldHelp=[...document.querySelectorAll('.help-copy p')].find(p=>p.textContent.startsWith('Touch:'));if(oldHelp)oldHelp.replaceWith(help);else if(!thumbApi)document.querySelector('.help-copy').append(help);
   if(thumbApi)initThumbUI(mobile,thumbApi);
 }
-export async function initOffline(){
+export async function initOffline({save=()=>false}={}){
   const status=document.createElement('p');status.id='offline-status';status.setAttribute('role','status');document.querySelector('#save-button').after(status);
   const install=document.createElement('p');install.textContent='iPhone: Safari → Teilen → Zum Home-Bildschirm. Einmal online warten, bis „Offline bereit“ erscheint. Offline bleiben Änderungen auf diesem Gerät. Am Server-Link synchronisiert „Konto & Inseln“ geladene eigene/freigegebene Serverstände online; vor Gerätewechsel „Jetzt synchronisieren“. Export bleibt als unabhängige Sicherung verfügbar.';status.after(install);
   if(!import.meta.env.PROD||!('serviceWorker' in navigator)||!isSecureContext){status.textContent='Offline-Modus benötigt den HTTPS-Spiel-Link (Produktionsbuild).';return;}
   status.textContent='Offline-Dateien werden gespeichert …';
-  try{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;status.textContent='Offline bereit · Spiel und Grafiken auf diesem Gerät gespeichert';navigator.storage?.persist?.().catch(()=>{});}catch{status.textContent='Offline-Download fehlgeschlagen. Online neu laden und erneut versuchen.';}
+  try{const registration=await navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'});await navigator.serviceWorker.ready;status.textContent='Offline bereit · Spiel und Grafiken auf diesem Gerät gespeichert';navigator.storage?.persist?.().catch(()=>{});
+    const offer=()=>{if(!registration.waiting||document.querySelector('#game-update'))return;const button=document.createElement('button');button.id='game-update';button.className='text-button';button.textContent='Neue Version laden (Spielstand sichern)';button.onclick=()=>{if(!save())return;navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload(),{once:true});registration.waiting?.postMessage('ACTIVATE_UPDATE');};status.after(button);};
+    offer();registration.addEventListener('updatefound',()=>{registration.installing?.addEventListener('statechange',offer);});
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)registration.update().catch(()=>{});});
+  }catch{status.textContent='Offline-Download fehlgeschlagen. Online neu laden und erneut versuchen.';}
 }
