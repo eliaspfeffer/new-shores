@@ -60,6 +60,8 @@ export function parseSave(text,types,width=50,height=50){
     if(b.recruitQueue!==undefined&&(b.type!=='barracks'||!Array.isArray(b.recruitQueue)||b.recruitQueue.length>20||b.recruitQueue.some(q=>!q||!['swordsman','archer','medic'].includes(q.type)||![1,2,3].includes(q.rank)||!Number.isInteger(q.count)||q.count<1||q.count>20||!Number.isFinite(q.progress)||q.progress<0||q.progress>8)))throw new Error('Ungültige Ausbildungswarteschlange.');
     if(b.rallyPoint!==undefined&&(b.type!=='barracks'||!point(b.rallyPoint)||!Number.isInteger(b.rallyPoint.x)||!Number.isInteger(b.rallyPoint.y)))throw new Error('Ungültiger Sammelpunkt.');
     if(b.productionRemaining!==undefined&&(!Number.isInteger(b.productionRemaining)||b.productionRemaining<0||b.productionRemaining>999))throw new Error('Ungültiger Produktionsauftrag.');
+    if(b.toolOrderMode!==undefined&&(b.type!=='toolsmith'||typeof b.toolOrderMode!=='boolean'))throw new Error('Ungültiger Werkzeugauftragsmodus.');
+    if(b.toolOrders!==undefined&&(b.type!=='toolsmith'||!b.toolOrders||typeof b.toolOrders!=="object"||Array.isArray(b.toolOrders)||Object.entries(b.toolOrders).some(([k,n])=>!['axe','hammer','shovel','sickle','pickaxe','saw','rod'].includes(k)||!Number.isInteger(n)||n<0||n>999)))throw new Error('Ungültige Werkzeugaufträge.');
   }
   for(const w of s.workers||[])if(w.tactics&&(!point(w.tactics.home)||w.tactics.lastSeen!=null&&!point(w.tactics.lastSeen)||!['guard','return','retreat','wounded','withdraw','engage','pursue','blocked','search'].includes(w.tactics.mode)||!Number.isFinite(w.tactics.clock)||w.tactics.clock< -1||w.tactics.clock>1||!Number.isInteger(w.tactics.lost)||w.tactics.lost<0||w.tactics.lost>4))throw new Error('Ungültiger Verteidigungsauftrag.');
   return s;

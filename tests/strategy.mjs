@@ -62,3 +62,13 @@ s.tickWorker(direct,2);assert.equal(direct.carry,'flour');assert.equal(sourceMil
 for(let i=0;i<100&&direct.phase==='supply';i++)s.tickWorker(direct,.1);
 assert.equal(targetBakery.buffer.flour,1);assert.equal(resources.flour,0,'direct delivery never credits the central store');
 console.log('PASS: direct workshop-to-workshop transport with exact stock conservation');
+
+const forge={type:'toolsmith',x:24,y:25,progress:1,buffer:{iron:5,coal:5},toolOrderMode:true,toolOrders:{shovel:2},work:0};buildings.push(forge);
+s.produce(forge,12);assert.equal(forge.ready,'shovel');assert.equal(forge.toolOrders.shovel,1);forge.ready=null;
+s.produce(forge,12);assert.equal(forge.ready,'shovel');assert.equal(forge.toolOrders.shovel,0);forge.ready=null;
+s.produce(forge,120);assert.equal(forge.ready,null);assert.deepEqual(forge.buffer,{iron:3,coal:3},'empty queue never consumes inputs');
+forge.toolOrderMode=false;forge.toolChoice='axe';s.produce(forge,12);assert.equal(forge.ready,'axe','automatic/legacy production remains available');
+const drops=[];api.dropTool=(w,key)=>drops.push({x:w.x,y:w.y,key});
+const retiring={id:900,x:25.5,y:26.5,unit:'pioneer',specialTool:'shovel',phase:'guard'};workers.push(retiring);selected.clear();selected.add(900);const shovels=resources.shovel||0;
+assert.equal(s.returnSpecialists(),1);assert.equal(retiring.unit,undefined);assert.equal(resources.shovel||0,shovels);assert.deepEqual(drops,[{x:25.5,y:26.5,key:'shovel'}]);assert.equal(s.returnSpecialists(),0);
+console.log('PASS: finite tool orders, no overproduction, legacy resume and exact physical specialist tool drop');

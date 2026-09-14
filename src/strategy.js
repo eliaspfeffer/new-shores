@@ -211,10 +211,10 @@ export function createStrategy(api){
     if(!own(b)||b.stopped||b.productionRemaining===0||b.progress<1||b.ready||r.coastal&&!api.hasWater(b))return true;
     const d=r.deposit?depositFor(b):null;if(r.deposit&&!d)return true;
     if(r.deposit){if(!feedMiner(b))return true;}else if(Object.entries(r.inputs).some(([k,n])=>(b.buffer?.[k]||0)<n))return true;
-    if(b.type==='toolsmith'&&!b.activeTool)b.activeTool=toolTypes.includes(b.toolChoice)?b.toolChoice:nextTool(stock());
+    if(b.type==='toolsmith'&&!b.activeTool){if(b.toolOrderMode){const order=toolTypes.find(k=>b.toolOrders?.[k]>0);if(!order)return true;b.activeTool=order;}else b.activeTool=toolTypes.includes(b.toolChoice)?b.toolChoice:nextTool(stock());}
     b.work=(b.work||0)+dt;if(b.work<r.cycle)return true;b.work=0;
     if(r.deposit)b.miningEnergy--;else for(const [k,n] of Object.entries(r.inputs))b.buffer[k]-=n;
-    if(b.productionRemaining>0)b.productionRemaining--;if(d){d.initialAmount??=d.amount;d.amount--;}b.ready=b.type==='toolsmith'?b.activeTool:r.output;delete b.activeTool;b.outputAmount=d?1:r.amount;return true;
+    if(b.productionRemaining>0)b.productionRemaining--;if(d){d.initialAmount??=d.amount;d.amount--;}b.ready=b.type==='toolsmith'?b.activeTool:r.output;if(b.type==='toolsmith'&&b.toolOrderMode&&b.toolOrders?.[b.activeTool]>0)b.toolOrders[b.activeTool]--;delete b.activeTool;b.outputAmount=d?1:r.amount;return true;
   }
   function damageUnit(target,damage){if(target.dead)return;target.hp-=damage;if(target.hp<=0){target.hp=0;target.dead=true;if(target.garrisonIndex!==undefined){const b=buildings[target.garrisonIndex];if(b)b.garrison=Math.max(0,(b.garrison||0)-1);delete target.garrisonIndex;recalculate();}api.onEvent?.('death',target);api.selected.delete(target.id);if(own(target))stock().people=Math.max(0,(stock().people||0)-1);}}
   const armyOrders=createArmyOrders({buildings,workers,state,stock,entrance,routeTo,recruit,terrain,visible:api.isSeen});
@@ -251,7 +251,7 @@ export function createStrategy(api){
     return command(b,false,targets);
   }
   function clearAutonomy(w){w.autoWork=false;w.waypoints=[];delete w.workArea;delete w.workSite;delete w.surveyQueue;delete w.surveyVisited;delete w.surveyStatus;w.workRetry=0;}
-  function returnSpecialists(){let n=0;for(const w of workers)if(api.selected.has(w.id)&&own(w)&&alive(w)&&['pioneer','geologist'].includes(w.unit)){clearAutonomy(w);delete w.unit;delete w.order;delete w.rank;w.role='carrier';w.phase='idle';w.route=null;returnTool(stock(),w.specialTool||'tools');delete w.specialTool;n++;}api.hud();toast(n+' Spezialisten sind wieder Träger');return n;}
+  function returnSpecialists(){let n=0;for(const w of workers)if(api.selected.has(w.id)&&own(w)&&alive(w)&&['pioneer','geologist'].includes(w.unit)){clearAutonomy(w);delete w.unit;delete w.order;delete w.rank;w.role='carrier';w.phase='idle';w.route=null;if(api.dropTool)api.dropTool(w,w.specialTool||'tools');else returnTool(stock(),w.specialTool||'tools');delete w.specialTool;n++;}api.hud();toast(n+' Spezialisten sind wieder Träger');return n;}
   function patrol(g,append=false){
     if(!g||!Number.isInteger(g.x)||!Number.isInteger(g.y)||!terrain[g.y]?.[g.x])return false;
     let count=0;

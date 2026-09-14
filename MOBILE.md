@@ -1,5 +1,13 @@
 # Mobile Querformat-Version
 
+## Aktuell: Daumen-Menüs nach den Nutzer-Screenshots
+
+Diese Fassung ersetzt die unten beschriebene ältere Fünf-Button-Leiste: **Haus unten links, Siedler unten rechts**. Das Haus öffnet Kategorien und große Gebäudeknöpfe. Nach der Gebäudeinformation zunächst einen Bauplatz antippen, dann links bestätigen oder rechts abbrechen. Brief oben links für Nachrichten; Warenpfeil oben für blätterbare Bestände; ausgewählte Einheiten ersetzen die Warenanzeige. Türme, Kasernen und Werkzeugschmieden haben eigene Kontext- und Mengenmenüs.
+
+Die bisherigen erweiterten Befehle bleiben im Pausenmenü unter Betriebsübersicht, Weitere Siedlerbefehle und Warenverteilung erreichbar. Gebäudedetails bieten Weitere Einstellungen. Neue Werkzeugmengen werden gespeichert; Spezialisten legen ihr Werkzeug beim Zurückverwandeln wirklich am Boden ab. Referenzzuordnung und noch fehlende Originalberufe/-Menüs: [MOBILE_REFERENCE_AUDIT.md](MOBILE_REFERENCE_AUDIT.md). Kein pixelidentischer Nachbau, keine echte iPhone-Hardwareprüfung.
+
+Aktuell hostet der private Server den unten verlinkten Spielstand der Anwendung. Für den ersten Download muss **der Server**, nicht der Mac, erreichbar sein. Die späteren Mac-/Port-4176-Angaben sind die historische lokale Hosting-Alternative.
+
 ## Referenz-Überarbeitung · 14. September 2026
 
 - Neue mobile Partien starten bei Zoom 1,15; gespeicherte Kameras werden nicht überschrieben. Der Hausknopf rechts zentriert das eigene Hauptlager und stellt den näheren Ausschnitt her. Pinch/Zoom reichen mobil jetzt bis 1,85.

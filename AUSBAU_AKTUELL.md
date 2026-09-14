@@ -1,5 +1,9 @@
 # Aktueller Ausbau – 13. September 2026
 
+## Nachtrag 14. September: mobile Referenz-Menüs
+
+Mobile Daumenbedienung mit Haus/Siedlern an den unteren Ecken, Baukategorien und Gebäudeknöpfen, bestätigter Bauplatzvorschau, Briefjournal, Warenblättern, Einheitenleiste und großen Rekrutierungs-/Werkzeugmengen. Werkzeugschmieden unterstützen endliche gespeicherte Aufträge; zurückverwandelte Spezialisten legen ihr Werkzeug physisch ab. Bestehende erweiterte Befehle bleiben zugänglich, Desktop und vorhandene Grafikdateien erhalten. Referenzabgleich, Prüfungen und noch fehlende Originalfunktionen: [MOBILE_REFERENCE_AUDIT.md](MOBILE_REFERENCE_AUDIT.md). Insbesondere Gärtner/Diebe/Planierer und manuelle Grundberufsquoten sind **nicht umgesetzt**.
+
 Yippee-Nachtrag: Drei einzelne Rufe aus der Original-CC0-Quellaufnahme an den Stillepausen getrennt. Bauabschluss/Geologenfund und Hörprobe spielen jeweils eine wechselnde Variante; keine Dreierfolge. Quellen/Schnittzeiten in assets/audio/SOURCES.md; bestehende Spielstände unverändert.
 
 ## Aufgenommene Geräusche statt Synthese für Holz, Hammer und Jubel

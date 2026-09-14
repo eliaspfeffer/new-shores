@@ -11,7 +11,7 @@ const assert=require('node:assert/strict');
    const context=await browser.newContext({viewport:{width:844,height:390},isMobile:true,hasTouch:true});
    const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/src/main.js*',route=>route.fulfill({contentType:'text/javascript',body:source.replaceAll('import.meta.env.DEV','true')+'\nglobalThis.__renderQA=render;globalThis.__pauseQA=()=>{paused=true;};'}));
-   await page.goto('http://localhost:5175/?mobile=1');await page.click('#new-game');await page.click('#dismiss-quest');
+   await page.goto('http://localhost:5175/?mobile=1');await page.click('#new-game');if(await page.locator('#dismiss-quest').isVisible())await page.click('#dismiss-quest');
    await page.waitForFunction(()=>performance.getEntriesByType('resource').some(e=>e.name.includes('nature-reference-v2')));
    await page.evaluate(()=>{__pauseQA();const g=__newShores;for(let id=g.workers.length;id<200;id++)g.workers.push({id,x:24+(id%8)*.2,y:25+Math.floor(id/8)*.1,phase:'idle',role:'carrier',t:0});});
    for(const zoom of [.5,1.15]){

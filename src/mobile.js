@@ -1,7 +1,8 @@
 import './mobile.css';
+import {initThumbUI} from './mobile-thumb.js';
 export const mobile={enabled:new URLSearchParams(location.search).get('mobile')==='1'||matchMedia('(pointer:coarse)').matches,select:false};
 document.documentElement.classList.toggle('mobile',mobile.enabled);
-export function initMobile({panel,reset,zoom,save,center,context}){
+export function initMobile({panel,reset,zoom,save,center,context,thumbApi}){
   if(!mobile.enabled)return;
   const game=document.querySelector('#game-screen'),sidebar=document.querySelector('#command-sidebar');
   const bar=document.createElement('nav');bar.id='mobile-controls';bar.setAttribute('aria-label','Touch-Befehle');
@@ -43,7 +44,8 @@ export function initMobile({panel,reset,zoom,save,center,context}){
   const home=document.createElement('button');home.id='mobile-center';home.textContent='⌂';home.setAttribute('aria-label','Siedlung zentrieren');home.onclick=center;zoomButtons.append(home);
   const rotate=document.createElement('aside');rotate.id='rotate-device';rotate.innerHTML='<span>↻</span><h2>Bitte iPhone drehen</h2><p>New Shores wird im Querformat gespielt.<br>Falls nötig, die Ausrichtungssperre ausschalten.</p>';document.body.append(rotate);
   const orientation=()=>{const portrait=innerHeight>innerWidth;document.documentElement.classList.toggle('mobile-portrait',portrait);if(portrait)save();};addEventListener('resize',orientation);orientation();
-  const help=document.createElement('p');help.textContent='Mobil: Ein Finger verschiebt die Karte, zwei Finger zoomen. „Markieren“ schaltet auf Auswahlrahmen per Ziehen um. Einheit antippen, dann „Ziel“ und das Ziel antippen. Gebäude antippen öffnet seine Einstellungen. Menüs mit „Zur Karte“ schließen.';const oldHelp=[...document.querySelectorAll('.help-copy p')].find(p=>p.textContent.startsWith('Touch:'));if(oldHelp)oldHelp.replaceWith(help);else document.querySelector('.help-copy').append(help);
+  const help=document.createElement('p');help.textContent='Mobil: Ein Finger verschiebt die Karte, zwei Finger zoomen. „Markieren“ schaltet auf Auswahlrahmen per Ziehen um. Einheit antippen, dann „Ziel“ und das Ziel antippen. Gebäude antippen öffnet seine Einstellungen. Menüs mit „Zur Karte“ schließen.';const oldHelp=[...document.querySelectorAll('.help-copy p')].find(p=>p.textContent.startsWith('Touch:'));if(oldHelp)oldHelp.replaceWith(help);else if(!thumbApi)document.querySelector('.help-copy').append(help);
+  if(thumbApi)initThumbUI(mobile,thumbApi);
 }
 export async function initOffline(){
   const status=document.createElement('p');status.id='offline-status';status.setAttribute('role','status');document.querySelector('#save-button').after(status);

@@ -1,0 +1,29 @@
+const {chromium}=require('playwright');const assert=require('node:assert/strict');
+(async()=>{const browser=await chromium.launch({channel:'chrome',headless:true});try{
+ const context=await browser.newContext({viewport:{width:844,height:390},hasTouch:true,isMobile:true});const p=await context.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await p.goto('http://localhost:5175/?mobile=1');await p.click('#new-game');
+ const click=name=>p.getByRole('button',{name,exact:true}).click();
+ assert(await p.locator('#thumb-left').isVisible());assert.equal(await p.locator('#command-sidebar').isVisible(),false);
+ await click('Bauen');await click('Wohnhäuser & Lager');await click('Kleines Wohnhaus');await p.locator('#thumb-sheet').waitFor({state:'visible'});await p.screenshot({path:'/tmp/new-shores-thumb-info.png'});
+ await p.locator('#thumb-sheet').getByRole('button',{name:'Bauen',exact:true}).click();
+ const target=await p.evaluate(()=>{const g=__newShores,s=g.getBuildSites('house').find(s=>{const c=g.camera,x=(s.x-s.y)*44*c.zoom+c.x,y=(s.x+s.y+1)*22*c.zoom+c.y;return x>100&&x<700&&y>110&&y<250;});if(!s)throw Error('No visible legal house site');return {x:(s.x-s.y)*44*g.camera.zoom+g.camera.x,y:(s.x+s.y+1)*22*g.camera.zoom+g.camera.y,count:g.buildings.length};});
+ await p.mouse.click(target.x,target.y);assert.equal(await p.evaluate(()=>__newShores.buildings.length),target.count);await p.evaluate(()=>{__newShores.resources.planks=0;});await p.waitForFunction(()=>document.querySelector('#thumb-left').disabled);await p.evaluate(()=>{__newShores.resources.planks=24;});await p.waitForFunction(()=>!document.querySelector('#thumb-left').disabled);await p.waitForFunction(()=>!document.querySelector('#build-site-hint').classList.contains('hidden'));await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));await p.screenshot({path:'/tmp/new-shores-thumb-placement.png'});await click('Bau bestätigen');assert.equal(await p.evaluate(()=>__newShores.buildings.length),target.count+1);
+ await click('Alle Waren anzeigen');assert.match(await p.locator('#thumb-sheet-title').innerText(),/Warenmenü/);await p.screenshot({path:'/tmp/new-shores-thumb-goods.png'});await click('Nächste Seite');assert.match(await p.locator('#thumb-sheet-title').innerText(),/2 \/ 4/);await click('Zurück');
+ await click('Nachrichten');assert((await p.locator('.thumb-message').innerText()).length>10);await click('Zurück');
+ await click('Minikarte anzeigen');assert(await p.locator('#game-screen>.sidebar-map').isVisible());await click('Minikarte schließen');
+ await click('Siedler');await click('Spezialisten anwerben');await click('Geologe');await click('+1');await click('Auftrag bestätigen');
+ assert(await p.evaluate(()=>__newShores.workers.some(w=>w.unit==='geologist')));
+ await p.click('#thumb-right');await click('Siedler');await click('Siedler finden');await p.locator('#thumb-sheet button[aria-label^="Geologe #"]').click();
+ await p.waitForSelector('.thumb-selection:not([hidden])');await click('Zum Träger');assert.equal(await p.evaluate(()=>__newShores.workers.some(w=>w.unit==='geologist')),false);
+ assert(await p.evaluate(()=>__newShores.strategy.state.groundPiles.some(p=>p.goods.hammer===1)));
+ await p.click('#thumb-left');
+ // Real building menu fixture in an isolated browser; keep simulation paused for exact UI checks.
+ await p.evaluate(()=>{const g=__newShores;for(const [i,type] of ['toolsmith','barracks','tower'].entries()){g.buildings.push({type,x:26+i*2,y:25,progress:1,owner:1,work:0});}g.resources.iron=20;g.resources.coal=20;});
+ const inspect=async type=>{await p.evaluate(type=>{const b=__newShores.buildings.find(b=>b.type===type&&(b.owner||1)===1);const c=__newShores.camera;c.x=422-(b.x-b.y)*44*c.zoom;c.y=200-(b.x+b.y+1)*22*c.zoom;},type);await p.mouse.click(422,180);};
+ await inspect('toolsmith');await click('Werkzeuge anfordern');await click('Schaufel');await click('+5');await click('Auftrag bestätigen');assert.equal(await p.evaluate(()=>__newShores.buildings.find(b=>b.type==='toolsmith').toolOrders.shovel),5);
+ await click('Auswahl aufheben');await inspect('barracks');await click('Krieger rekrutieren');await click('Bogenschütze 2');await click('+5');await click('Auftrag bestätigen');assert.equal(await p.evaluate(()=>__newShores.buildings.find(b=>b.type==='barracks').recruitQueue[0].count),5);
+ await click('Auswahl aufheben');await inspect('tower');await click('Besatzung');assert.match(await p.locator('.thumb-description').innerText(),/Besatzung: 0 \/ 3/);await click('Zurück');
+ assert(await p.evaluate(()=>{const g=__newShores;g.resources.swords=20;const origin=g.workers.find(w=>(w.owner||1)===1);for(let i=0;i<3;i++)g.workers.push({id:Math.max(...g.workers.map(w=>w.id))+1,x:origin.x,y:origin.y,owner:1,role:'carrier',phase:'idle',t:0});return Boolean(g.strategy.recruit('swordsman',1,g.buildings.find(b=>b.type==='barracks'),{preserveSelection:true}));}));await inspect('tower');await click('Soldaten hinein');await p.waitForFunction(()=>__newShores.workers.some(w=>(w.owner||1)===1&&w.garrisonIndex!==undefined),{},{timeout:20000});await click('Soldaten heraus');assert.equal(await p.evaluate(()=>__newShores.workers.some(w=>(w.owner||1)===1&&w.garrisonIndex!==undefined)),false);
+ await p.setViewportSize({width:667,height:320});await click('Auswahl aufheben');await click('Alle Waren anzeigen');assert(await p.locator('#thumb-sheet').evaluate(e=>e.scrollHeight<=e.clientHeight+1));await p.screenshot({path:'/tmp/new-shores-thumb-small.png'});await click('Zurück');
+ assert.deepEqual(errors,[]);console.log('PASS: thumb build categories, two-phase placement, goods paging, messages, map, specialist recruitment/tool drop, smith orders, barracks queue, garrison status and small landscape');await context.close();
+}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

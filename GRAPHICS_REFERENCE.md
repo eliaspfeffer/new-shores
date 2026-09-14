@@ -1,5 +1,9 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 14. September: mobile Daumen-Menüs
+
+Die 30 vom Nutzer angehängten Screenshots der Gameloft-Handyfassung wurden als direkte UI-Referenz visuell betrachtet. Anordnung, Kategorien, Pergamentblätter, Waren-Seiten und Kontextbefehle sind in [MOBILE_REFERENCE_AUDIT.md](MOBILE_REFERENCE_AUDIT.md) einzeln den Bildern zugeordnet. Keine Änderungen an Rastergrafikfamilien, keine kopierten Original-Sprites, keine Vermischung mit der Desktop-Seitenleiste. Neue eigene CSS-Rahmen und kleine SVG-Befehlssymbole; vorhandene Gebäude-/Waren-/Einheitenatlanten bleiben erhalten. Vollständige Originalsymbol-Abdeckung, zusätzliche Berufe und das Startmenü bleiben offen.
+
 ## Nachtrag 13. September: Bodenwaren / Bergung
 
 [PC-Screenshot mit Maya-Figuren und Warenhaufen](https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc756m.jpg) erneut im isolierten Browser vollständig visuell betrachtet: flach gestapelte gelbbraune Hölzer, graue Stein-/dunkle Kohlehaufen und kleine helle Waren liegen dicht bei den Figuren auf dem Boden. Nur allgemeine Warenanordnung übernommen, keine Maya-Figuren oder Fraktionsgebäude als römische Vorlagen verwendet. Die Haufen im Prototyp benutzen die bestehenden eigenen Waren-/Werkzeugatlanten unverändert, in kleinen versetzten Stapeln mit Mengenanzeige. Kein Ausschnitt aus dem Originalbild und keine neue Rastergrafikfamilie. Tiefensortierung und Darstellung im Desktop-/Touch-Spiel überprüft; vollständiger warenweiser Originalvergleich bleibt offen.

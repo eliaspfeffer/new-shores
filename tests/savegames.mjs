@@ -9,3 +9,7 @@ assert.throws(()=>parseSave(JSON.stringify({...data,resources:{wood:-1}}),types)
 assert.throws(()=>parseSave(JSON.stringify({...data,resources:{'<img src=x>':1}}),types));
 assert.throws(()=>parseSave('{"__proto__":{}}',types));
 console.log('PASS: save parsing, version rejection, bounds/references, duplicate IDs and unsafe keys');
+const forgeSave={...data,buildings:[...data.buildings,{type:'toolsmith',x:24,y:25,progress:1,toolOrderMode:true,toolOrders:{shovel:5}}]};
+assert.equal(parseSave(JSON.stringify(forgeSave),['storehouse','toolsmith']).buildings[1].toolOrders.shovel,5);
+for(const invalid of [{shovel:-1},{shovel:1000},{unknown:1}])assert.throws(()=>parseSave(JSON.stringify({...forgeSave,buildings:[data.buildings[0],{...forgeSave.buildings[1],toolOrders:invalid}]}),['storehouse','toolsmith']));
+console.log('PASS: tool order save/load and invalid order rejection');
