@@ -62,8 +62,23 @@ Object.assign(context,{chooseStorage,rerouteStorageAfterDemolition,depotGoods,ti
 context.sessionStorage={getItem:()=>null};
 vm.createContext(context);
 const source=fs.readFileSync(new URL('../src/main.js',import.meta.url),'utf8').replace(/^import .*\n/gm,'').replaceAll('import.meta.env.DEV','false').replace(/new URL\([^\n]+?import.meta.url\).href/g,"'test-image.png'");
-vm.runInContext(source+`;globalThis.qa={workforce,exploration,growTree,nearby,workers,buildings,trees,rocks,traffic,trailEdges,terrain,updateWorkers,save,load,runProduction,strategy,selectedWorkers,placementReason,getBuildSites,hitBuilding,iso,setWorkingArea,demolishBuilding,getResources:()=>resources};`,context);
+vm.runInContext(source+`;globalThis.qa={routeTo,workforce,exploration,growTree,nearby,workers,buildings,trees,rocks,traffic,trailEdges,terrain,updateWorkers,save,load,runProduction,strategy,selectedWorkers,placementReason,getBuildSites,hitBuilding,iso,setWorkingArea,demolishBuilding,getResources:()=>resources};`,context);
 const q=context.qa;
+// Pioneers may cross and occupy resource tiles, but not water or buildings.
+{
+ const original={terrain:q.terrain.map(r=>r.slice()),trees:q.trees.slice(),rocks:q.rocks.slice(),buildings:q.buildings.slice()};
+ q.terrain.forEach(r=>r.fill('water'));for(let y=1;y<=4;y++)for(let x=1;x<=6;x++)q.terrain[y][x]='grass';
+ q.trees.splice(0,q.trees.length,...[1,2,3,4].map(y=>({x:2,y})));
+ q.rocks.splice(0,q.rocks.length,...[1,2,3,4].map(y=>({x:3,y,amount:5})));q.buildings.splice(0);
+ const pioneer={unit:'pioneer',x:1.5,y:2.5},goal={x:5.5,y:2.5};
+ assert.ok(q.routeTo(pioneer,goal),'pioneer crosses an unbroken forest and stone barrier');
+ assert.ok(q.routeTo(pioneer,{x:3.5,y:2.5}),'pioneer can stand on stone to expand territory');
+ assert.equal(q.routeTo({...pioneer,unit:undefined},goal),null,'carrier obstacle rules remain unchanged');
+ q.buildings.push(...[1,2,3,4].map(y=>({type:'house',x:4,y})));assert.equal(q.routeTo(pioneer,goal),null,'buildings still block pioneers');q.buildings.splice(0);
+ for(let y=1;y<=4;y++)q.terrain[y][4]='water';assert.equal(q.routeTo(pioneer,goal),null,'pioneers cannot cross water');
+ q.terrain.splice(0,q.terrain.length,...original.terrain);for(const key of ['trees','rocks','buildings'])q[key].splice(0,q[key].length,...original[key]);
+ console.log('PASS: pioneer forest/stone traversal and resource-tile targets; water/buildings/carrier rules preserved');
+}
 const catalog=elements.get('.tool-dock').innerHTML;
 assert.equal((catalog.match(/class="building-preview"/g)||[]).length,26,'every buildable building has its in-game preview');
 assert.ok(!catalog.includes('undefined'),'all buildings have names, art and descriptions');

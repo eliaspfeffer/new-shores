@@ -1,5 +1,11 @@
 # Aktueller Ausbau – 13. September 2026
 
+## Nachtrag 14. September: Pionier-Wege und Reload-Prüfung
+
+Pioniere können Wald- und Steinressourcen durchqueren und diese Felder als Arbeitsziel erreichen. Gebäude und Wasser bleiben Hindernisse; normale Träger behalten ihre bisherigen Wegregeln. Ressourcen und bestehende Spielstände bleiben unverändert.
+
+Geprüft durch Simulation, Strategie, alle 37 Node-Testdateien, Produktionsbuild und einen isolierten echten Browser-Reload auf Desktop- und Mobilgröße (`tests/browser/reload-work.cjs`): Fracht, Baufortschritt, Außenarbeit und Pionieraufträge laufen im Test weiter. Mobile Darstellung visuell geprüft. Der gemeldete Stillstand bei weiterhin navigierbarer Karte wurde **nicht reproduziert und ist nicht als behoben bestätigt**; zur weiteren Diagnose wird der betroffene exportierte Spielstand benötigt.
+
 ## Nachtrag 14. September: mobile Referenz-Menüs
 
 Mobile Daumenbedienung mit Haus/Siedlern an den unteren Ecken, Baukategorien und Gebäudeknöpfen, bestätigter Bauplatzvorschau, Briefjournal, Warenblättern, Einheitenleiste und großen Rekrutierungs-/Werkzeugmengen. Werkzeugschmieden unterstützen endliche gespeicherte Aufträge; zurückverwandelte Spezialisten legen ihr Werkzeug physisch ab. Bestehende erweiterte Befehle bleiben zugänglich, Desktop und vorhandene Grafikdateien erhalten. Referenzabgleich, Prüfungen und noch fehlende Originalfunktionen: [MOBILE_REFERENCE_AUDIT.md](MOBILE_REFERENCE_AUDIT.md). Insbesondere Gärtner/Diebe/Planierer und manuelle Grundberufsquoten sind **nicht umgesetzt**.
