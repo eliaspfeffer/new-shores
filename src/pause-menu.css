@@ -1,0 +1,29 @@
+#pause-modal > .modal-card{box-sizing:border-box;width:min(600px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:22px;overflow:visible;}
+#pause-modal [hidden]{display:none!important}
+#pause-modal h2{font-size:30px;margin:0 0 18px;}
+#pause-modal .pause-content{display:grid;gap:12px;}
+#pause-modal .pause-home-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+#pause-modal #resume-button,#pause-modal #return-main-menu{grid-column:1/-1;}
+#pause-modal button,#pause-modal .text-button,#pause-modal .import-label{box-sizing:border-box;min-height:44px;margin:0;padding:10px 12px;font-size:16px;line-height:1.25;text-decoration:none;width:100%;}
+#pause-modal button:focus-visible{outline:3px solid #366e83;outline-offset:3px;}
+#pause-modal .pause-navigation{display:flex;align-items:center;gap:10px;margin-top:14px;}
+#pause-modal .pause-navigation:empty{display:none}
+#pause-modal .pause-navigation span{white-space:nowrap;font-size:14px;}
+#pause-modal p{font-size:14px;line-height:1.4;margin:0;color:#593b21;}
+#pause-modal #scenario-progress{margin:0;text-align:left;}
+#pause-modal #audio-settings{margin:0;padding:0;}
+#pause-modal #audio-settings summary{display:none}
+#pause-modal .player-color-picker{margin:0;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:16px;}
+#pause-modal select{max-width:50%;min-height:44px;}
+#pause-modal .pause-audio-extras{display:grid;gap:10px;}
+#pause-modal .pause-audio-extras > div{display:grid!important;grid-template-columns:repeat(3,1fr);gap:8px;}
+@media(max-height:500px){
+  #pause-modal > .modal-card{width:min(720px,calc(100vw - 24px));padding:14px;}
+  #pause-modal h2{font-size:24px;margin-bottom:10px;}
+  #pause-modal .pause-home-actions{grid-template-columns:repeat(3,1fr);gap:10px;}
+  #pause-modal #resume-button,#pause-modal #return-main-menu{grid-column:auto;}
+  #pause-modal .pause-content:not([data-page="home"]):not([data-page="audio"]):not([data-page="sounds"]){grid-template-columns:1fr 1fr;gap:10px;}
+  #pause-modal .pause-navigation{margin-top:10px;}
+  #pause-modal .pause-audio-extras > div{grid-template-columns:repeat(5,1fr);}
+  #pause-modal button,#pause-modal .text-button{font-size:14px;padding:8px;}
+}

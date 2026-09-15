@@ -56,6 +56,7 @@ Object.assign(context,{toolTypes,professionTools,checkoutTool,returnTool});
 context.createOutdoor=createOutdoor;
 Object.assign(context,{mobile:{enabled:false},initMobile(){},initOffline(){}});
 context.initTitleMenu=()=>{};
+context.initPauseMenu=()=>{};
 context.initBuildingSettings=()=>({sync(){},feedback(){}});
 Object.assign(context,{initRouteControls:()=>({refresh(){}}),drawPatrolRoutes(){}});
 context.buildingContext=buildingContext;

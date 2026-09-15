@@ -1,6 +1,7 @@
 import {mobile,initMobile,initOffline} from './mobile.js';
 import './comic-menu.css';
 import {initTitleMenu} from './title-menu.js';
+import {initPauseMenu} from './pause-menu.js';
 import {createSettlerSpacing} from './settler-spacing.js';
 
 function createThumbAPI(){
@@ -800,3 +801,4 @@ unitMenu=initUnitMenu({workers,selected:selectedWorkers,names:unitNames,art:unit
 }});
 initCloud({capture:()=>hasSession&&save(),freeze:()=>{const wasPaused=paused;paused=true;return ()=>{paused=wasPaused;last=0;};},validate:s=>parseSave(JSON.stringify(s),['storehouse',...Object.keys(buildDefs)]),notify:toast,pause:()=>{if(active){paused=true;document.querySelector('#pause-modal').classList.remove('hidden');}}});
 initTitleMenu();
+initPauseMenu();
