@@ -36,3 +36,45 @@
 :is(.mobile,.desktop-thumb) .thumb-selected-type{display:flex;align-items:center;gap:3px}:is(.mobile,.desktop-thumb) .thumb-selected-type .thumb-art{height:38px;width:30px}
 :is(.mobile,.desktop-thumb) .thumb-map-close{display:flex;position:absolute;right:-12px;top:-12px;width:44px;height:44px}:is(.mobile,.desktop-thumb) #game-screen>.sidebar-map{width:min(340px,55vw);height:min(220px,65dvh);right:calc(var(--safe-right) + 52px);top:58px;border:4px ridge #d1bc79;background:#030604}
 @media (max-height:350px){:is(.mobile,.desktop-thumb) .thumb-ui{--thumb-size:52px}:is(.mobile,.desktop-thumb) .thumb-sheet{padding:6px 12px}:is(.mobile,.desktop-thumb) .thumb-sheet-footer .thumb-button{width:44px;height:44px}:is(.mobile,.desktop-thumb) .thumb-choice .thumb-icon{width:44px;height:44px}:is(.mobile,.desktop-thumb) .thumb-choice{min-height:51px}:is(.mobile,.desktop-thumb) .thumb-description{font-size:12px}:is(.mobile,.desktop-thumb) .thumb-grid{gap:4px 12px}}
+
+/* One large, readable command language on touch and desktop. Labels sit on
+   parchment nameplates below the medallion, as in the mobile reference. */
+:is(.mobile,.desktop-thumb){--thumb-size:clamp(88px,26dvh,104px)}
+:is(.mobile,.desktop-thumb) .thumb-ui{--thumb-size:inherit}
+:is(.mobile,.desktop-thumb) .thumb-ui .thumb-button,
+:is(.mobile,.desktop-thumb) .thumb-mail,
+:is(.mobile,.desktop-thumb) .thumb-map-toggle{
+  width:var(--thumb-size);height:var(--thumb-size);padding:5px;overflow:visible;
+  border:4px ridge #e8dba9;background:linear-gradient(155deg,#fffbe5f2,#d9d6b7d9 48%,#676247e8);
+  box-shadow:0 4px 0 #4f3527,0 7px 12px #1b160da8;
+  transition:transform .16s ease,filter .16s ease;
+}
+:is(.mobile,.desktop-thumb) .thumb-ui .thumb-button:hover,
+:is(.mobile,.desktop-thumb) .thumb-mail:hover,
+:is(.mobile,.desktop-thumb) .thumb-map-toggle:hover{filter:brightness(1.08);transform:translateY(-2px)}
+:is(.mobile,.desktop-thumb) .thumb-ui .thumb-button:active,
+:is(.mobile,.desktop-thumb) .thumb-mail:active,
+:is(.mobile,.desktop-thumb) .thumb-map-toggle:active{transform:translateY(2px);box-shadow:0 2px 0 #4f3527,0 4px 8px #1b160d99}
+:is(.mobile,.desktop-thumb) .thumb-ui .thumb-button small,
+:is(.mobile,.desktop-thumb) .thumb-mail small,
+:is(.mobile,.desktop-thumb) .thumb-map-toggle small{
+  position:absolute;left:50%;top:calc(100% - 5px);transform:translateX(-50%);
+  display:block!important;min-width:max-content;max-width:132px;padding:3px 7px;
+  border:2px solid #765033;border-radius:8px;background:#f4dfae;
+  color:#392416;text-shadow:0 1px #fff7;font:bold clamp(12px,1.8dvh,15px)/1.05 Georgia,serif;
+  text-align:center;white-space:normal;box-shadow:0 2px 0 #4f3527;
+}
+:is(.mobile,.desktop-thumb) .thumb-ui .thumb-icon,
+:is(.mobile,.desktop-thumb) .thumb-mail .thumb-icon,
+:is(.mobile,.desktop-thumb) .thumb-map-toggle .thumb-icon{height:88%;font-size:42px}
+:is(.mobile,.desktop-thumb) .thumb-ui .thumb-icon .good-icon{width:52px;height:52px}
+:is(.mobile,.desktop-thumb) .thumb-button:has(.command-medallion) .thumb-icon{width:100%;height:100%}
+:is(.mobile,.desktop-thumb) .thumb-left,:is(.mobile,.desktop-thumb) .thumb-right{bottom:calc(var(--safe-bottom) + 28px)}
+:is(.mobile,.desktop-thumb) .thumb-actions{bottom:calc(var(--safe-bottom) + 28px);left:calc(var(--safe-left) + var(--thumb-size) + 18px);gap:18px}
+:is(.mobile,.desktop-thumb) .thumb-actions>.thumb-button{position:relative}
+:is(.mobile,.desktop-thumb) .thumb-ui[data-mode=building] .thumb-actions{left:calc(var(--safe-left) + var(--thumb-size) + 18px);right:auto}
+:is(.mobile,.desktop-thumb) .thumb-ui[data-mode=units] .thumb-actions,:is(.mobile,.desktop-thumb) .thumb-ui[data-mode=selected] .thumb-actions{right:calc(var(--safe-right) + var(--thumb-size) + 18px)}
+:is(.mobile,.desktop-thumb) .thumb-mail{top:58px;left:var(--safe-left)}
+:is(.mobile,.desktop-thumb) .thumb-map-toggle{top:58px!important;right:var(--safe-right)!important}
+:is(.mobile,.desktop-thumb) .thumb-caption{bottom:0;font-size:15px;max-width:52vw}
+@media (max-height:430px){:is(.mobile,.desktop-thumb){--thumb-size:88px}:is(.mobile,.desktop-thumb) .thumb-ui{--thumb-size:inherit}:is(.mobile,.desktop-thumb) .thumb-actions{gap:10px}}

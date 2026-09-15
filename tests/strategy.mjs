@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {createStrategy,recipes,facing8} from '../src/strategy.js';
+import {createStrategy,recipes,facing8,nearestTowerSoldiers} from '../src/strategy.js';
 import {findPath} from '../src/navigation.js';
 const terrain=Array.from({length:50},()=>Array(50).fill('grass'));
 const buildings=[{x:25,y:25,type:'storehouse',progress:1}],workers=[],resources={people:8,tools:4,swords:2,bows:1,coal:4,ironOre:4},selected=new Set();
@@ -24,9 +24,13 @@ assert.equal(s.ownerAt(38,25),1,'pioneer expands contiguous neutral land');
 buildings.push({type:'barracks',x:24,y:24,progress:1});workers.push({id:12,x:25.5,y:26.5,phase:'idle',t:0});
 const soldier=s.recruit('swordsman');assert.equal(resources.swords,1);
 const tower={type:'tower',x:32,y:30,progress:1,owner:2,hp:12};buildings.push(tower);
+const nearby={id:901,x:31,y:30,unit:'archer',owner:1,phase:'guard'},faraway={id:902,x:20,y:20,unit:'swordsman',owner:1,phase:'guard'};
+assert.deepEqual(nearestTowerSoldiers([faraway,nearby],tower,1).map(w=>w.id),[901],'nearest eligible soldier is sent to a tower first');
 selected.clear();selected.add(soldier.id);s.command(tower);for(let i=0;i<500;i++)s.tickWorker(soldier,.1);
 assert.equal(tower.owner,1,'tower captured');assert.equal(tower.garrison,1,'swordsman occupies tower');
 assert.equal(s.ownerAt(39,30),1,'occupied tower projects territory');s.release(tower);assert.equal(tower.garrison,0);assert.equal(soldier.phase,'guard');
+const autoTower={type:'tower',x:Math.floor(soldier.x)+3,y:Math.floor(soldier.y),progress:1,owner:2,hp:100};buildings.push(autoTower);s.tickWorker(soldier,.1);assert.equal(soldier.order?.building,buildings.indexOf(autoTower),'nearby enemy tower is attacked automatically');
+selected.clear();selected.add(soldier.id);assert.ok(s.command({x:25,y:27}));assert.equal(soldier.autoTower,undefined,'manual destination cancels automatic tower attack');assert.equal(soldier.order.building,-1);autoTower.owner=1;Object.assign(soldier,{phase:'guard',route:null,order:null});
 const enemy={id:99,x:soldier.x+.5,y:soldier.y,unit:'swordsman',owner:2,hp:10,phase:'guard'};workers.push(enemy);s.tickWorker(soldier,1.3);assert.equal(enemy.dead,true,'melee damages and kills an enemy');
 // Inputs must physically arrive before smelting can proceed.
 const smelter={type:'smelter',x:27,y:25,progress:1};buildings.push(smelter);

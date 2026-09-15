@@ -35,6 +35,7 @@ export const extraBuildings = {
   weaponsmith:['Weaponsmith','swords'],bowmaker:['Bow maker','bows'],barracks:['Barracks',null],
 };
 export function facing8(dx,dy){return (Math.round(Math.atan2((dx+dy)*.5,dx-dy)/(Math.PI/4))+8)%8;}
+export function nearestTowerSoldiers(workers,tower,count,owner=1){return workers.filter(w=>!w.dead&&(w.owner||1)===owner&&['swordsman','archer'].includes(w.unit)&&w.garrisonIndex===undefined&&w.phase==='guard').sort((a,b)=>Math.hypot(a.x-tower.x,a.y-tower.y)-Math.hypot(b.x-tower.x,b.y-tower.y)).slice(0,Math.max(0,count));}
 export function createStrategy(api){
   const {workers,buildings,terrain,trees,rocks,routeTo,entrance,followRoute,toast}=api;
   const state={version:1,claims:[],deposits:[],projectiles:[],initialized:false};
@@ -108,6 +109,7 @@ export function createStrategy(api){
     let issued=0;
     chosen.forEach((w,i)=>{
       if(!targets)delete w.patrol;
+      delete w.autoTower;
       if(append&&(w.manualTarget||!['idle','guard'].includes(w.phase))){w.waypoints??=[];if(w.waypoints.length<32){w.waypoints.push({x:g.x,y:g.y});issued++;}return;}
       if(spreading&&isMilitary(w)&&!spread.has(w.id))return;
       let target=spread?.get(w.id)?.point||(b?entrance(b):{x:g.x+.5+(i%3)*.15,y:g.y+.5+Math.floor(i/3)*.15});
@@ -155,6 +157,10 @@ export function createStrategy(api){
       w.t=(w.t||0)+dt;w.cooldown=Math.max(0,(w.cooldown||0)-dt);
       if(w.autoWork&&w.workArea&&w.phase==='guard'){w.workRetry=(w.workRetry||0)-dt;if(w.workRetry<=0){if(w.unit==='pioneer')nextPioneer(w);if(w.unit==='geologist')nextSurvey(w);}}
       if(w.unit==='medic'&&heal(w,dt))return true;
+      if(['swordsman','archer'].includes(w.unit)&&w.phase==='guard'&&w.combatStance!=='march'&&!w.raid){
+        const target=buildings.filter(b=>b.type==='tower'&&b.progress>=1&&(b.owner||1)!==(w.owner||1)&&(!api.isVisible||api.isVisible(b.x,b.y))&&dist(w,b)<=7).sort((a,b)=>dist(w,a)-dist(w,b)).find(b=>{const p=entrance(b);return p&&routeTo(w,p);});
+        if(target){const p=entrance(target),route=routeTo(w,p);Object.assign(w,{route,routeIndex:0,phase:'command',order:{x:target.x,y:target.y,building:buildings.indexOf(target)},wait:0,autoTower:true});}
+      }
       const enemy=isMilitary(w)&&w.combatStance!=='march'&&w.raid?.stage!=='return'&&!['retreat','withdraw'].includes(w.tactics?.mode)?workers.find(o=>alive(o)&&isMilitary(o)&&(o.owner||1)!==(w.owner||1)&&o.garrisonIndex===undefined&&dist(w,o)<(w.unit==='archer'?4:1.4)):null;
       if(enemy){if(!w.cooldown){api.onEvent?.(w.unit==='archer'?'bow':'hit',w);const damage=(w.unit==='archer'?7:w.unit==='medic'?4:10)*(1+((w.rank||1)-1)*.4);if(w.unit==='archer')state.projectiles.push({x:w.x,y:w.y,fromX:w.x,fromY:w.y,targetId:enemy.id,owner:w.owner||1,damage,age:0});else damageUnit(enemy,damage);w.cooldown=1.2;w.direction=facing8(enemy.x-w.x,enemy.y-w.y);}return true;}
       if(w.phase==='patrol'){if(followRoute(w,dt)){w.phase='guard';w.route=null;}return true;}
@@ -165,7 +171,7 @@ export function createStrategy(api){
         if(isMilitary(w)&&b?.type==='hospital'&&own(b)){
           if(w.hp>=maxHealth(w)){w.phase='guard';w.order=null;toast('Soldat vollständig genesen');}return true;
         }else if(['swordsman','archer'].includes(w.unit)&&b?.type==='tower'){
-          if((b.owner||1)!==(w.owner||1)){if(w.unit!=='swordsman'||w.combatStance==='march'){w.phase='guard';w.order=null;return true;}if(fightTowerDefender(w,b,{workers,buildings,damage:damageUnit,onEvent:api.onEvent}))return true;if(w.combatStance==='march'){w.phase='guard';w.order=null;return true;}if(w.wait>=1.2){b.hp=(b.hp??100)-12;w.wait=0;if(b.hp<=0){b.owner=w.owner||1;b.hp=100;b.garrison=0;api.onEvent?.('capture',b);toast('Outpost captured');recalculate();}}}
+          if((b.owner||1)!==(w.owner||1)){if(w.combatStance==='march'){w.phase='guard';w.order=null;delete w.autoTower;return true;}if(fightTowerDefender(w,b,{workers,buildings,damage:damageUnit,onEvent:api.onEvent}))return true;if(w.wait>=1.2){b.hp=(b.hp??100)-(w.unit==='archer'?6:12);w.wait=0;if(b.hp<=0){b.owner=w.owner||1;b.hp=100;b.garrison=0;delete w.autoTower;api.onEvent?.('capture',b);toast('Outpost captured');recalculate();}}}
           else {if((b.garrison||0)>=towerCapacity){w.phase='guard';w.order=null;toast('Turm voll: maximal '+towerCapacity+' Soldaten');return true;}b.garrison=(b.garrison||0)+1;w.garrisonIndex=buildings.indexOf(b);w.phase='garrison';recalculate();}
         }else if(w.unit==='geologist'){
           w.surveyStatus='Untersucht Boden · '+Math.min(100,Math.floor(w.wait/4*100))+' %';

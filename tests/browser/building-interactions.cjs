@@ -7,7 +7,13 @@ for(const mobile of [false,true]){
  await page.locator('#open-title-saves').click();await page.locator('#title-import-save').setInputFiles('/Users/eliaspfeffer/Downloads/new-shores-spielstand 2.json');await page.locator('#resume-button').click();
  if(await page.locator('#dismiss-quest').isVisible())await page.locator('#dismiss-quest').click();
  const clickBuilding=async type=>{const p=await page.evaluate(type=>{const b=__newShores.buildings.find(b=>b.type===type&&(b.owner||1)===1),c=__newShores.camera;c.zoom=1;c.x=innerWidth*.6-(b.x-b.y)*44;c.y=innerHeight*.65-(b.x+b.y+1)*22;return{x:innerWidth*.6,y:innerHeight*.65-35};},type);await page.mouse.click(p.x,p.y);};
- await clickBuilding('woodcutter');const menu=page.locator('#building-settings-dialog');await menu.waitFor({state:'visible'});await page.mouse.click(3,3);await menu.waitFor({state:'hidden'});
+ const menu=page.locator('#building-settings-dialog');await clickBuilding('woodcutter');assert.equal(await menu.isVisible(),false);
+ for(const label of ['Abriss','Anhalten','Arbeitsbereich'])await page.locator('.thumb-actions [aria-label="'+label+'"]').waitFor({state:'visible'});
+ assert.equal(await page.locator('.thumb-actions .thumb-button').count(),3,'simple building exposes its actions directly');
+ const commandSizes=await page.locator('.thumb-left,.thumb-actions .thumb-button,.thumb-mail'+(mobile?'':',.thumb-map-toggle')).evaluateAll(es=>es.map(e=>Math.round(e.getBoundingClientRect().width)));assert.equal(new Set(commandSizes).size,1,'all primary command medallions have one size');
+ const labelCenters=await page.locator('.thumb-actions .thumb-button small').evaluateAll(es=>es.map(e=>Math.round(e.getBoundingClientRect().x+e.getBoundingClientRect().width/2)));assert.equal(new Set(labelCenters).size,3,'each direct action keeps its own readable label');
+ await page.screenshot({path:'/tmp/direct-building-buttons-'+mobile+'.png'});
+ await clickBuilding('barracks');assert.equal(await menu.isVisible(),false);await page.locator('.thumb-actions [aria-label="Krieger rekrutieren"]').click();await page.locator('#thumb-sheet').waitFor({state:'visible'});await page.mouse.click(3,3);await page.locator('#thumb-sheet').waitFor({state:'hidden'});
  await clickBuilding('tower');await page.locator('#tower-quick-actions').waitFor({state:'visible'});assert.equal(await menu.isVisible(),false);
  assert.match(await page.locator('#building-map-card p').innerText(),/\d+ \/ \d+ Soldaten/);
  await page.screenshot({path:'/tmp/tower-bubble-'+mobile+'.png'});
@@ -16,6 +22,6 @@ for(const mobile of [false,true]){
  await page.locator('#pause-button').click();await page.locator('#pause-modal').getByRole('button',{name:'Spielstände',exact:true}).click();
  while(!await page.locator('#open-pause-saves').isVisible())await page.locator('#pause-modal').getByRole('button',{name:'Weitere →',exact:true}).click();
  await page.locator('#open-pause-saves').click();await page.screenshot({path:'/tmp/friendly-saves-'+mobile+'.png'});assert.deepEqual(errors,[]);
- console.log('PASS direct building click, backdrop dismissal, tower bubble and save library '+mobile);await page.close();
+ console.log('PASS direct building actions, complex submenu dismissal, tower bubble and save library '+mobile);await page.close();
 }
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

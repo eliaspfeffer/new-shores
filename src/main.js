@@ -25,7 +25,7 @@ function createThumbAPI(){
     release:b=>{strategy.release(b);updateHud();save();},
     towerSpace:b=>Math.max(0,strategy.towerCapacity-(b.garrison||0)-ownWorkers().filter(w=>w.order?.building===buildings.indexOf(b)&&w.garrisonIndex===undefined&&w.phase==='command').length),
     fillTower:b=>{const i=buildings.indexOf(b),pending=ownWorkers().filter(w=>w.order?.building===i&&w.garrisonIndex===undefined).length;
-      const candidates=ownWorkers().filter(w=>['swordsman','archer'].includes(w.unit)&&w.garrisonIndex===undefined&&w.phase==='guard').slice(0,Math.max(0,strategy.towerCapacity-(b.garrison||0)-pending));
+      const candidates=nearestTowerSoldiers(ownWorkers(),b,strategy.towerCapacity-(b.garrison||0)-pending);
       if(!candidates.length)return toast('Keine freien Soldaten oder Turm bereits besetzt');strategy.command({x:b.x,y:b.y},false,candidates);updateHud();save();},
     buildStatus:b=>{if(!buildings.includes(b))return 'Gebäude nicht mehr vorhanden';if(b.type==='tower'){const i=buildings.indexOf(b),inside=ownWorkers().filter(w=>w.garrisonIndex===i),incoming=ownWorkers().filter(w=>w.order?.building===i&&w.garrisonIndex===undefined);return 'Besatzung: '+inside.length+' / '+strategy.towerCapacity+' · Unterwegs: '+incoming.length;}
       if(housingCapacity(b))return housingCapacity(b)+' Wohnplätze · '+(b.spawnRemaining||0)+' Siedler ziehen noch aus';
@@ -86,7 +86,7 @@ import {createWorkforce} from './workforce.js';
 import {createExploration} from './exploration.js';
 import {goodsOrder,goodsNames,buildingNames,hasVisibleCargo,cargoPose,createGoodsArt} from './goods.js';
 import {findPath, keyOf, roadStage, walkSpeed} from './navigation.js';
-import {createStrategy, recipes, extraBuildings, facing8} from './strategy.js';
+import {createStrategy, recipes, extraBuildings, facing8, nearestTowerSoldiers} from './strategy.js';
 import {wheelAction,demolitionRefund} from './interaction.js';
 import {housingCapacity,finishHousing,updateHousing} from './housing.js';
 import {buildingClearance,groundDeposit} from './build-space.js';
@@ -498,7 +498,7 @@ document.querySelector('#release-garrison').onclick=()=>{strategy.release(inspec
 const focusSelect=document.querySelector('#transport-focus');focusSelect.innerHTML=[...new Set(['planks','stone','wood',...toolTypes,...Object.values(recipes).map(r=>r.output)])].map(k=>`<option value="${k}">${goodsNames[k]||k}</option>`).join('');focusSelect.onchange=e=>{priorityOrder=[e.target.value,...priorityOrder.filter(k=>k!==e.target.value)];toast((goodsNames[e.target.value]||e.target.value)+' beim Transport bevorzugt');updateHud();save();};
 function hitBuilding(p){const g=screenToGrid(p.x,p.y);const targets=buildings.filter(b=>(b.owner||1)===1||exploration.sees(b.x,b.y));return [...targets].sort((a,b)=>(b.x+b.y)-(a.x+a.y)).find(b=>{const q=iso(b.x+.5,b.y+.5),size=(b.type==='tower'?96:116)*camera.zoom;return Math.abs(p.x-q.x)<size*.36&&p.y>=q.y-size*.73&&p.y<=q.y+size*.05;})||targets.find(b=>b.x===g.x&&b.y===g.y);}
 function inspectAt(p,add=false){
-  const b=hitBuilding(p);if(b){inspect(b);if((b.owner||1)===1&&b.type!=='tower')buildingSettings?.open();return;}
+  const b=hitBuilding(p);if(b){inspect(b);return;}
   const candidates=workers.filter(w=>!w.dead&&w.garrisonIndex===undefined&&exploration.sees(w.x,w.y)).map(w=>({w,p:iso(w.x,w.y)})).filter(o=>Math.hypot(o.p.x-p.x,o.p.y-12*camera.zoom-p.y)<17).sort((a,b)=>Math.hypot(a.p.x-p.x,a.p.y-12*camera.zoom-p.y)-Math.hypot(b.p.x-p.x,b.p.y-12*camera.zoom-p.y));
   if(candidates.length){const w=candidates[0].w;if(!add)selectedWorkers.clear();if((w.owner||1)===1){if(add&&selectedWorkers.has(w.id))selectedWorkers.delete(w.id);else selectedWorkers.add(w.id);}inspectedWorker=w.id;inspectedBuilding=null;settingArea=false;document.querySelector('#info-panel').classList.add('hidden');toast(`${w.unit||w.role||'Settler'} selected. Click clear ground to move; busy workers finish their delivery first.`);return;}
   const tile=screenToGrid(p.x,p.y),pile=groundGoods?.at(tile.x,tile.y);if(pile&&!selectedWorkers.size&&exploration.sees(tile.x,tile.y)){toast('Bergungswaren: '+refundText(pile.goods)+' · Freie Träger holen erreichbare Waren im eigenen Gebiet ab.');return;}
@@ -666,7 +666,7 @@ function initDetails(){
   const find=document.createElement('button');find.id='find-geologist';find.textContent='Geologen finden & auswählen';find.onclick=()=>{const geologists=workers.filter(w=>w.unit==='geologist'&&!w.dead&&(w.owner||1)===1);selectedWorkers.clear();for(const w of geologists)selectedWorkers.add(w.id);if(geologists.length){const p=iso(geologists[0].x,geologists[0].y);camera.x+=innerWidth/2+100-p.x;camera.y+=innerHeight/2-p.y;selectedTool='inspect';}updateUnitStatus();};units.after(find);
   operationsUI=initOperationsUI({strategy,workers,buildings,names:unitNames,journal,building:()=>inspectedBuilding,save,notify:toast,
     buildingName:b=>buildingNames[b.type]||b.type,buildingStatus:b=>buildingContext(b,resources,workforce.status(b)).status,
-    focusBuilding:b=>{document.querySelector('#resume-button').click();inspect(b);const p=iso(b.x+.5,b.y+.5);camera.x+=innerWidth/2-p.x;camera.y+=innerHeight*.65-p.y;if(b.type!=='tower')buildingSettings?.open();},
+    focusBuilding:b=>{document.querySelector('#resume-button').click();inspect(b);const p=iso(b.x+.5,b.y+.5);camera.x+=innerWidth/2-p.x;camera.y+=innerHeight*.65-p.y;},
     focus:w=>{document.querySelector('#pause-modal').classList.add('hidden');paused=false;const b=w.garrisonIndex!==undefined?buildings[w.garrisonIndex]:null,p=iso(b?b.x+.5:w.x,b?b.y+.5:w.y);camera.x+=innerWidth/2-p.x;camera.y+=innerHeight/2-p.y;selectedWorkers.clear();settingArea=false;commandMode=false;selectedTool='inspect';if(b)inspect(b);else{selectedWorkers.add(w.id);inspectedWorker=w.id;inspectedBuilding=null;document.querySelector('#info-panel').classList.add('hidden');document.documentElement.classList.remove('mobile-panel');}updateHud();}
   });
   initAudioControls(sound);

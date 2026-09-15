@@ -1,5 +1,9 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag: einheitliche große Befehlsmedaillons
+
+15. September 2026: Die vier vom Nutzer angehängten aktuellen UI-Ausschnitte und die bereits dokumentierten Gameloft-Handybilder wurden direkt als Größen-, Anordnungs- und Kontrastreferenz verwendet. Nachrichten, Karte, Eckbefehle und Kontextaktionen verwenden nun dieselbe große Medaillongröße mit separaten, kontrastreichen Pergamentbeschriftungen. Einfache Gebäude öffnen keinen Einstellungsdialog mehr; ihre maximal drei Aktionen stehen zusammen mit „Auswahl aufheben“ unten links. Nur die Kaserne und Werkzeugschmiede öffnen über Rekrutieren beziehungsweise Herstellen ein Untermenü. Vorhandene eigene Befehlsmedaillons wurden skaliert; keine Originalgrafik wurde kopiert und keine neue Rastergrafikfamilie eingeführt.
+
 ## Nachtrag: direkte Turmsteuerung und Kohlekarren
 
 15. September 2026: Nutzerreferenzen der Gameloft-Handyfassung erneut als UI-Vorlage genutzt: schwebende Turm-Sprechblase, Rundknöpfe, helle Menüs. Desktop und Touch verwenden nun dieselben unteren Befehle, aber weiterhin getrennte Eingabe-/Renderereinstellungen. Spielstand- und Siedlungsübersicht erhalten Pergamentoberflächen. Turmdächer zeigen vorhandene eigene Soldatensprites entsprechend der Besatzung. Kein neuer Original-Turm-Assetvergleich und kein Architekturtausch.

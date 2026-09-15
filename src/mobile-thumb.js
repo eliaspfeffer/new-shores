@@ -97,9 +97,17 @@ export function initThumbUI(mobile,api){
     if(mode==='units'){caption.textContent='Siedler';setCorner(right,'Abbrechen','×',clear);add('Alle Militäreinheiten','⚔',()=>{api.select(api.workers().filter(w=>api.military(w)&&w.garrisonIndex===undefined),false);page='map';lastContext='';});add('Siedler finden','⌕',()=>findUnits());add('Grundberufe',api.good('hammer'),basicJobs);add('Spezialisten anwerben','♟+',specialists);}
     if(mode==='selected'){caption.textContent=selected.length+' Siedler ausgewählt';setCorner(left,'Auswahl aufheben','✋',clear);setCorner(right,'Siedlermenü','♟',()=>{api.clear();page='units';lastContext='';});add('Markieren','⌗',()=>{mobile.select=!mobile.select;lastContext='';});add('Ziel zuweisen','➜',()=>invoke('move-units'));add('Halt','■',()=>invoke('halt-units'));if(selected.some(w=>['pioneer','geologist'].includes(w.unit)))add('Zum Träger','➜♟',()=>{api.returnSpecialists();lastContext='';});}
     if(mode==='building'){
-      caption.textContent=api.buildName(b.type);setCorner(left,'Auswahl aufheben','✋',clear);setCorner(right,'Details','➜',()=>buildingDetails(b));
-      if(b.type==='tower'){right.hidden=true;return;}
-      if(b.type!=='storehouse'){add('Abriss','✹',()=>invoke('demolish-building'));if(b.type==='tower'){add('Soldaten heraus','⇩',()=>api.release(b),!b.garrison||b.progress<1);add('Soldaten hinein','⇧',()=>api.fillTower(b),api.towerSpace(b)===0||b.progress<1);add('Besatzung','♟',()=>buildingDetails(b));}else{add(b.stopped?'Fortsetzen':'Anhalten',b.stopped?'▶':'Ⅱ',()=>invoke('production-toggle'));if(b.type==='barracks')add('Krieger rekrutieren','⚔',()=>military(b));else if(b.type==='toolsmith')add('Werkzeuge anfordern',api.good('hammer'),()=>tools(b));else if(['woodcutter','quarry','forester'].includes(b.type))add('Arbeitsbereich','◎',()=>invoke('area-toggle'));else add(b.priority?'Priorität: hoch':'Priorität: normal','↑',()=>invoke('priority-toggle')).setAttribute('aria-pressed',String(Boolean(b.priority)));}}
+      caption.textContent=api.buildName(b.type)+' · '+api.buildStatus(b);setCorner(left,'Auswahl aufheben','✋',clear);right.hidden=true;
+      if(b.type==='tower')return;
+      if(b.type!=='storehouse'){
+        add('Abriss','✹',()=>invoke('demolish-building'));
+        const productive=!['house','largehouse'].includes(b.type);
+        if(productive)add(b.stopped?'Fortsetzen':'Anhalten',b.stopped?'▶':'Ⅱ',()=>invoke('production-toggle'));
+        if(b.type==='barracks')add('Krieger rekrutieren','⚔',()=>military(b));
+        else if(b.type==='toolsmith')add('Werkzeuge herstellen',api.good('hammer'),()=>tools(b));
+        else if(['woodcutter','quarry','forester'].includes(b.type))add('Arbeitsbereich','◎',()=>invoke('area-toggle'));
+        else if(productive)add(b.priority?'Priorität: hoch':'Priorität: normal','↑',()=>invoke('priority-toggle')).setAttribute('aria-pressed',String(Boolean(b.priority)));
+      }
     }
     if(mode==='placement'){caption.textContent=pendingReason||api.buildName(state.tool)+' · Bauplatz bestätigen';setCorner(left,'Bau bestätigen','✓',()=>{if(mobile.pendingSite)api.place(mobile.pendingSite);lastContext='';refresh(true);});left.disabled=Boolean(pendingReason);setCorner(right,'Bau abbrechen','×',clear);}
   }
