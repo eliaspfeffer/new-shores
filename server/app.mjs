@@ -100,6 +100,12 @@ export async function createApp({pool,origin,origins=[origin],secure=true}){
       const relative=decodeURIComponent(path==='/'?'/index.html':path);const file=resolve(root,'.'+relative);if(!file.startsWith(root+'/'))throw fail(404,'Nicht gefunden.');
       let info;try{info=await stat(file);}catch{throw fail(404,'Nicht gefunden.');}if(!info.isFile())throw fail(404,'Nicht gefunden.');
       const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.mp3':'audio/mpeg'};
+      // Opt-in framing for the public game only. API responses and ordinary
+      // pages retain DENY; no CORS, session-cookie or CSRF policy is relaxed.
+      if((path==='/'||path==='/index.html')&&url.searchParams.get('embed')==='whip'){
+        res.removeHeader('X-Frame-Options');
+        res.setHeader('Content-Security-Policy',res.getHeader('Content-Security-Policy').replace("frame-ancestors 'none'","frame-ancestors https://whip.run"));
+      }
       res.writeHead(200,{'Content-Type':types[extname(file)]||'application/octet-stream','Cache-Control':/\/assets\/.+-[\w-]{8,}\.[\w]+$/.test(path)?'public, max-age=31536000, immutable':'no-cache'});res.end(req.method==='HEAD'?undefined:await readFile(file));
     }catch(e){if(!res.headersSent)json(e.status||(['23505'].includes(e.code)?409:500),{error:e.status?e.message:e.code==='23505'?'Eintrag bereits vorhanden.':'Anfrage fehlgeschlagen. Bitte erneut versuchen.'});else res.end();}
   });
