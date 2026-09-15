@@ -25,6 +25,7 @@ export function initOperationsUI(api){
   const reserveInput=reserve.querySelector('input');reserveInput.onchange=()=>{if(reserveInput.value===''||!strategy.armyOrders.reserve(Number(reserveInput.value)))api.notify('Trägerreserve: ganze Zahl von 0 bis 50');else api.save();reserveInput.value=strategy.state.carrierReserve||0;};
   const dialog=document.createElement('dialog');dialog.id='operations-dialog';dialog.innerHTML='<header><h2>Siedlungsübersicht</h2><button id="close-operations">Schließen ×</button></header><label>Ansicht<select id="operations-view"><option value="army">Armee</option><option value="idle">Untätige Arbeiter & Spezialisten</option><option value="journal">Meldungsjournal</option></select></label><div id="operations-list"></div>';document.body.append(dialog);
   dialog.addEventListener('keydown',e=>e.stopPropagation());dialog.querySelector('#close-operations').onclick=()=>dialog.close();
+  const economyOption=document.createElement('option');economyOption.value='economy';economyOption.textContent='Betriebe & Engpässe';dialog.querySelector('#operations-view').append(economyOption);
   dialog.querySelector('#operations-view').onchange=()=>{lastList='';refreshOverview();};
   function open(view){dialog.querySelector('#operations-view').value=view;lastList='';refreshOverview();dialog.showModal();}
   for(const [id,label,view] of [['open-army','Armeeübersicht','army'],['find-idle','Untätige Siedler finden','idle'],['open-journal','Meldungsjournal','journal']]){
@@ -34,6 +35,10 @@ export function initOperationsUI(api){
   const mail=document.createElement('button');mail.id='desktop-mail';mail.setAttribute('aria-label','Nachrichten');mail.innerHTML=commandArt('✉');mail.onclick=()=>open('journal');document.querySelector('#game-screen').append(mail);
   function refreshOverview(){
     const view=dialog.querySelector('#operations-view').value,list=dialog.querySelector('#operations-list');
+    if(view==='economy'){
+      const entries=buildings.filter(b=>(b.owner||1)===1),signature=JSON.stringify(entries.map(b=>[b.type,b.x,b.y,api.buildingStatus?.(b)]));if(signature===lastList)return;lastList=signature;list.replaceChildren();
+      for(const b of entries){const row=document.createElement('div');row.className='operations-row';const button=document.createElement('button');button.textContent=(api.buildingName?.(b)||b.type)+' · '+(api.buildingStatus?.(b)||'');button.onclick=()=>{dialog.close();api.focusBuilding?.(b);};row.append(button);list.append(row);}return;
+    }
     const entries=view==='journal'?api.journal.list().slice().reverse():workers.filter(w=>!w.dead&&(w.owner||1)===1&&(view==='army'?strategy.isMilitary(w):freeCarrier(w)||['geologist','pioneer'].includes(w.unit)&&w.phase==='guard'&&!w.autoWork));
     const signature=JSON.stringify([view,entries.map(w=>view==='journal'?w:[w.id,w.unit,w.hp,w.phase,w.garrisonIndex])]);if(signature===lastList)return;lastList=signature;list.replaceChildren();
     if(!entries.length){const p=document.createElement('p');p.textContent=view==='journal'?'Noch keine Meldungen.':'Keine passenden Einheiten.';list.append(p);}

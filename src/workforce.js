@@ -12,7 +12,9 @@ export function createWorkforce(api){
     for(const w of workers){if(w.employerIndex===undefined)continue;const b=buildings[w.employerIndex];
       if(w.dead){if(b?.workerId===w.id)delete b.workerId;if(b)b.outputInTransit=false;delete w.employerIndex;continue;}
       if(w.waypoints?.length&&['fieldWait','staffWait'].includes(w.phase)){release(w);continue;}
-      if(!valid(b)||w.manualTarget){release(w);continue;}
+      if(!b||(b.owner||1)!==1||b.progress<1||w.manualTarget){release(w);continue;}
+      // Pausing a workshop does not turn its specialist back into a carrier.
+      if(b.stopped)continue;
       w.t=(w.t||0)+dt;
       if(w.phase==='staffTravel'&&followRoute(w,dt)){w.phase=api.moveInside?'staffWait':'staffWork';w.route=null;}
       else if(!['staffWork','staffTravel','staffWait','staffEnter','staffExit'].includes(w.phase)&&!w.phase.startsWith('field')){release(w);continue;}
@@ -37,5 +39,5 @@ export function createWorkforce(api){
   }
   function beforeDemolish(index){for(const w of workers){if(w.employerIndex===index)release(w,false);else if(w.employerIndex>index)w.employerIndex--;}}
   function status(b){const w=workers.find(w=>!w.dead&&w.employerIndex===buildings.indexOf(b));return !w?'Kein Facharbeiter / Werkzeug':w.phase==='fieldTravel'?'Unterwegs zum Arbeitsort':w.phase==='fieldReturn'?'Kehrt zum Betrieb zurück':w.phase==='fieldWork'?({chop:'Fällt einen Baum',quarry:'Baut Stein ab',sow:'Sät aus',harvest:'Erntet Getreide',plant:'Pflanzt einen Baum',fish:'Angelt am Ufer'}[w.outdoorJob?.kind]||'Arbeitet draußen'):w.phase==='fieldWait'?'Wartet auf Ernte, freien Arbeitsort oder Abholung':w.phase==='staffTravel'?'Facharbeiter unterwegs':w.phase==='staffEnter'?'Bringt Vorräte an den Arbeitsplatz':w.phase==='staffExit'?'Bringt Waren zum Ausgang':w.phase==='staffWait'?'Facharbeiter wartet am Eingang':'Facharbeiter arbeitet';}
-  return {update,hasStaff,beforeDemolish,release,status};
+  return {update,hasStaff,beforeDemolish,release,status(b){const w=workers.find(w=>!w.dead&&w.employerIndex===buildings.indexOf(b));if(b.stopped&&w)return 'Betrieb angehalten; Facharbeiter bleibt zugeordnet';if(w?.phase==='fieldWait'&&api.outdoor?.status)return api.outdoor.status(w,b);return status(b);}};
 }

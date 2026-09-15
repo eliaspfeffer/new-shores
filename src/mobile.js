@@ -1,10 +1,17 @@
 import './mobile.css';
+import './desktop-thumb.css';
 import {initThumbUI} from './mobile-thumb.js';
 import {touchLayout} from './device-mode.js';
 export const mobile={enabled:touchLayout({search:location.search,coarse:matchMedia('(pointer:coarse)').matches,hover:matchMedia('(hover:hover)').matches,maxTouchPoints:navigator.maxTouchPoints}),select:false};
 document.documentElement.classList.toggle('mobile',mobile.enabled);
 export function initMobile({panel,reset,zoom,save,center,context,thumbApi}){
-  if(!mobile.enabled)return;
+  if(!mobile.enabled){
+    document.documentElement.classList.add('desktop-thumb');
+    const game=document.querySelector('#game-screen'),top=document.createElement('div');top.id='mobile-resources';top.append(document.querySelector('.resource-bar'));game.append(top);
+    game.append(document.querySelector('.sidebar-map'));
+    initThumbUI(mobile,thumbApi);
+    return;
+  }
   const game=document.querySelector('#game-screen'),sidebar=document.querySelector('#command-sidebar');
   const bar=document.createElement('nav');bar.id='mobile-controls';bar.setAttribute('aria-label','Touch-Befehle');
   bar.innerHTML='<button data-panel="build"><span>⌂</span>Bauen</button><button data-panel="units"><span>♟</span>Siedler</button><button id="touch-select" aria-pressed="false"><span>⌗</span>Markieren</button><button id="touch-move"><span>➜</span>Ziel</button><button id="touch-stop"><span>■</span>Halt</button><button data-panel="goods"><span>▰</span>Waren</button><button data-panel="economy"><span>⚒</span>Betriebe</button>';

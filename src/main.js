@@ -2,6 +2,7 @@ import {mobile,initMobile,initOffline} from './mobile.js';
 import './comic-menu.css';
 import {initTitleMenu} from './title-menu.js';
 import {initPauseMenu} from './pause-menu.js';
+import {commandArt} from './command-art.js';
 import {createSettlerSpacing} from './settler-spacing.js';
 
 function createThumbAPI(){
@@ -93,6 +94,7 @@ import {lostCivilianBuildings,collapseCivilian} from './conquest-losses.js';
 const directionAtlas=new Image();directionAtlas.src=new URL('../assets/workers-directions-v1.png',import.meta.url).href;
 const industryAtlas=new Image();industryAtlas.src=new URL('../assets/industry-strategy-v1.png',import.meta.url).href;
 const specialistAtlas=new Image();specialistAtlas.src=new URL('../assets/specialists-directions-v1.png',import.meta.url).href;
+const minerCartAtlas=new Image();minerCartAtlas.src=new URL('../assets/miner-carts-v1.png',import.meta.url).href;
 const canvas = document.querySelector('#world');
 const ctx = canvas.getContext('2d');
 const grassTexture=new Image();grassTexture.src=new URL('../assets/grass-reference-v2.png',import.meta.url).href;
@@ -280,7 +282,7 @@ function drawDetail(o){const p=iso(o.x+.5,o.y+.5);const wet=hasWater(o),index=we
 function drawGroundPile(pile){if(!exploration.sees(pile.x,pile.y))return;const p=iso(pile.x+.5,pile.y+.5),z=camera.zoom;groundShadow(p,18);let slot=0;for(const [item,n] of Object.entries(pile.goods).slice(0,6)){for(let i=0;i<Math.min(n,3);i++){const x=p.x+((slot%3)-1)*14*z+i*2*z,y=p.y+Math.floor(slot/3)*9*z-i*3*z;goodsArt.draw(ctx,item,x,y,22*z);}slot++;}ctx.fillStyle='#29271de0';ctx.fillRect(p.x-13*z,p.y+20*z,26*z,13*z);ctx.fillStyle='#f7e5b9';ctx.font='bold '+Math.max(9,11*z)+'px sans-serif';ctx.textAlign='center';const total=pileTotal(pile);ctx.fillText(total>999?'999+':String(total),p.x,p.y+30*z);ctx.textAlign='start';}
 function buildingArt(b,p,size){if(b.type==='largehouse')return gridSprite(largehouseAtlas,2,0,3,1,p,size);if(b.type==='hospital')return gridSprite(hospitalAtlas,2,0,3,1,p,size);const industryIndex=Object.keys(extraBuildings).indexOf(b.type);if(industryIndex>=0)return gridSprite(industryAtlas,industryIndex%4,Math.floor(industryIndex/4),4,4,p,size);const base={storehouse:3,warehouse:3,woodcutter:4,quarry:5,house:6,tower:7}[b.type];const extra={forester:0,sawmill:1,farm:2,mill:3,bakery:4,fisher:5}[b.type];if(base!==undefined)return drawSprite(base,p,size,b.type==='tower'?.88:.83);if(extra!==undefined)return atlasCell(economyAtlas,extra,p,size,size,.5,.84);return false}
 function buildingShape(b){const p=iso(b.x+.5,b.y+.5),z=camera.zoom;const size=b.type==='largehouse'?150:b.type==='tower'?96:116;if(b.progress<1){drawConstruction(b,p,size);return;}
-  groundShadow(p,b.type==='tower'?27:37);if(buildingArt(b,p,size))return;
+  groundShadow(p,b.type==='tower'?27:37);if(buildingArt(b,p,size)){if(b.type==='tower'){const count=Math.min(strategy.towerCapacity,b.garrison||0);for(let i=0;i<count;i++)gridSprite(directionAtlas,2,2,8,4,{x:p.x+((i%3)-1)*11*z,y:p.y-51*z+Math.floor(i/3)*7*z},16);}return;}
   const palettes={storehouse:['#dfc88e','#a34425'],woodcutter:['#a8733f','#63391f'],quarry:['#b8ad8e','#66594d'],house:['#ead29f','#b44729'],tower:['#aaa58f','#6d3824']};const c=palettes[b.type]||['#c9ad78','#6d4327'];
   if(b.type==='tower'){ctx.fillStyle=c[0];ctx.fillRect(p.x-15*z,p.y-48*z,30*z,48*z);ctx.fillStyle=c[1];ctx.beginPath();ctx.moveTo(p.x-22*z,p.y-48*z);ctx.lineTo(p.x,p.y-65*z);ctx.lineTo(p.x+22*z,p.y-48*z);ctx.closePath();ctx.fill();}
   else {ctx.fillStyle=c[0];ctx.fillRect(p.x-25*z,p.y-29*z,50*z,30*z);ctx.fillStyle=c[1];ctx.beginPath();ctx.moveTo(p.x-31*z,p.y-29*z);ctx.lineTo(p.x,p.y-52*z);ctx.lineTo(p.x+31*z,p.y-29*z);ctx.closePath();ctx.fill();ctx.fillStyle='#3a2418';ctx.fillRect(p.x-5*z,p.y-15*z,10*z,16*z);if(b.type==='woodcutter'){ctx.fillStyle='#a8793c';ctx.fillRect(p.x+24*z,p.y-6*z,27*z,5*z);}}
@@ -331,10 +333,15 @@ function pickTask(w){
 function deliveryAmount(item){return item==='food'?3:2}
 function followRoute(w,dt){const point=w.route?.[w.routeIndex];if(!point)return true;if(moveWorker(w,point.x,point.y,dt))w.routeIndex++;return w.routeIndex>=w.route.length}
 const spaceSettlers=createSettlerSpacing({workers,terrain,blocked:obstacles,move:moveWorker});
+function directConsumer(w){
+  const pending=new Map();for(const o of workers)if(o!==w&&o.phase==='supply'&&o.carry===w.carry)pending.set(o.supplyIndex,(pending.get(o.supplyIndex)||0)+(o.carryAmount||1));
+  return buildings.map((b,i)=>({b,i})).filter(({b,i})=>b!==w.task&&(b.owner||1)===1&&!b.stopped&&(b.progress<1||b.productionRemaining!==0)&&((b.progress<1&&!b.materialsSpent?b.materials:productionInputs(b,recipes[b.type],resources))?.[w.carry]||0)>(b.buffer?.[w.carry]||0)+(pending.get(i)||0)).map(({b,i})=>({b,i,route:entrance(b)&&routeTo(w,entrance(b))})).filter(c=>c.route).sort((a,b)=>Number(Boolean(b.b.priority))-Number(Boolean(a.b.priority))||a.route.length-b.route.length)[0];
+}
 function updateWorkers(dt){
   for(const w of workers){
     if(groundGoods?.tick(w,dt))continue;
     if(w.employerIndex!==undefined)continue;
+    if(w.phase==='inbound'&&w.role==='carrier'&&w.carry){w.redirectCheck=(w.redirectCheck||0)-dt;if(w.redirectCheck<=0){w.redirectCheck=1;const target=directConsumer(w);if(target){Object.assign(w,{phase:'supply',supplyIndex:target.i,pickupEnd:0,route:target.route,routeIndex:0,task:null});delete w.storageIndex;}}}
     if(w.phase==='recoverCargo'){w.t=(w.t||0)+dt;if(!w.route){const home=entrance(buildings[0]);w.route=home&&routeTo(w,home);w.routeIndex=0;}if(w.route&&followRoute(w,dt)){resources[w.carry]=(resources[w.carry]||0)+(w.carryAmount||2);delete w.carryAmount;delete w.storageIndex;returnTool(resources,w.jobTool);delete w.jobTool;w.task=null;w.carry=null;w.route=null;w.phase='idle';updateHud();}continue;}
     if(strategy.tickWorker(w,dt))continue;
     if(groundGoods?.assign(w,dt))continue;
@@ -357,8 +364,7 @@ function updateWorkers(dt){
       if(w.gather){const list=w.gather.type==='woodcutter'?trees:rocks,index=list.findIndex(o=>o.x===w.gather.x&&o.y===w.gather.y);if(index>=0){if(w.gather.type==='woodcutter'){particles.push({...list[index],kind:'fall',life:1.5});audibleEvent('fall',list[index]);list.splice(index,1);}else if(--list[index].amount<=0)list.splice(index,1);w.carry=w.gather.type==='woodcutter'?'wood':'stone';if(w.task.productionRemaining>0)w.task.productionRemaining--;}w.gather=null;}
       const home=entrance(['woodcutter','quarry'].includes(w.role)?w.task:buildings[0]);w.route=home?routeTo(w,home):null;
       if(w.carry&&!['woodcutter','quarry'].includes(w.role)){
-        const consumers=buildings.map((b,i)=>({b,i})).filter(({b,i})=>b!==w.task&&(b.owner||1)===1&&b.progress>=1&&!b.stopped&&b.productionRemaining!==0&&productionInputs(b,recipes[b.type],resources)[w.carry]>(b.buffer?.[w.carry]||0)+workers.filter(o=>o!==w&&o.phase==='supply'&&o.supplyIndex===i&&o.carry===w.carry).reduce((n,o)=>n+(o.carryAmount||1),0)).map(({b,i})=>({b,i,route:entrance(b)&&routeTo(w,entrance(b))})).filter(c=>c.route).sort((a,b)=>Number(Boolean(b.b.priority))-Number(Boolean(a.b.priority))||a.route.length-b.route.length);
-        const consumer=consumers[0];if(consumer){Object.assign(w,{phase:'supply',role:'carrier',supplyIndex:consumer.i,pickupEnd:0,route:consumer.route,routeIndex:0,task:null});continue;}
+        const consumer=directConsumer(w);if(consumer){Object.assign(w,{phase:'supply',role:'carrier',supplyIndex:consumer.i,pickupEnd:0,route:consumer.route,routeIndex:0,task:null});continue;}
         const storage=chooseStorage(w,w.carry,buildings,entrance,routeTo);w.route=storage?.route||null;w.storageIndex=storage?.index??0;
       }
       if(!w.route){returnTool(resources,w.jobTool);delete w.jobTool;w.wait=0;w.task.ready=w.carry;w.carry=null;w.task=null;w.phase='idle';continue;}
@@ -425,6 +431,10 @@ const activity=workActivity(w,buildings,recipes,b=>strategy.depositFor(b),b=>Boo
   groundShadow(p,5);
   if(selectedWorkers.has(w.id)||inspectedWorker===w.id){ctx.strokeStyle=colorForOwner(w.owner,playerColor).light;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(p.x,p.y,10*z,5*z,0,0,Math.PI*2);ctx.stroke();}
   const cargo=hasVisibleCargo(w),pose=cargoPose(w),bob=moving?Math.sin((w.t||0)*10)*.7*z:0;
+  if(w.profession==='coalmine'&&w.employerIndex!==undefined&&['staffEnter','staffExit','staffWait','staffWork'].includes(w.phase)&&minerCartAtlas.complete&&minerCartAtlas.naturalWidth){
+    if(w.inside)return;const row=w.phase==='staffEnter'?1:0,col=w.workCarry==='coal'?1:0,s=48*z,sw=minerCartAtlas.naturalWidth/2,sh=minerCartAtlas.naturalHeight/2;
+    ctx.drawImage(minerCartAtlas,col*sw,row*sh,sw,sh,p.x-s/2,p.y-s*(row?.78:.89)+bob,s,s);return;
+  }
   const drawCargo=()=>goodsArt.draw(ctx,w.carry,p.x+pose.x*z,p.y+pose.y*z+bob,(w.carry==='wood'||w.carry==='planks'?24:18)*z,(w.direction??2)>=3&&(w.direction??2)<=5);
   if(cargo&&pose.behind)drawCargo();
   if(activity){p.y+=Math.sin((w.t||0)*5)*1.3*z;}
@@ -474,7 +484,7 @@ function render(){if(performance.now()-presentationRefresh>250){presentationRefr
   for(const d of strategy.state.deposits){if(!d.discovered||!exploration.seen(d.x,d.y))continue;const p=iso(d.x+.5,d.y+.5),z=camera.zoom;ctx.fillStyle='#735333';ctx.fillRect(p.x-2*z,p.y-20*z,3*z,22*z);ctx.fillStyle='#e5cd8c';ctx.fillRect(p.x-13*z,p.y-37*z,26*z,22*z);goodsArt.draw(ctx,d.type,p.x,p.y-27*z,22*z);ctx.fillStyle='#231e13';ctx.font='bold '+Math.max(9,11*z)+'px sans-serif';ctx.textAlign='center';ctx.fillText(String(d.amount),p.x,p.y-40*z);ctx.textAlign='start';}
   drawSpecialistArea();drawPatrolRoutes(ctx,workers,selectedWorkers,iso);drawFog();
 }
-function selectBox(box,add=false){const hits=workers.filter(w=>!w.dead&&(w.owner||1)===1&&w.garrisonIndex===undefined).filter(w=>{const p=iso(w.x,w.y);return p.x>=Math.min(box.a.x,box.b.x)&&p.x<=Math.max(box.a.x,box.b.x)&&p.y>=Math.min(box.a.y,box.b.y)&&p.y<=Math.max(box.a.y,box.b.y);});const preferred=hits.find(w=>strategy.isMilitary(w))?.unit||hits.find(w=>w.unit)?.unit;if(!add)selectedWorkers.clear();for(const w of hits)if(preferred?w.unit===preferred:!w.unit)selectedWorkers.add(w.id);toast(`${selectedWorkers.size} ${preferred||'workers'} selected`);}
+function selectBox(box,add=false){const hits=workers.filter(w=>!w.dead&&(w.owner||1)===1&&w.garrisonIndex===undefined&&exploration.sees(w.x,w.y)).filter(w=>{const p=iso(w.x,w.y);return p.x>=Math.min(box.a.x,box.b.x)&&p.x<=Math.max(box.a.x,box.b.x)&&p.y>=Math.min(box.a.y,box.b.y)&&p.y<=Math.max(box.a.y,box.b.y);});if(!add)selectedWorkers.clear();for(const w of hits)selectedWorkers.add(w.id);inspectedBuilding=null;toast(`${selectedWorkers.size} Siedler ausgewählt`);updateUnitStatus();}
 function drawSpecialistArea(){for(const w of workers){if(!selectedWorkers.has(w.id)||!w.autoWork||!w.workArea)continue;const a=w.workArea,p=iso(a.x+.5,a.y+.5),z=camera.zoom;ctx.save();ctx.strokeStyle=w.unit==='pioneer'?'#f4c75e99':'#a0d4e899';ctx.lineWidth=1.5;ctx.setLineDash([5,5]);ctx.beginPath();ctx.ellipse(p.x,p.y,a.radius*TILE_W*.707*z,a.radius*TILE_H*.707*z,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);if(w.workSite){const t=iso(w.workSite.x+.5,w.workSite.y+.5);ctx.beginPath();ctx.ellipse(t.x,t.y,9*z,4*z,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}}
 function legacyInspectAt(p){const candidate=workers.filter(w=>w.unit&&!w.dead&&w.garrisonIndex===undefined).find(w=>{const q=iso(w.x,w.y);return Math.hypot(q.x-p.x,q.y-12*camera.zoom-p.y)<16;});if(candidate){selectedWorkers.clear();if((candidate.owner||1)===1)selectedWorkers.add(candidate.id);inspectedWorker=candidate.id;document.querySelector('#info-panel').classList.add('hidden');toast(`${candidate.unit} · ${Math.ceil(candidate.hp)} HP${candidate.owner===2?' · enemy':' · right-click or tap destination'}`);return;}oldInspectAt(p);}
 function updateHud(){baseUpdateHud();checkBottlenecks();const rations=document.querySelector('#rations-count');if(rations)rations.textContent=(resources.bread||0)+(resources.fish||0)+(resources.meat||0);const stocks=document.querySelector('#strategy-stocks');if(stocks){const html='<strong>Hauptlager</strong>'+Object.entries(resources).filter(([k])=>!['people','beds','food'].includes(k)).map(([k,v])=>`<div class="stock-row">${goodIcon(k)}<span>${goodsNames[k]||k}</span><b>${Math.floor(v)}</b></div>`).join('');if(stocks.innerHTML!==html)stocks.innerHTML=html;}updateEconomyReport();updateUnitStatus();refreshBuildingContext();}
@@ -488,7 +498,7 @@ document.querySelector('#release-garrison').onclick=()=>{strategy.release(inspec
 const focusSelect=document.querySelector('#transport-focus');focusSelect.innerHTML=[...new Set(['planks','stone','wood',...toolTypes,...Object.values(recipes).map(r=>r.output)])].map(k=>`<option value="${k}">${goodsNames[k]||k}</option>`).join('');focusSelect.onchange=e=>{priorityOrder=[e.target.value,...priorityOrder.filter(k=>k!==e.target.value)];toast((goodsNames[e.target.value]||e.target.value)+' beim Transport bevorzugt');updateHud();save();};
 function hitBuilding(p){const g=screenToGrid(p.x,p.y);const targets=buildings.filter(b=>(b.owner||1)===1||exploration.sees(b.x,b.y));return [...targets].sort((a,b)=>(b.x+b.y)-(a.x+a.y)).find(b=>{const q=iso(b.x+.5,b.y+.5),size=(b.type==='tower'?96:116)*camera.zoom;return Math.abs(p.x-q.x)<size*.36&&p.y>=q.y-size*.73&&p.y<=q.y+size*.05;})||targets.find(b=>b.x===g.x&&b.y===g.y);}
 function inspectAt(p,add=false){
-  const b=hitBuilding(p);if(b){inspect(b);return;}
+  const b=hitBuilding(p);if(b){inspect(b);if((b.owner||1)===1&&b.type!=='tower')buildingSettings?.open();return;}
   const candidates=workers.filter(w=>!w.dead&&w.garrisonIndex===undefined&&exploration.sees(w.x,w.y)).map(w=>({w,p:iso(w.x,w.y)})).filter(o=>Math.hypot(o.p.x-p.x,o.p.y-12*camera.zoom-p.y)<17).sort((a,b)=>Math.hypot(a.p.x-p.x,a.p.y-12*camera.zoom-p.y)-Math.hypot(b.p.x-p.x,b.p.y-12*camera.zoom-p.y));
   if(candidates.length){const w=candidates[0].w;if(!add)selectedWorkers.clear();if((w.owner||1)===1){if(add&&selectedWorkers.has(w.id))selectedWorkers.delete(w.id);else selectedWorkers.add(w.id);}inspectedWorker=w.id;inspectedBuilding=null;settingArea=false;document.querySelector('#info-panel').classList.add('hidden');toast(`${w.unit||w.role||'Settler'} selected. Click clear ground to move; busy workers finish their delivery first.`);return;}
   const tile=screenToGrid(p.x,p.y),pile=groundGoods?.at(tile.x,tile.y);if(pile&&!selectedWorkers.size&&exploration.sees(tile.x,tile.y)){toast('Bergungswaren: '+refundText(pile.goods)+' · Freie Träger holen erreichbare Waren im eigenen Gebiet ab.');return;}
@@ -647,12 +657,16 @@ function initDetails(){
   const card=document.createElement('aside');card.id='building-map-card';card.hidden=true;card.setAttribute('aria-label','Ausgewähltes Gebäude auf der Karte');card.innerHTML='<button id="close-building-card" aria-label="Gebäudeauswahl schließen">×</button><strong></strong><p></p><div class="context-goods"></div><button id="building-settings">Gebäudeeinstellungen</button>';game.append(card);
   document.querySelector('#close-building-card').onclick=()=>{inspectedBuilding=null;settingArea=false;document.querySelector('#info-panel').classList.add('hidden');card.hidden=true;showCommandPanel('build');};
   buildingSettings=initBuildingSettings({getBuilding:()=>inspectedBuilding,name:b=>buildingNames[b.type]||b.name,api:createThumbAPI()});
+  const towerActions=document.createElement('div');towerActions.id='tower-quick-actions';
+  for(const [label,icon,action] of [['Soldaten hinein','⇧',()=>createThumbAPI().fillTower(inspectedBuilding)],['Soldaten heraus','⇩',()=>createThumbAPI().release(inspectedBuilding)],['Gebäude abreißen','✹',()=>document.querySelector('#demolish-building').click()]]){const button=document.createElement('button');button.setAttribute('aria-label',label);button.title=label;button.innerHTML=commandArt(icon);button.onclick=()=>{if(inspectedBuilding?.type!=='tower')return;action();refreshBuildingContext();};towerActions.append(button);}card.append(towerActions);
   const toolOutput=document.createElement('select');toolOutput.id='tool-output';toolOutput.setAttribute('aria-label','Werkzeugschmiede: Produktionsauftrag');toolOutput.hidden=true;toolOutput.innerHTML='<option value="auto">Automatisch: knappstes Werkzeug</option>'+toolTypes.map(k=>`<option value="${k}">${goodsNames[k]}</option>`).join('');toolOutput.onchange=()=>{if(inspectedBuilding?.type==='toolsmith'){inspectedBuilding.toolOrderMode=false;inspectedBuilding.toolChoice=toolOutput.value;save();inspect(inspectedBuilding);}};document.querySelector('#building-actions').append(toolOutput);
   document.querySelectorAll('[data-recruit]').forEach(b=>{const type=b.dataset.recruit;b.classList.add('unit-card');b.innerHTML=`<span class="unit-preview" role="img" aria-label="${unitNames[type]}" style='${unitMenuArt(type)}'></span><strong>${unitNames[type]}</strong><small class="unit-count"></small>${goodAmount(['swordsman','medic'].includes(type)?'swords':type==='archer'?'bows':professionTools[type],1)}`;});
   const units=document.querySelector('.unit-buttons'),status=document.createElement('p');status.id='unit-status';units.after(status);
   const survey=document.createElement('button');survey.id='survey-nearest';survey.textContent='Geologe: nächstes Felsgebiet untersuchen';survey.onclick=()=>{selectedTool='inspect';strategy.surveyNearest();};units.after(survey);
   const find=document.createElement('button');find.id='find-geologist';find.textContent='Geologen finden & auswählen';find.onclick=()=>{const geologists=workers.filter(w=>w.unit==='geologist'&&!w.dead&&(w.owner||1)===1);selectedWorkers.clear();for(const w of geologists)selectedWorkers.add(w.id);if(geologists.length){const p=iso(geologists[0].x,geologists[0].y);camera.x+=innerWidth/2+100-p.x;camera.y+=innerHeight/2-p.y;selectedTool='inspect';}updateUnitStatus();};units.after(find);
   operationsUI=initOperationsUI({strategy,workers,buildings,names:unitNames,journal,building:()=>inspectedBuilding,save,notify:toast,
+    buildingName:b=>buildingNames[b.type]||b.type,buildingStatus:b=>buildingContext(b,resources,workforce.status(b)).status,
+    focusBuilding:b=>{document.querySelector('#resume-button').click();inspect(b);const p=iso(b.x+.5,b.y+.5);camera.x+=innerWidth/2-p.x;camera.y+=innerHeight*.65-p.y;if(b.type!=='tower')buildingSettings?.open();},
     focus:w=>{document.querySelector('#pause-modal').classList.add('hidden');paused=false;const b=w.garrisonIndex!==undefined?buildings[w.garrisonIndex]:null,p=iso(b?b.x+.5:w.x,b?b.y+.5:w.y);camera.x+=innerWidth/2-p.x;camera.y+=innerHeight/2-p.y;selectedWorkers.clear();settingArea=false;commandMode=false;selectedTool='inspect';if(b)inspect(b);else{selectedWorkers.add(w.id);inspectedWorker=w.id;inspectedBuilding=null;document.querySelector('#info-panel').classList.add('hidden');document.documentElement.classList.remove('mobile-panel');}updateHud();}
   });
   initAudioControls(sound);
@@ -679,11 +693,14 @@ function refreshBuildingContext(){
   if(b.type==='hospital'&&b.progress>=1&&!b.stopped){const patients=workers.filter(w=>!w.dead&&w.order?.building===buildings.indexOf(b)&&strategy.isMilitary(w)),patient=patients.find(w=>w.id===b.patientId&&w.phase==='action');data.status=(workforce.hasStaff(b)?'Heiler bereit':'Heiler fehlt oder unterwegs')+' · '+patients.length+' Patienten'+(patient?' · Behandlung: '+Math.ceil(patient.hp)+' / '+(patient.maxHp||55)+' HP':'');}
   const html='<strong>'+data.status+'</strong>'+(data.progress!==null?'<progress max="100" value="'+data.progress+'" aria-label="Fortschritt"></progress>':'')+'<div class="context-goods">'+goods(data.items)+'</div>'+(recipes[b.type]?.deposit?'<p>Verbleibende Förderungen: '+(b.miningEnergy||0)+'</p>':'');if(live.innerHTML!==html)live.innerHTML=html;
   card.querySelector('strong').textContent=buildingNames[b.type]||b.name;card.querySelector('p').textContent=data.status;const compact=goods(data.items.slice(0,4));if(card.querySelector('.context-goods').innerHTML!==compact)card.querySelector('.context-goods').innerHTML=compact;
+  const tower=b.type==='tower';card.classList.toggle('tower-bubble',tower);card.querySelector('#building-settings').hidden=tower;
+  const actions=card.querySelector('#tower-quick-actions');if(actions){actions.hidden=!tower;if(tower){const index=buildings.indexOf(b),count=workers.filter(w=>!w.dead&&w.garrisonIndex===index).length;card.querySelector('p').textContent=`${count} / ${strategy.towerCapacity} Soldaten`;actions.children[0].disabled=b.progress<1||createThumbAPI().towerSpace(b)===0;actions.children[1].disabled=!count;}}
 }
 function positionBuildingContext(){
   const card=document.querySelector('#building-map-card'),b=inspectedBuilding;if(!card)return;
-  card.hidden=!b||settingArea||selectedTool!=='inspect'||document.querySelector('#building-section').classList.contains('hidden');if(card.hidden)return;
+  card.hidden=!b||b.type!=='tower'||settingArea||selectedTool!=='inspect';if(card.hidden)return;
   const p=iso(b.x+.5,b.y+.5);if(p.x<0||p.x>innerWidth||p.y<0||p.y>innerHeight){card.hidden=true;return;}
+  if(b.type==='tower'){card.style.left=Math.max(8,Math.min(innerWidth-236,p.x-114))+'px';card.style.top=Math.max(75,Math.min(innerHeight-card.offsetHeight-12,p.y-90*camera.zoom-card.offsetHeight))+'px';return;}
   const left=document.querySelector('#command-sidebar').getBoundingClientRect().right+8;card.style.left=Math.max(Math.min(left,innerWidth-224),Math.min(innerWidth-224,p.x+50*camera.zoom))+'px';card.style.top=Math.max(8,Math.min(innerHeight-card.offsetHeight-12,p.y-110*camera.zoom))+'px';
 }
 function initCommandSidebar(){

@@ -1,0 +1,23 @@
+.desktop-thumb{--safe-left:16px;--safe-right:16px;--safe-bottom:16px;}
+.desktop-thumb #command-sidebar{display:none;}
+.desktop-thumb.mobile-panel #command-sidebar{display:grid;left:16px;top:80px;bottom:110px;width:min(440px,calc(100vw - 32px));background:#f1dfb6;color:#593b24;border:4px solid #89603a;border-radius:20px;grid-template-rows:auto minmax(0,1fr);}
+.desktop-thumb #command-sidebar .sidebar-map,.desktop-thumb .sidebar-resources,.desktop-thumb .command-tabs{display:none;}
+.desktop-thumb #mobile-resources{position:absolute;left:100px;right:100px;top:8px;z-index:15;}
+.desktop-thumb #mobile-resources .resource-bar{position:static;transform:none;display:flex;justify-content:space-between;gap:12px;width:100%;max-width:none;box-sizing:border-box;background:#f1dfb6;color:#593b24;border:3px solid #89603a;border-radius:18px;padding:5px 12px;}
+.desktop-thumb #mobile-resources .res-count{color:#593b24;}
+.desktop-thumb #mobile-resources .resource strong,.desktop-thumb #mobile-resources .resource small,.desktop-thumb #mobile-resources .resource span,.desktop-thumb #mobile-resources .thumb-dropdown{color:#593b24;opacity:1;}
+.desktop-thumb #desktop-mail{display:none;}
+.desktop-thumb #game-screen>.sidebar-map{display:none;position:absolute;z-index:18;}
+.desktop-thumb.mobile-map-open #game-screen>.sidebar-map{display:block;}
+.desktop-thumb #game-screen>.sidebar-map canvas{display:block;width:100%;height:100%;}
+.desktop-thumb .thumb-map-toggle{display:flex;position:absolute;right:16px;top:12px;width:54px;height:54px;z-index:16;}
+.desktop-thumb #mobile-resources .thumb-selection{background:#f1dfb6;color:#593b24;}
+.desktop-thumb .thumb-mail{top:12px!important;left:16px!important;}
+.desktop-thumb .thumb-button{background:linear-gradient(#fff6d8,#d9b678);border-color:#a77d45;color:#593b24;}
+.desktop-thumb .thumb-button small{font-size:10px;font-weight:bold;}
+.desktop-thumb .thumb-sheet[open]{inset:85px 9vw 105px;}
+.desktop-thumb .thumb-sheet-body{align-content:start;}
+.desktop-thumb #status-panel{display:none;}
+.desktop-thumb .thumb-ui[data-mode=building] .thumb-actions{max-width:70vw;}
+.desktop-thumb #command-sidebar h2,.desktop-thumb #command-sidebar p{color:#593b24;}
+.desktop-thumb .economy-card{background:#fff3d4;color:#593b24;border-radius:12px;}

@@ -15,7 +15,7 @@ for(const w of workers.slice(4))s.tickWorker(w,.1);s.tick(1);assert.equal(worker
 const healer=workers.find(w=>w.employerIndex===1);assert.equal(workActivity(healer,buildings,recipes,()=>null),'heal');
 const late={id:20,unit:'swordsman',owner:1,x:26.5,y:27.5,hp:10,maxHp:55,phase:'action',order:{building:1}};workers.unshift(late);s.tick(.5);assert.equal(late.hp,10,'new arrival does not preempt current patient');workers.shift();
 const snapshot=parseSave(JSON.stringify({version:6,resources,buildings,workers,roads:[],terrain}),['storehouse','hospital']);Object.assign(workers[4],snapshot.workers[4]);
-b.stopped=true;wf.update(.1);s.tick(1);assert.equal(workers[4].hp,53);assert.ok(!wf.hasStaff(b));
+b.stopped=true;wf.update(.1);s.tick(1);assert.equal(workers[4].hp,53);assert.ok(wf.hasStaff(b),'paused hospital retains its healer without healing');
 b.stopped=false;wf.update(2);wf.update(.1);s.tick(2);s.tickWorker(workers[4],.1);assert.equal(workers[4].hp,55);assert.equal(workers[4].phase,'guard');s.tick(3);s.tickWorker(workers[5],.1);assert.equal(workers[5].hp,55);s.tick(.1);assert.equal(b.healingActive,false,'idle healer has no fake activity');
 workers[4].hp=10;selected.add(10);assert.ok(s.sendWounded(b));s.stop();s.tick(10);assert.equal(workers[4].hp,10,'cancelled patient no longer healed');
 blocked=true;assert.equal(s.sendWounded(b),false);blocked=false;workers[4].garrisonIndex=0;assert.equal(s.sendWounded(b),false);delete workers[4].garrisonIndex;workers[4].owner=2;assert.equal(s.sendWounded(b),false);workers[4].owner=1;workers[4].dead=true;assert.equal(s.sendWounded(b),false);delete workers[4].dead;

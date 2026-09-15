@@ -1,5 +1,11 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag: direkte Turmsteuerung und Kohlekarren
+
+15. September 2026: Nutzerreferenzen der Gameloft-Handyfassung erneut als UI-Vorlage genutzt: schwebende Turm-Sprechblase, Rundknöpfe, helle Menüs. Desktop und Touch verwenden nun dieselben unteren Befehle, aber weiterhin getrennte Eingabe-/Renderereinstellungen. Spielstand- und Siedlungsübersicht erhalten Pergamentoberflächen. Turmdächer zeigen vorhandene eigene Soldatensprites entsprechend der Besatzung. Kein neuer Original-Turm-Assetvergleich und kein Architekturtausch.
+
+Römische Kohlemine über Websuche gefunden und das [statische Originalbild](https://www.siedlercommunity.de/media/die-siedler-IV-4/gebaeude/roemer/Kohlemine.png) im Browser visuell angesehen. Eigene leere/volle Kohlekarren mit Arbeiter erzeugt: [Prompt und Einschränkungen](assets/MINER_CARTS_PROMPT.md). Transparenz technisch geprüft. Nur Kohlearbeiter verwenden dieses Set; weitere Berufsanimationen und die Original-Animationsfolgen bleiben offen.
+
 ## Nachtrag 15. September: Gebäudemenüs und Befehlsbilder
 
 Die bereits visuell geprüften Nutzerbilder der Gameloft-Handyfassung sind die passende Referenz für diesen UI-Pass: Pergament, plastische Rundknöpfe und große Mengenwahl. 16 eigenständige Rastermedaillons erzeugt und in mobile Befehle sowie Gebäudedialoge eingebunden; [Prompt und Versionsquellen](assets/COMMAND_MEDALLIONS_PROMPT.md). Menüs auf 1400×900 und 844×390 mit dem bereitgestellten Spielstand visuell geprüft. Nicht sämtliche Spezialbefehle wurden durch neue Bilder ersetzt.

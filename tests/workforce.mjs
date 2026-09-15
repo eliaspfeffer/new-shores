@@ -6,7 +6,7 @@ wf.update(2);assert.equal(stock.tools,3,'miller and baker require no tool');asse
 wf.update(.1);assert.ok(wf.hasStaff(buildings[0]));assert.ok(wf.hasStaff(buildings[1]));
 workers[0].manualTarget={x:4,y:4};wf.update(.1);assert.equal(workers[0].phase,'idle');assert.equal(workers[0].employerIndex,undefined);assert.equal(stock.tools,3);
 wf.beforeDemolish(0);assert.equal(workers[1].employerIndex,0,'remaining staff remapped after demolition');
-buildings.splice(0,1);buildings[0].stopped=true;wf.update(.1);assert.equal(stock.tools,3);assert.equal(workers[1].employerIndex,undefined);
+buildings.splice(0,1);buildings[0].stopped=true;wf.update(.1);assert.equal(stock.tools,3);assert.equal(workers[1].employerIndex,0,'paused workshop keeps its specialist');
 console.log('PASS: real workshop staffing, tool checkout/return, carrier reserve, manual reassignment and demolition indices');
 buildings[0].stopped=false;workers.splice(0,workers.length,{id:0,x:0,y:0,owner:2,phase:'idle'},...[1,2,3].map(id=>({id,x:0,y:0,phase:'idle'})));wf.update(2);
 assert.equal(workers[0].employerIndex,undefined,'enemy civilians cannot fill local workplaces');assert.equal(workers.filter(w=>w.employerIndex!==undefined).length,1,'reserve counts only own carriers');

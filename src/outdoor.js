@@ -55,5 +55,16 @@ export function createOutdoor(api){
     }
     return true;
   }
-  return {handles,grow,update};
+  function status(w,b){
+    if(b.ready)return 'Fertige Ware wartet auf einen Träger';
+    if(b.productionRemaining===0)return 'Produktionsauftrag abgeschlossen';
+    if(sites(b,w).length)return 'Arbeitsplätze vorhanden; sucht einen erreichbaren Hin- und Rückweg';
+    if(b.type==='forester')return 'Kein freier Pflanzplatz im Arbeitsgebiet';
+    if(b.type==='woodcutter')return 'Kein ausgewachsener, unbesetzter Baum im Arbeitsgebiet';
+    if(b.type==='quarry')return 'Kein unbesetzter Stein im Arbeitsgebiet';
+    if(b.type==='fisher')return 'Kein freier Angelplatz am Wasser';
+    if(b.type==='farm')return b.fields?.some(f=>f.age<35)?'Getreide wächst noch; kein weiterer freier Ackerplatz':'Kein freier Ackerplatz oder erntereifes Feld';
+    return 'Kein freier Arbeitsort';
+  }
+  return {handles,grow,update,status};
 }

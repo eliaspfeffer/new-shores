@@ -21,6 +21,7 @@ export function initThumbUI(mobile,api){
   function closeSheet(){sheetRender=null;if(sheet.open)sheet.close();}
   function openSheet(name,draw){closeSheet();title.textContent=name;body.replaceChildren();footer.replaceChildren(button('Zurück','✓',closeSheet));draw(body,footer);sheet.showModal();}
   sheet.addEventListener('cancel',()=>{sheetRender=null;});sheet.addEventListener('keydown',e=>e.stopPropagation());
+  sheet.addEventListener('click',e=>{if(e.target!==sheet)return;const r=sheet.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeSheet();});
   function clear(){mobile.pendingSite=null;mobile.placing=false;api.clear();hideSidebar();mobile.select=false;page='map';closeSheet();lastContext='';refresh(true);}
   function navigate(next){closeSheet();hideSidebar();api.clear();mobile.pendingSite=null;mobile.placing=false;page=next;lastContext='';refresh(true);}
   function advanced(panel){closeSheet();$('#resume-button').click();page='advanced';api.panel(panel);document.documentElement.classList.add('mobile-panel');lastContext='';}
@@ -69,6 +70,7 @@ export function initThumbUI(mobile,api){
   for(const [panel,label] of [['economy','Betriebsübersicht'],['units','Weitere Siedlerbefehle'],['goods','Warenverteilung']]){const b=el('button','text-button',label);b.onclick=()=>advanced(panel);help.before(b);}
   const selection=el('div','thumb-selection');selection.hidden=true;$('#mobile-resources .resource-bar').append(selection);
   const mapClose=button('Minikarte schließen','×',()=>document.documentElement.classList.remove('mobile-map-open'),'thumb-button thumb-map-close');$('.sidebar-map').append(mapClose);
+  if(!mobile.enabled)game.append(button('Karte','⌕',()=>document.documentElement.classList.toggle('mobile-map-open'),'thumb-button thumb-map-toggle'));
   mobile.stagePlacement=g=>{mobile.pendingSite={...g};page='placement';lastContext='';refresh(true);};
   mobile.cancelPlacement=clear;
   function refresh(force=false){
@@ -88,6 +90,7 @@ export function initThumbUI(mobile,api){
     root.dataset.mode=mode;actions.replaceChildren();left.hidden=false;right.hidden=false;
     setCorner(left,'Bauen','⌂',()=>navigate('build'));setCorner(right,'Siedler','♟',()=>navigate('units'));caption.textContent='Siedlung';
     const add=(label,icon,fn,disabled=false)=>{const control=button(label,icon,fn);control.disabled=disabled;actions.append(control);return control;};
+    if(mode==='map')add('Siedlungsübersicht','⌂',()=>invoke('open-army'));
     if(mode==='build'){caption.textContent='Baumenü';setCorner(left,'Abbrechen','×',clear);for(const [key,icon,label] of categories)add(label,icon,()=>categoryMenu(key));}
     if(mode==='catalog'){caption.textContent=categories.find(c=>c[0]===category)[2];actions.classList.add('catalog');setCorner(left,'Zurück','×',()=>navigate('build'));for(const source of document.querySelectorAll('.building-card:not([hidden])')){const type=source.dataset.tool;add(api.buildName(type),art(type),()=>buildInfo(type));}}
     else actions.classList.remove('catalog');
@@ -95,6 +98,7 @@ export function initThumbUI(mobile,api){
     if(mode==='selected'){caption.textContent=selected.length+' Siedler ausgewählt';setCorner(left,'Auswahl aufheben','✋',clear);setCorner(right,'Siedlermenü','♟',()=>{api.clear();page='units';lastContext='';});add('Markieren','⌗',()=>{mobile.select=!mobile.select;lastContext='';});add('Ziel zuweisen','➜',()=>invoke('move-units'));add('Halt','■',()=>invoke('halt-units'));if(selected.some(w=>['pioneer','geologist'].includes(w.unit)))add('Zum Träger','➜♟',()=>{api.returnSpecialists();lastContext='';});}
     if(mode==='building'){
       caption.textContent=api.buildName(b.type);setCorner(left,'Auswahl aufheben','✋',clear);setCorner(right,'Details','➜',()=>buildingDetails(b));
+      if(b.type==='tower'){right.hidden=true;return;}
       if(b.type!=='storehouse'){add('Abriss','✹',()=>invoke('demolish-building'));if(b.type==='tower'){add('Soldaten heraus','⇩',()=>api.release(b),!b.garrison||b.progress<1);add('Soldaten hinein','⇧',()=>api.fillTower(b),api.towerSpace(b)===0||b.progress<1);add('Besatzung','♟',()=>buildingDetails(b));}else{add(b.stopped?'Fortsetzen':'Anhalten',b.stopped?'▶':'Ⅱ',()=>invoke('production-toggle'));if(b.type==='barracks')add('Krieger rekrutieren','⚔',()=>military(b));else if(b.type==='toolsmith')add('Werkzeuge anfordern',api.good('hammer'),()=>tools(b));else if(['woodcutter','quarry','forester'].includes(b.type))add('Arbeitsbereich','◎',()=>invoke('area-toggle'));else add(b.priority?'Priorität: hoch':'Priorität: normal','↑',()=>invoke('priority-toggle')).setAttribute('aria-pressed',String(Boolean(b.priority)));}}
     }
     if(mode==='placement'){caption.textContent=pendingReason||api.buildName(state.tool)+' · Bauplatz bestätigen';setCorner(left,'Bau bestätigen','✓',()=>{if(mobile.pendingSite)api.place(mobile.pendingSite);lastContext='';refresh(true);});left.disabled=Boolean(pendingReason);setCorner(right,'Bau abbrechen','×',clear);}

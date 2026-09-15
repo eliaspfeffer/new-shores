@@ -41,5 +41,6 @@ export function initBuildingSettings({getBuilding,name,api}){
   function open(){current=getBuilding();if(!current)return;home();dialog.showModal();sync();}
   launcher.onclick=open;q('#building-settings').onclick=open;dialog.querySelector('header button').onclick=close;dialog.querySelector('footer button').onclick=()=>screen==='home'?close():home();dialog.addEventListener('cancel',e=>{e.preventDefault();close();});dialog.addEventListener('close',restore);dialog.addEventListener('keydown',e=>e.stopPropagation());
   panel.classList.add('building-controls-source');
+  dialog.addEventListener('click',e=>{if(e.target!==dialog)return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();});
   return {open,close,sync,feedback(message,saved){feedback.textContent=message+(saved?'':' · Speichern fehlgeschlagen');}};
 }

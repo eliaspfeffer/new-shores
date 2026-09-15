@@ -1,4 +1,17 @@
 .building-controls-source{display:none!important}
+#open-building-settings{display:none!important}
+#building-map-card.tower-bubble{display:block;width:228px;box-sizing:border-box;padding:12px;background:linear-gradient(#fff5d8,#e7c58c);color:#58381f;border:3px solid #906039;border-radius:24px;box-shadow:0 4px 0 #593b24;z-index:12;text-align:center;}
+#building-map-card.tower-bubble[hidden]{display:none!important}
+.mobile #building-map-card.tower-bubble:not([hidden]){display:block!important}
+#building-map-card.tower-bubble::after{content:'';position:absolute;bottom:-14px;left:calc(50% - 10px);width:20px;height:20px;background:#e7c58c;border-right:3px solid #906039;border-bottom:3px solid #906039;transform:rotate(45deg);}
+#building-map-card.tower-bubble p{color:#58381f;margin:8px 0;font-weight:bold;}
+#building-map-card.tower-bubble .context-goods{display:none}
+#building-map-card.tower-bubble #building-settings{display:none!important}
+#tower-quick-actions{display:flex;justify-content:center;gap:12px;}
+#tower-quick-actions button{width:48px;height:48px;padding:0;border:0;background:transparent;cursor:pointer;}
+#tower-quick-actions button:disabled{opacity:.35;filter:grayscale(1);cursor:default;}
+#tower-quick-actions .command-medallion{width:48px;height:48px;}
+#tower-quick-actions button:last-child{position:absolute;right:-54px;bottom:0;}
 #building-settings-dialog.building-menu{width:min(940px,calc(100vw - 24px));color:#58381f;background:radial-gradient(ellipse at 30% 10%,#fff6d9,#e9ce97);border:5px ridge #b59656;border-radius:24px;box-shadow:0 8px 0 #503820,0 20px 70px #0008}
 .building-menu #building-settings-content{min-height:180px}
 .building-menu>header{background:transparent!important;color:#58381f}
