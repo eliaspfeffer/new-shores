@@ -243,3 +243,20 @@ assert.equal(context.parallelPickups,6,'all available output jobs receive a free
 assert.equal(q.getResources().planks,12,'parallel carriers deliver every batch exactly once');
 assert(q.workers.every(w=>w.phase==='idle'),'workers rest only after available jobs are finished');
 console.log('PASS: 20 civilians, six simultaneous real routed pickups, exact cargo delivery and idle completion');
+
+vm.runInContext(`
+  trees.length=0;rocks.length=0;buildings.length=0;workers.length=0;roads.length=0;strategy.state.groundPiles=[];strategy.state.deposits=[];
+  for(const row of terrain)row.fill('grass');resources={wood:0,stone:0,planks:0,people:3,beds:3};
+  const producer={type:'woodcutter',x:13,y:13,progress:1,completed:true,ready:'wood',outputAmount:2};
+  buildings.push({type:'storehouse',x:10,y:10,progress:1},producer,{type:'sawmill',x:16,y:13,progress:1,buffer:{}});
+  workers.push({id:950,x:13.5,y:14.5,phase:'working',role:'carrier',task:producer,wait:3,t:0});
+  updateWorkers(.1);globalThis.directPickup=workers[0].phase==='supply'&&workers[0].carryAmount===2;
+  for(let i=0;i<300;i++)updateWorkers(.1);
+  terrain[15][10]='shore';terrain[16][10]='water';strategy.recalculate();exploration.update(buildings,workers);
+`,context);
+assert(context.directPickup,'collected batch goes straight to the consumer');
+assert.equal(q.buildings[2].buffer.wood,2,'full two-unit batch arrives exactly once');
+assert.equal(q.getResources().wood,0,'no intermediate warehouse deposit');
+assert.equal(q.placementReason({x:10,y:15},'fisher'),'','claimed sandy shore accepts fisher huts');
+assert(q.getBuildSites('fisher').some(p=>p.x===10&&p.y===15),'same coastal tile appears in placement preview');
+console.log('PASS: direct collected batch conservation and claimed sandy coast placement/preview');

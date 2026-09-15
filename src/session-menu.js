@@ -6,6 +6,8 @@ export function initSessionMenu(api){
   const dialog=document.createElement('dialog');dialog.id='save-library-dialog';
   dialog.innerHTML='<header><div><small>DEINE SIEDLUNGEN</small><h2>Spielstände</h2></div><button id="close-save-library" aria-label="Spielstände schließen">Schließen ×</button></header><p>Nur auf diesem Gerät gespeichert. Beim Laden bleibt der vorherige Stand als Sicherung erhalten.</p><div id="save-library-list"></div><p id="save-library-feedback" role="status" aria-live="polite"></p>';
   document.body.append(dialog);
+  const importLabel=document.createElement('label');importLabel.className='save-import';importLabel.textContent='Spielstand aus JSON-Datei übernehmen ';const file=document.createElement('input');file.type='file';file.accept='.json,application/json';file.id='title-import-save';importLabel.append(file);dialog.querySelector('#save-library-list').before(importLabel);
+  file.onchange=async()=>{const selected=file.files?.[0];if(!selected)return;try{if(selected.size>8_000_000)throw new Error('Datei ist zu groß');if(api.restore(await selected.text())){dialog.close();api.resumeLoaded();}else feedback('Spielstand konnte nicht geladen werden.');}catch(e){feedback(e.message);}finally{file.value='';}};
   const feedback=message=>dialog.querySelector('#save-library-feedback').textContent=message;
   dialog.addEventListener('keydown',e=>e.stopPropagation());
   dialog.querySelector('#close-save-library').onclick=()=>dialog.close();

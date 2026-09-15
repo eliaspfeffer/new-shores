@@ -1,0 +1,20 @@
+.building-controls-source{display:none!important}
+#building-settings-dialog.building-menu{width:min(940px,calc(100vw - 24px));color:#58381f;background:radial-gradient(ellipse at 30% 10%,#fff6d9,#e9ce97);border:5px ridge #b59656;border-radius:24px;box-shadow:0 8px 0 #503820,0 20px 70px #0008}
+.building-menu #building-settings-content{min-height:180px}
+.building-menu>header{background:transparent!important;color:#58381f}
+.building-menu footer{display:flex;align-items:center;gap:20px;padding:10px 20px;border-top:1px solid #bba16c;flex-shrink:0}
+.building-menu-summary{display:flex;align-items:center;justify-content:center;gap:24px;min-height:100px;text-align:center}
+.building-menu-art{display:inline-block;width:100px;height:100px;background-repeat:no-repeat;flex-shrink:0}
+.building-menu-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;padding:20px 4px}
+.building-menu-grid.quantity{grid-template-columns:repeat(4,1fr)}
+.building-menu .building-menu-choice{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:106px;border:0!important;background:transparent!important;box-shadow:none!important;color:#58381f!important;font:700 16px Georgia!important;cursor:pointer;padding:4px}
+.building-menu-choice .command-medallion{width:76px;height:76px;min-height:76px}
+.building-menu .building-menu-close,.building-menu .building-menu-back{width:54px;height:54px;padding:0;border:0!important;background:transparent!important;box-shadow:none!important;flex-shrink:0}
+.building-menu-choice .good-icon{width:70px;height:70px}
+.building-menu-choice[aria-pressed=true]{outline:3px solid #b07c20;border-radius:16px}
+.building-menu-choice:disabled{filter:grayscale(1);opacity:.4;cursor:default}
+.building-menu button:focus-visible{outline:3px solid #8c5e27!important;outline-offset:3px}
+.building-menu #training-orders>label:has(#queue-type),.building-menu #training-orders>label:has(#queue-rank),.building-menu #training-orders>label:has(#queue-count),.building-menu #enqueue-training,.building-menu #training-orders>p:first-of-type{display:none}
+.building-menu #warehouse-rules label{color:#58381f}
+@media(max-width:600px){.building-menu-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.building-menu-summary{gap:10px}.building-menu-choice .command-medallion{width:60px;height:60px;min-height:60px}.building-menu .building-menu-choice{font-size:13px!important}.building-menu #building-settings-content{padding:10px}}
+@media(max-height:500px){.building-menu-summary{min-height:60px}.building-menu-summary .building-menu-art{width:60px;height:60px}.building-menu-grid{gap:6px;padding:6px;grid-template-columns:repeat(5,minmax(0,1fr))}.building-menu-choice .command-medallion{width:52px;height:52px;min-height:52px}.building-menu .building-menu-choice{min-height:76px;font-size:13px!important}.building-menu>header{padding:3px 14px!important}.building-menu footer{padding:3px 14px}.building-menu .building-menu-close,.building-menu .building-menu-back{width:40px;height:40px}}

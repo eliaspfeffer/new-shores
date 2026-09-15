@@ -4,6 +4,7 @@ export function matchingUnits(workers,query,names){
 }
 export function initUnitMenu(api){
   const panel=document.querySelector('#units-section .units-panel');if(!panel)return null;
+  const selectedBar=document.createElement('div');selectedBar.className='selected-unit-bar';selectedBar.setAttribute('aria-label','Ausgewählte Siedler');selectedBar.hidden=true;document.querySelector('.resource-bar').append(selectedBar);let selectedSignature='';
   const tabs=document.createElement('nav');tabs.className='unit-subtabs';tabs.setAttribute('aria-label','Siedlerbereiche');
   const sections=new Map();for(const [key,icon,label] of [['train','♟','Ausbilden'],['find','⌕','Finden'],['orders','➜','Befehle'],['army','⚔','Militär']]){
     const button=document.createElement('button');button.dataset.unitTab=key;button.innerHTML='<span aria-hidden="true">'+icon+'</span><small>'+label+'</small>';button.setAttribute('aria-pressed',String(key==='train'));tabs.append(button);
@@ -24,6 +25,10 @@ export function initUnitMenu(api){
   panel.prepend(tabs);panel.append(...sections.values(),help);let signature='';
   function refresh(force=false){
     const selected=api.workers.filter(w=>api.selected.has(w.id)&&!w.dead&&(w.owner||1)===1),special=selected.some(w=>['pioneer','geologist'].includes(w.unit)),military=selected.some(api.military);
+    const counts=new Map();for(const w of selected){const key=(w.unit||w.role||'carrier')+':'+(w.rank||1);const item=counts.get(key)||{w,n:0};item.n++;counts.set(key,item);}
+    const selectionKey=JSON.stringify([...counts].map(([key,item])=>[key,item.n]));
+    if(selectionKey!==selectedSignature){selectedSignature=selectionKey;selectedBar.replaceChildren();for(const {w,n} of counts.values()){const item=document.createElement('span');item.className='selected-unit-count';item.title=(api.names[w.unit]||api.names[w.role]||'Siedler')+' · Rang '+(w.rank||1);const art=document.createElement('span');art.className='unit-preview';art.style.cssText=api.art(w.unit||w.role||'carrier');const count=document.createElement('b');count.textContent=n;item.append(art,count);selectedBar.append(item);}}
+    selectedBar.hidden=!selected.length;selectedBar.parentElement.classList.toggle('has-unit-selection',Boolean(selected.length));
     for(const id of ['move-units','halt-units'])document.getElementById(id).disabled=!selected.length;
     document.querySelector('#return-specialists').disabled=!special;document.querySelector('#survey-nearest').disabled=!selected.some(w=>w.unit==='geologist');document.querySelector('#patrol-units').disabled=!military;
     if(sections.get('find').hidden&&!force)return;

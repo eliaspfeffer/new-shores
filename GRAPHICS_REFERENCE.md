@@ -1,5 +1,11 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 15. September: Gebäudemenüs und Befehlsbilder
+
+Die bereits visuell geprüften Nutzerbilder der Gameloft-Handyfassung sind die passende Referenz für diesen UI-Pass: Pergament, plastische Rundknöpfe und große Mengenwahl. 16 eigenständige Rastermedaillons erzeugt und in mobile Befehle sowie Gebäudedialoge eingebunden; [Prompt und Versionsquellen](assets/COMMAND_MEDALLIONS_PROMPT.md). Menüs auf 1400×900 und 844×390 mit dem bereitgestellten Spielstand visuell geprüft. Nicht sämtliche Spezialbefehle wurden durch neue Bilder ersetzt.
+
+Bei großem Wohnhaus, Lazarett und Industriegebäuden ausschließlich den Zeichenanker anhand der tatsächlichen sichtbaren Unterkante des vorhandenen Atlas korrigiert. Kein Gebäudeasset ersetzt. Die Gebäude und Bodenwaren wurden im laufenden Spiel betrachtet. Keine Behauptung vollständig originalgetreuer Fraktionsarchitektur.
+
 ## Nachtrag: breites Startmenü mit Dialogen
 
 Auf Nutzerwunsch die vorhandene Comic-Holzkarte zur breiten Zweispalten-Navigation umgebaut: Titel links, große Aktionen rechts; Spielziel, Farbe und Karte im Dialog „Neue Siedlung“. Die angehängte eigene Laptop-Ansicht dient als direkte Layout-Fehlerreferenz, die bereits dokumentierten Gameloft-Holztafeln bleiben die Stilreferenz. Keine Rastergrafikfamilie geändert, keine Originalassets extrahiert. Hauptmenü und laufendes Spiel bei 894×612, 1400×900 und 844×390 visuell geprüft, Hauptmenü zusätzlich bei 390×844 funktional geprüft. Kontraste der Dialogfelder nach der ersten Sichtprüfung korrigiert. Keine Behauptung pixelidentischer Originalmenüs.

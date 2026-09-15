@@ -1,4 +1,5 @@
 import './mobile-thumb.css';
+import {commandArt} from './command-art.js';
 
 // Mobile presentation only. All mutations go through the live simulation API.
 export function initThumbUI(mobile,api){
@@ -6,7 +7,7 @@ export function initThumbUI(mobile,api){
   const $=s=>document.querySelector(s),game=$('#game-screen');
   const el=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
   const paths={'⌂':'M2 11 12 2 22 11H19V22H14V15H10V22H5V11Z','♟':'M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8M8 11H16L21 22H3Z','⚒':'M3 3H12V8H9L6 22H2L6 8H3ZM17 3H22V5H20V22H18V5H17Z','⚔':'M4 1 13 12 11 14 2 4ZM3 13 11 21 13 19 5 11ZM20 1 11 12 13 14 22 4ZM21 13 13 21 11 19 19 11Z','anvil':'M2 7H22L18 12H14V17L19 20V22H5V20L10 17V12H6Z','✉':'M2 5H22V19H2ZM3 6 12 13 21 6V8L12 15 3 8Z'};
-  const iconHTML=value=>paths[value]?'<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="'+paths[value]+'"/></svg>':value;
+  const iconHTML=value=>commandArt(value)||(paths[value]?'<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="'+paths[value]+'"/></svg>':value);
   const button=(label,icon,fn,cls='thumb-button')=>{const b=el('button',cls);b.setAttribute('aria-label',label);b.title=label;b.innerHTML='<span class="thumb-icon" aria-hidden="true">'+iconHTML(icon)+'</span>';b.append(el('small','',label));b.onclick=fn;return b;};
   const art=(type,unit=false)=>'<span class="thumb-art" style=\''+(unit?api.unitArt(type):api.buildArt(type))+'\'></span>';
   let page='map',category='basic',sheetRender=null,sheetKey='',lastContext='',lastRefresh=0;
@@ -59,7 +60,7 @@ export function initThumbUI(mobile,api){
   function buildingDetails(b){openSheet(api.buildName(b.type),(content,foot)=>{
     const summary=el('div','thumb-build-summary');summary.innerHTML=art(b.type);content.append(summary);
     const status=el('p','thumb-description');content.append(status);sheetRender=()=>{status.textContent=api.buildStatus(b);};sheetRender();
-    if(b.type!=='storehouse')foot.append(button('Weitere Einstellungen','⚙',()=>{closeSheet();invoke('building-settings');}));
+    if(b.type!=='storehouse')foot.append(button('Gebäudemenü','⌂',()=>{closeSheet();invoke('building-settings');}));
   });}
   const mail=button('Nachrichten','✉',()=>{const entries=[{text:api.quest()},...api.messages().slice().reverse()];let i=0;const show=()=>openSheet('Nachrichten · '+(i+1)+' / '+entries.length,(content,foot)=>{content.append(el('p','thumb-message',entries[i].text));if(i)foot.prepend(button('Neuere Nachricht','◀',()=>{i--;show();}));if(i+1<entries.length)foot.append(button('Ältere Nachricht','▶',()=>{i++;show();}));});show();},'thumb-button thumb-mail');game.append(mail);
   const dropdown=button('Alle Waren anzeigen','▼',goods,'thumb-dropdown');dropdown.id='thumb-goods';$('#mobile-resources .resource-bar').insertBefore(dropdown,$('#speed-button'));
@@ -83,10 +84,10 @@ export function initThumbUI(mobile,api){
     if(mobile.placing&&state.tool==='inspect'){mobile.placing=false;mobile.pendingSite=null;page='map';}
     const mode=mobile.placing?'placement':page==='map'?(selected.length?'selected':b?'building':'map'):page;
     const pendingReason=mode==='placement'?(mobile.pendingSite?api.placementReason(mobile.pendingSite):'Bauplatz auf der Karte antippen'):'';
-    const key=JSON.stringify([mode,category,b?.type,b?.x,b?.y,b?.stopped,b?.progress>=1,b?.garrison,selected.map(w=>w.unit),mobile.select,mobile.pendingSite,pendingReason]);if(!force&&key===lastContext)return;lastContext=key;
+    const key=JSON.stringify([mode,category,b?.type,b?.x,b?.y,b?.stopped,b?.priority,b?.progress>=1,b?.garrison,b?.type==='tower'?api.towerSpace(b):null,selected.map(w=>w.unit),mobile.select,mobile.pendingSite,pendingReason]);if(!force&&key===lastContext)return;lastContext=key;
     root.dataset.mode=mode;actions.replaceChildren();left.hidden=false;right.hidden=false;
     setCorner(left,'Bauen','⌂',()=>navigate('build'));setCorner(right,'Siedler','♟',()=>navigate('units'));caption.textContent='Siedlung';
-    const add=(label,icon,fn)=>actions.append(button(label,icon,fn));
+    const add=(label,icon,fn,disabled=false)=>{const control=button(label,icon,fn);control.disabled=disabled;actions.append(control);return control;};
     if(mode==='build'){caption.textContent='Baumenü';setCorner(left,'Abbrechen','×',clear);for(const [key,icon,label] of categories)add(label,icon,()=>categoryMenu(key));}
     if(mode==='catalog'){caption.textContent=categories.find(c=>c[0]===category)[2];actions.classList.add('catalog');setCorner(left,'Zurück','×',()=>navigate('build'));for(const source of document.querySelectorAll('.building-card:not([hidden])')){const type=source.dataset.tool;add(api.buildName(type),art(type),()=>buildInfo(type));}}
     else actions.classList.remove('catalog');
@@ -94,7 +95,7 @@ export function initThumbUI(mobile,api){
     if(mode==='selected'){caption.textContent=selected.length+' Siedler ausgewählt';setCorner(left,'Auswahl aufheben','✋',clear);setCorner(right,'Siedlermenü','♟',()=>{api.clear();page='units';lastContext='';});add('Markieren','⌗',()=>{mobile.select=!mobile.select;lastContext='';});add('Ziel zuweisen','➜',()=>invoke('move-units'));add('Halt','■',()=>invoke('halt-units'));if(selected.some(w=>['pioneer','geologist'].includes(w.unit)))add('Zum Träger','➜♟',()=>{api.returnSpecialists();lastContext='';});}
     if(mode==='building'){
       caption.textContent=api.buildName(b.type);setCorner(left,'Auswahl aufheben','✋',clear);setCorner(right,'Details','➜',()=>buildingDetails(b));
-      if(b.type!=='storehouse'){add('Abriss','✹',()=>invoke('demolish-building'));if(b.type==='tower'){add('Soldaten heraus','⇩',()=>api.release(b));add('Soldaten hinein','⇧',()=>api.fillTower(b));add('Besatzung','♟',()=>buildingDetails(b));}else{add(b.stopped?'Fortsetzen':'Anhalten',b.stopped?'▶':'Ⅱ',()=>invoke('production-toggle'));if(b.type==='barracks')add('Krieger rekrutieren','⚔',()=>military(b));else if(b.type==='toolsmith')add('Werkzeuge anfordern',api.good('hammer'),()=>tools(b));else if(['woodcutter','quarry','forester'].includes(b.type))add('Arbeitsbereich','◎',()=>invoke('area-toggle'));else add('Priorität','↑',()=>invoke('priority-toggle'));}}
+      if(b.type!=='storehouse'){add('Abriss','✹',()=>invoke('demolish-building'));if(b.type==='tower'){add('Soldaten heraus','⇩',()=>api.release(b),!b.garrison||b.progress<1);add('Soldaten hinein','⇧',()=>api.fillTower(b),api.towerSpace(b)===0||b.progress<1);add('Besatzung','♟',()=>buildingDetails(b));}else{add(b.stopped?'Fortsetzen':'Anhalten',b.stopped?'▶':'Ⅱ',()=>invoke('production-toggle'));if(b.type==='barracks')add('Krieger rekrutieren','⚔',()=>military(b));else if(b.type==='toolsmith')add('Werkzeuge anfordern',api.good('hammer'),()=>tools(b));else if(['woodcutter','quarry','forester'].includes(b.type))add('Arbeitsbereich','◎',()=>invoke('area-toggle'));else add(b.priority?'Priorität: hoch':'Priorität: normal','↑',()=>invoke('priority-toggle')).setAttribute('aria-pressed',String(Boolean(b.priority)));}}
     }
     if(mode==='placement'){caption.textContent=pendingReason||api.buildName(state.tool)+' · Bauplatz bestätigen';setCorner(left,'Bau bestätigen','✓',()=>{if(mobile.pendingSite)api.place(mobile.pendingSite);lastContext='';refresh(true);});left.disabled=Boolean(pendingReason);setCorner(right,'Bau abbrechen','×',clear);}
   }

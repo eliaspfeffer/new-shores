@@ -50,7 +50,7 @@ export function initMobile({panel,reset,zoom,save,center,context,thumbApi}){
 }
 export async function initOffline({save=()=>false}={}){
   const status=document.createElement('p');status.id='offline-status';status.setAttribute('role','status');document.querySelector('#save-button').after(status);
-  const install=document.createElement('p');install.textContent='iPhone: Safari → Teilen → Zum Home-Bildschirm. Einmal online warten, bis „Offline bereit“ erscheint. Offline bleiben Änderungen auf diesem Gerät. Am Server-Link synchronisiert „Konto & Inseln“ geladene eigene/freigegebene Serverstände online; vor Gerätewechsel „Jetzt synchronisieren“. Export bleibt als unabhängige Sicherung verfügbar.';status.after(install);
+  const install=document.createElement('p');install.textContent='iPhone: Safari → Teilen → Zum Home-Bildschirm. Einmal online warten, bis „Offline bereit“ erscheint. Mit deinem Konto wird die Insel automatisch synchronisiert. Offline bleiben Änderungen auf diesem Gerät, bis du wieder online bist. Verwende auf beiden Geräten dieselbe Spieladresse.';status.after(install);
   if(!import.meta.env.PROD||!('serviceWorker' in navigator)||!isSecureContext){status.textContent='Offline-Modus benötigt den HTTPS-Spiel-Link (Produktionsbuild).';return;}
   status.textContent='Offline-Dateien werden gespeichert …';
   try{const registration=await navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'});await navigator.serviceWorker.ready;status.textContent='Offline bereit · Spiel und Grafiken auf diesem Gerät gespeichert';navigator.storage?.persist?.().catch(()=>{});

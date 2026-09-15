@@ -18,7 +18,7 @@ assert.ok(strategy.isRocky(18,22));assert.equal(strategy.isRocky(25,25),false);
 strategy.command({x:18,y:22});assert.equal(geo.phase,'command','blocked clicked tree/rock falls back to reachable adjacent tile');
 strategy.tickWorker(geo,1);assert.equal(geo.phase,'action');
 const saved=JSON.parse(JSON.stringify(geo));Object.assign(geo,saved); // Resume an in-flight JSON save, including the finite work queue.
-for(let i=0;i<150;i++)strategy.tickWorker(geo,1);
+for(let i=0;i<1200&&geo.phase!=='guard';i++)strategy.tickWorker(geo,1);
 assert.equal(strategy.state.deposits[0].discovered,true);assert.ok(geo.surveyDone>1,'multiple physical probes');assert.equal(geo.phase,'guard','completed surveys stop moving');
 const pos=[geo.x,geo.y];strategy.tickWorker(geo,50);assert.deepEqual([geo.x,geo.y],pos);
 strategy.command({x:18,y:22});strategy.stop();assert.equal(geo.surveyQueue.length,0);assert.equal(geo.phase,'guard');

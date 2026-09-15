@@ -1,4 +1,5 @@
 import './operations-ui.css';
+import {commandArt} from './command-art.js';
 import {supportsProductionOrder,setProductionOrder} from './production-orders.js';
 import {freeCarrier} from './army-orders.js';
 export function initOperationsUI(api){
@@ -30,6 +31,7 @@ export function initOperationsUI(api){
     const button=document.createElement('button');button.id=id;button.textContent=label;button.onclick=()=>open(view);reserve.after(button);
   }
   const journalButton=document.createElement('button');journalButton.className='text-button';journalButton.id='pause-journal';journalButton.textContent='Meldungsjournal';journalButton.onclick=()=>open('journal');document.querySelector('#save-button').after(journalButton);
+  const mail=document.createElement('button');mail.id='desktop-mail';mail.setAttribute('aria-label','Nachrichten');mail.innerHTML=commandArt('✉');mail.onclick=()=>open('journal');document.querySelector('#game-screen').append(mail);
   function refreshOverview(){
     const view=dialog.querySelector('#operations-view').value,list=dialog.querySelector('#operations-list');
     const entries=view==='journal'?api.journal.list().slice().reverse():workers.filter(w=>!w.dead&&(w.owner||1)===1&&(view==='army'?strategy.isMilitary(w):freeCarrier(w)||['geologist','pioneer'].includes(w.unit)&&w.phase==='guard'&&!w.autoWork));

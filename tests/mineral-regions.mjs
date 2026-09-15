@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {expandMineralRegions} from '../src/mineral-regions.js';
+const terrain=Array.from({length:50},()=>Array(50).fill('grass'));
+const state={deposits:[{x:20,y:20,type:'coal',amount:0,discovered:true}]};
+const buildings=[{x:24,y:20}];
+expandMineralRegions(state,terrain,buildings);
+assert.equal(state.deposits[0].amount,0);
+assert.equal(state.deposits.length,4);
+assert.ok(state.deposits.slice(1).every(d=>!d.discovered&&d.amount===240&&Math.hypot(d.x-24,d.y-20)>=3.5));
+const saved=JSON.stringify(state);expandMineralRegions(state,terrain,buildings);assert.equal(JSON.stringify(state),saved);
+state.deposits[1].amount=0;expandMineralRegions(state,terrain,buildings);assert.equal(state.deposits[1].amount,0);
+console.log('PASS: finite mineral regions migrate once and preserve depleted seams/buildings');

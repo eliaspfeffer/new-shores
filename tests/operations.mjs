@@ -30,7 +30,7 @@ const mill={type:'mill',x:23,y:23,progress:1,buffer:{grain:3},work:0};buildings.
 assert(setProductionOrder(mill,1));strategy.produce(mill,10);assert.equal(mill.productionRemaining,0);assert.equal(mill.ready,'flour');assert.equal(mill.buffer.grain,2);
 mill.ready=null;strategy.produce(mill,100);assert.equal(mill.buffer.grain,2);assert.equal(mill.ready,null);assert(setProductionOrder(mill,null));strategy.produce(mill,10);assert.equal(mill.buffer.grain,1);
 assert(!setProductionOrder(tower,1));assert(!setProductionOrder(mill,-1));
-const journal=createJournal();journal.add('Bau fertig',3);journal.add('Bau fertig',4);assert.equal(journal.list()[0].count,2);for(let i=0;i<120;i++)journal.add('Meldung '+i,i);assert.equal(journal.list().length,100);const copy=createJournal();copy.restore(journal.list());assert.deepEqual(copy.list(),journal.list());
+const journal=createJournal();journal.add('Bau fertig',3);journal.add('Bau fertig',4);assert.equal(journal.list()[0].count,2);for(let i=0;i<120;i++)journal.add('Meldung '+i,i);assert.equal(journal.list().length,15);const copy=createJournal();copy.restore(journal.list());assert.deepEqual(copy.list(),journal.list());
 const camera={x:123,y:456,zoom:1};assert(restoreCamera(camera,{x:0,y:0,zoom:.5}));assert.deepEqual(camera,{x:0,y:0,zoom:.5});assert(!restoreCamera(camera,{x:Infinity,y:0,zoom:1}));
 const save={version:6,resources,buildings,roads:[],workers:workers.map(w=>({...w,task:undefined})),strategy:strategy.state,journal:journal.list()};
 assert(parseSave(JSON.stringify(save),['storehouse','barracks','tower','mill']));

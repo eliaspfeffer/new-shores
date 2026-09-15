@@ -17,4 +17,11 @@
 .unit-subtabs :focus-visible,[data-unit-section] :focus-visible{outline:2px solid #f1d383;outline-offset:2px}
 .unit-subtabs button:hover,.unit-command:not(:disabled):hover{background:#5f6340}
 .unit-command:disabled{opacity:.4;cursor:default}
+.selected-unit-bar{display:flex;gap:12px;align-items:center;overflow-x:auto;max-width:100%}.selected-unit-bar[hidden]{display:none}
+.selected-unit-count{display:flex;align-items:center;flex-shrink:0;gap:3px}.selected-unit-count .unit-preview{display:block;width:42px;height:48px;background-repeat:no-repeat}
+html:not(.mobile) #command-sidebar .resource-bar.has-unit-selection{position:fixed;left:250px;right:80px;top:8px;bottom:auto;width:auto;height:60px;z-index:16;display:flex;flex-wrap:nowrap;background:#352b1eee;border:2px ridge #d4b66a;border-radius:0 0 16px 16px;padding:4px 12px}
+html:not(.mobile) #command-sidebar .resource-bar.has-unit-selection>.resource{display:none}
+html:not(.mobile) #command-sidebar .resource-bar.has-unit-selection>.round-button{width:42px;min-width:42px;max-width:42px;flex:0 0 42px;height:42px}
+html:not(.mobile) #command-sidebar .resource-bar.has-unit-selection>.selected-unit-bar{flex:1;min-width:0}
+.mobile .selected-unit-bar{display:none}
 @media(max-height:500px){#unit-search-results{max-height:170px}.unit-subtabs{margin-bottom:8px}}
