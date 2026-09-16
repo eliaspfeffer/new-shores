@@ -32,7 +32,35 @@ Stand: 16. September 2026
 - In beiden Schmieden sollen Auftrag, verfügbare Rohstoffe, Warteschlange und herstellbare Ware verständlich sichtbar sein.
 - Keine doppelt vorhandenen Aktionen zwischen unterer Leiste und Dialog.
 
-## 2. Sichtbare Ausbildung in der Kaserne
+### 1.4 Zielbefehle starten teilweise erst beim zweiten Versuch
+
+- Bei einer ausgewählten Gruppe laufen gelegentlich nicht alle Einheiten nach der ersten Zielzuweisung los.
+- Erst eine zweite Zuweisung desselben oder eines anderen Ziels setzt die übrigen Einheiten in Bewegung.
+- Später untersuchen, ob einzelne Einheiten wegen alter Laufwege, Arbeitszustände, Gruppenformationen, blockierter Startfelder oder einer vorzeitig geleerten Auswahl keinen Auftrag erhalten.
+- Spätere Abnahmekriterien:
+  - Jede berechtigte ausgewählte Einheit erhält den ersten gültigen Zielbefehl genau einmal.
+  - Unerreichbare Einheiten werden sichtbar gemeldet, statt den Befehl still zu ignorieren.
+  - Beschäftigte Siedler zeigen verständlich an, ob der Befehl sofort gilt oder nach Abschluss der aktuellen Tätigkeit ausgeführt wird.
+  - Maus, Touch, gemischte Einheitengruppen und gespeicherte/neu geladene Gruppen verhalten sich identisch.
+
+## 2. Wuselfaktor, Abstand und Gruppenbewegung
+
+- Laufende Siedler und Soldaten dürfen nicht dauerhaft ineinander stehen oder optisch zu einer einzigen Figur verschmelzen.
+- Einheiten sollen beim Gehen, Warten, Arbeiten und Ankommen kleine natürliche Abstände einhalten.
+- Gruppen brauchen individuelle, leicht variierende Zielpositionen rund um den befohlenen Punkt statt eines gemeinsamen exakten Mittelpunkts.
+- Begegnende Einheiten sollen einander weich ausweichen, ohne auf Wegen unnatürlich weit auseinanderzuspringen.
+- Engstellen, Gebäudeeingänge, Baustellen und Be-/Entladepunkte brauchen Warteschlangen beziehungsweise kurzlebige Stellplätze.
+- Das Ausweichen darf keine Sackgassen, Endlosschleifen oder starkes Zittern erzeugen.
+- Kleine zufällige Standpositionen und dezente Leerlaufbewegungen erhöhen den Wuselfaktor, dürfen aber keine Arbeits- oder Kampfbefehle verändern.
+- Formation und Kampfreichweite bleiben spielerisch verbindlich; die optische Streuung darf keine Treffer, Besitzprüfung oder Wegerreichbarkeit verfälschen.
+- Die Berechnung soll räumlich begrenzt bleiben: nur nahe Einheiten berücksichtigen, damit große Siedlungen auf Handy und Laptop flüssig bleiben.
+- Spätere Abnahmekriterien:
+  - Eine größere Gruppe erreicht ihr Ziel verteilt und ohne sichtbare vollständige Überlagerung.
+  - Gegenverkehr auf schmalen Wegen löst sich selbstständig auf.
+  - Nach Speichern und Neuladen bleiben Einheiten an gültigen, getrennten Positionen und arbeiten weiter.
+  - Die Änderung wird mit großen Zivilisten- und Militärgruppen auf Mobilgerät und Laptop auf Bildrate und CPU-Last geprüft.
+
+## 3. Sichtbare Ausbildung in der Kaserne
 
 - Ein freier Siedler wird für einen konkreten Rekrutierungsauftrag reserviert.
 - Er läuft sichtbar zur ausgewählten Kaserne und durch deren Eingang hinein.
@@ -42,15 +70,15 @@ Stand: 16. September 2026
 - Speichern und Neuladen muss jede Phase erhalten: unterwegs, im Gebäude, Ausbildung, Ausgang und Sammelpunkt.
 - Abbruch, Abriss, blockierter Eingang und fehlende Ressourcen benötigen definierte, verlustfreie Zustände.
 
-## 3. Seefahrt und neue Gebäude
+## 4. Seefahrt und neue Gebäude
 
-### 3.1 Hafen
+### 4.1 Hafen
 
 - Küstengebäude mit gültiger Wasserzufahrt und einem landseitigen Warenanschluss.
 - Bau, Lagerung, Be- und Entladung sowie Schiffsaufträge müssen physisch sichtbar sein.
 - Ein Hafen darf keine Wasserroute anbieten, wenn sie durch Küste oder Inseln blockiert ist.
 
-### 3.2 Werft und Schiffstypen
+### 4.2 Werft und Schiffstypen
 
 - Werft oder Hafen-Unterfunktion zur Herstellung von Schiffen.
 - **Warenschiff:** transportiert definierte Warenmengen zwischen Häfen.
@@ -59,7 +87,7 @@ Stand: 16. September 2026
 - Für jeden Typ: Baukosten, Bauzeit, Besatzung, Kapazität, Schaden, Reichweite, Reparatur und Verlustregeln festlegen.
 - Be- und Entladung darf Waren oder Personen nie duplizieren; unterbrochene Fahrten müssen speicherbar sein.
 
-## 4. Einzelspieler-Leuchtturm und KI-Inseln
+## 5. Einzelspieler-Leuchtturm und KI-Inseln
 
 - Ein eigener, klar erkennbarer **Erkundungsleuchtturm** erschließt eine weitere Inselwelt.
 - Nach Fertigstellung beziehungsweise einem bestätigten Erkundungsauftrag wird eine neue, anders aussehende Insel erzeugt.
@@ -67,7 +95,7 @@ Stand: 16. September 2026
 - Beispiel: Eine nordöstlich entdeckte KI-Insel bleibt dauerhaft nordöstlich und wechselt nach Neuladen oder einem späteren Multiplayer-Beitritt nicht ihre Position.
 - Die Minikarte beziehungsweise Weltkarte erweitert ihren Ausschnitt und zeigt Inseln, Seewege, Häfen und Sichtbarkeit.
 
-### 4.1 Fortschrittsabhängige Gegner-KI
+### 5.1 Fortschrittsabhängige Gegner-KI
 
 - Keine reine Attrappe aus Turm und wenigen Soldaten.
 - Beim Erzeugen wird der Fortschritt der eigenen Zivilisation bewertet, unter anderem anhand von:
@@ -82,7 +110,7 @@ Stand: 16. September 2026
 - Verschiedene Seeds, Küstenformen, Vegetation und Ressourcenverteilungen sorgen für unterschiedliche Inseln.
 - Schwierigkeit und Aufholmechanik müssen begrenzt sein: glaubwürdiger Gegner statt exakter Kopie oder unfairer Ressourcenbeschaffung.
 
-## 5. Multiplayer-Leuchtturm und gemeinsame Inselwelt
+## 6. Multiplayer-Leuchtturm und gemeinsame Inselwelt
 
 - Ein zweiter, größerer und optisch eindeutig anderer **Multiplayer-Leuchtturm** verbindet die eigene Insel mit einer gemeinsamen Welt.
 - Die eigene bestehende Insel wird übernommen; Bauwerke, Waren und relative Nachbarinseln bleiben erhalten.
@@ -91,7 +119,7 @@ Stand: 16. September 2026
 - Andere Spieler erhalten eigene Inselverbünde in ausreichendem Abstand, ohne Überlappungen oder unerreichbare Seewege.
 - Weltkoordinaten sind serverseitig stabil und für alle Beteiligten identisch.
 
-### 5.1 Weltkarte und räumliche Konsistenz
+### 6.1 Weltkarte und räumliche Konsistenz
 
 - Lokale Inselpositionen werden als unveränderliche relative Koordinaten eines Verbunds gespeichert.
 - Beim Multiplayer-Beitritt bekommt der Verbund lediglich einen globalen Ursprungspunkt.
@@ -100,7 +128,7 @@ Stand: 16. September 2026
 - Weltkarte lädt entfernte Regionen stufenweise, ohne die komplette Welt permanent zu rendern.
 - Unterschiedliche Inselgrafik und Landschaftsseeds bleiben deterministisch, damit alle Geräte dieselbe Welt sehen.
 
-### 5.2 Live-Synchronisation
+### 6.2 Live-Synchronisation
 
 - Andere Spieler sehen relevante Änderungen zeitnah: Schiffe, Einheiten, Kämpfe, Gebäude, Warenübergaben und Nachrichten.
 - Der Server ist maßgeblich für Besitz, Positionen, Ressourcen, Kampf und Handel; Clients dürfen diese Daten nicht selbst verbindlich festlegen.
@@ -110,7 +138,7 @@ Stand: 16. September 2026
 - Wiederverbindung, Paketverlust, doppelte Ereignisse und Versionskonflikte benötigen feste Regeln.
 - Handy und Laptop desselben Accounts dürfen nicht gleichzeitig widersprüchliche Befehle erzeugen.
 
-### 5.3 Beitritt, Anwesenheit und Nachrichtenhinweise
+### 6.3 Beitritt, Anwesenheit und Nachrichtenhinweise
 
 - Beim Erscheinen eines neuen benachbarten Spielers erzeugt das Nachrichtensystem einen auffälligen Hinweis, beispielsweise „Eine neue Siedlung ist in deiner Nähe aufgetaucht“.
 - Der Nachrichtenbutton zeigt große, gut erkennbare Ausrufezeichen für neue wichtige Ereignisse.
@@ -118,7 +146,7 @@ Stand: 16. September 2026
 - Hinweise müssen anklickbar sein und zur betreffenden Insel, Einheit oder Position springen.
 - Nur die letzten relevanten Nachrichten behalten; Spam zusammenfassen und wiederholte Ereignisse begrenzen.
 
-## 6. Boten und Diplomatie
+## 7. Boten und Diplomatie
 
 - Spieler können einen Boten mit einer kurzen Nachricht zu einer bekannten fremden Insel schicken.
 - Der Bote startet sichtbar an einem passenden Gebäude oder Hafen, reist physisch und kann sein Ziel verfehlen beziehungsweise aufgehalten werden.
@@ -127,7 +155,7 @@ Stand: 16. September 2026
 - Missbrauchsschutz: Längenlimit, Rate-Limit, Blockieren/Stummschalten und serverseitige Inhaltsvalidierung.
 - Private Kontaktdaten dürfen nicht automatisch offengelegt werden.
 
-## 7. Leistung, Sicherheit und Betrieb
+## 8. Leistung, Sicherheit und Betrieb
 
 - Simulation in feste, messbare Teilsysteme zerlegen; keine vollständige Weltberechnung in jedem Renderframe.
 - Inseln ohne aktive Spieler serverseitig mit reduzierter Frequenz oder ereignisbasiert fortschreiben.
@@ -140,15 +168,16 @@ Stand: 16. September 2026
 - Regelmäßige Backups, atomare Speicherungen und Wiederherstellungstests einplanen.
 - CPU-, Speicher- und Datenverkehrsbudgets für Server, Vercel-Variante, Laptop und Mobilgeräte messen.
 
-## 8. Sinnvolle spätere Umsetzungsetappen
+## 9. Sinnvolle spätere Umsetzungsetappen
 
-1. Die vier aktuellen UI-/Funktionsfehler aus Abschnitt 1 beheben.
-2. Sichtbare Kasernenausbildung mit speicherbaren Zuständen fertigstellen.
-3. Lokale Weltkoordinaten, mehrere Inseln und erweiterte Karte ohne Multiplayer entwickeln.
-4. Hafen, Wasserwege und ein Warenschiff als kleinsten vollständigen Seefahrt-Vertikalschnitt bauen.
-5. Erkundungsleuchtturm und eine echte fortschrittsabhängige KI-Insel ergänzen.
-6. Serverautoritative Welt- und Ereignisstruktur entwickeln und Lasttests durchführen.
-7. Multiplayer-Leuchtturm, stabilen Inselverbund-Beitritt und Live-Synchronisation aktivieren.
-8. Truppentransporter, Kriegsschiff, Kampf, Handel, Boten und Diplomatie schrittweise ergänzen.
+1. Die aktuellen UI-/Funktionsfehler aus Abschnitt 1 beheben.
+2. Gruppenbefehle zuverlässig machen und kollisionsarme Wuselbewegung aus Abschnitt 2 entwickeln.
+3. Sichtbare Kasernenausbildung mit speicherbaren Zuständen fertigstellen.
+4. Lokale Weltkoordinaten, mehrere Inseln und erweiterte Karte ohne Multiplayer entwickeln.
+5. Hafen, Wasserwege und ein Warenschiff als kleinsten vollständigen Seefahrt-Vertikalschnitt bauen.
+6. Erkundungsleuchtturm und eine echte fortschrittsabhängige KI-Insel ergänzen.
+7. Serverautoritative Welt- und Ereignisstruktur entwickeln und Lasttests durchführen.
+8. Multiplayer-Leuchtturm, stabilen Inselverbund-Beitritt und Live-Synchronisation aktivieren.
+9. Truppentransporter, Kriegsschiff, Kampf, Handel, Boten und Diplomatie schrittweise ergänzen.
 
 Jede Etappe braucht eigene Simulationstests, Speicher-/Migrationsprüfungen, Browserprüfungen auf Laptop und Mobilgerät sowie einen Test mit einer bereits bestehenden Insel. Multiplayer wird erst als fertig bezeichnet, wenn zwei getrennte Geräte dieselbe serverautoritativ gespeicherte Welt nach Verbindungsabbruch konsistent fortsetzen können.
