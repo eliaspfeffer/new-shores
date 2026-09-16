@@ -43,6 +43,20 @@ Stand: 16. September 2026
   - Beschäftigte Siedler zeigen verständlich an, ob der Befehl sofort gilt oder nach Abschluss der aktuellen Tätigkeit ausgeführt wird.
   - Maus, Touch, gemischte Einheitengruppen und gespeicherte/neu geladene Gruppen verhalten sich identisch.
 
+### 1.5 Ungültige Arbeitsbereiche unmittelbar farblich anzeigen
+
+- Beim Festlegen eines Arbeitsbereichs, beispielsweise für einen Holzfäller, bleiben die Vorschaupunkte derzeit auch dann grün, wenn der gewählte Bereich außerhalb der zulässigen Reichweite liegt.
+- Ungültige beziehungsweise nicht erreichbare Punkte sollen unmittelbar **rot** dargestellt werden, damit der Grund schon auf der Karte erkennbar ist und nicht erst aus einem Text gelesen werden muss.
+- Gültige Punkte bleiben grün; der gerade anvisierte Mittelpunkt erhält zusätzlich eine eindeutige Kontur.
+- Bei teilweise gültigen Bereichen werden die einzelnen Punkte getrennt bewertet: nutzbar grün, unzulässig rot.
+- Mögliche Gründe wie zu große Entfernung, fremdes Gebiet, Wasser, blockierter Weg oder fehlende passende Ressource dürfen unterschiedliche Symbole oder kurze Hinweise erhalten, müssen aber mindestens durch Rot als ungültig erkennbar sein.
+- Die Farbwahl benötigt neben Rot/Grün zusätzlich Form, Kontur oder Symbol, damit sie auch bei Rot-Grün-Sehschwäche verständlich bleibt.
+- Spätere Abnahmekriterien:
+  - Die Vorschau ändert sich ohne zusätzlichen Klick während Mausbewegung beziehungsweise Touch-Auswahl.
+  - Ein ungültiger Punkt kann nicht versehentlich als gültiger Arbeitsbereich bestätigt werden.
+  - Holzfäller, Förster, Steinmetz und alle weiteren Gebäude mit einstellbarem Arbeitsbereich verwenden dieselbe Logik.
+  - Kartenzoom, mobile Ansicht und Laptop-Ansicht zeigen denselben Gültigkeitszustand.
+
 ## 2. Wuselfaktor, Abstand und Gruppenbewegung
 
 - Laufende Siedler und Soldaten dürfen nicht dauerhaft ineinander stehen oder optisch zu einer einzigen Figur verschmelzen.
