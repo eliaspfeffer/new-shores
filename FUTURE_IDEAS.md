@@ -57,6 +57,29 @@ Stand: 16. September 2026
   - Holzfäller, Förster, Steinmetz und alle weiteren Gebäude mit einstellbarem Arbeitsbereich verwenden dieselbe Logik.
   - Kartenzoom, mobile Ansicht und Laptop-Ansicht zeigen denselben Gültigkeitszustand.
 
+### 1.6 „Siedler finden“ nach Kategorien statt Einzelpersonen
+
+- Das Menü listet derzeit einzelne Figuren wie „Holzfäller #0“ und „Holzfäller #4“ auf und wird bei größeren Siedlungen unnötig voll.
+- Die erste Ebene soll stattdessen zusammengefasste Berufs- und Einheitengruppen zeigen, beispielsweise:
+  - Holzfäller,
+  - Förster,
+  - Träger,
+  - Bauarbeiter,
+  - Bergleute nach Minentyp,
+  - Schmiede nach Betrieb,
+  - Pioniere und Geologen,
+  - Schwertkämpfer, Bogenschützen und Sanitäter.
+- Jede Kategorie zeigt die Anzahl der vorhandenen, aktiven und gegebenenfalls untätigen Siedler.
+- Ein Klick auf „Holzfäller“ markiert alle eigenen Holzfäller gleichzeitig auf der Karte und passt den Kartenausschnitt so an, dass die Gruppe sinnvoll sichtbar ist.
+- Die markierten Figuren erhalten eine deutliche gemeinsame Hervorhebung; ihre Arbeitsgebäude können optional mit markiert werden.
+- Eine zweite, bewusst aufgerufene Detailstufe darf einzelne Personen anzeigen, falls später eine bestimmte Figur gesucht werden soll. Sie ist nicht die Standardansicht.
+- Filter für „untätig“, „blockiert“, „unterwegs“ und „im Gebäude“ können die Kategorieansicht ergänzen, ohne die Hauptliste mit Einzelpersonen zu überladen.
+- Spätere Abnahmekriterien:
+  - Die Länge der ersten Menüebene hängt von den vorhandenen Kategorien ab, nicht von der gesamten Einwohnerzahl.
+  - Eine Kategorieauswahl erfasst wirklich alle lebenden eigenen Siedler dieses Berufs, einschließlich momentan laufender oder im Betrieb befindlicher Personen.
+  - Laptop- und Mobilansicht verwenden dieselbe Gruppierungs- und Auswahlregel.
+  - Nach Schließen des Menüs bleibt die Gruppenauswahl sichtbar und kann direkt einen gemeinsamen Befehl erhalten, sofern der Beruf dies erlaubt.
+
 ## 2. Wuselfaktor, Abstand und Gruppenbewegung
 
 - Laufende Siedler und Soldaten dürfen nicht dauerhaft ineinander stehen oder optisch zu einer einzigen Figur verschmelzen.
