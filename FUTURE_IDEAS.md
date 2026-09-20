@@ -12,7 +12,7 @@ Stand: 20. September 2026
 - Die Insel erhält Wald, Stein und zusätzliche Kohle-, Eisen-, Gold- und Schwefelvorkommen. Die Vorkommen bleiben geologisch unentdeckt, bis sie regulär untersucht werden.
 - Bestehender KI-Außenposten und Soldaten werden auf die neue Insel versetzt; weitere Gebäude und Soldaten skalieren weiterhin etwas unterhalb der Spielersiedlung.
 - Das Leuchtfeuer deckt die komplette Inselzone dauerhaft auf. Eine einzelne schmale Westpassage akzeptiert wahlweise Holzbrücke oder Fähre; ohne Überfahrt bleibt die Insel für die normale Wegsuche isoliert.
-- [x] Jeder weitere fertiggestellte Erkundungsleuchtturm entdeckt die nächste von vier stabilen KI-Inselpositionen. Jede Insel erhält eigene Rohstoffe und eine kleinere, lokal skalierte KI-Siedlung.
+- [x] Jeder weitere fertiggestellte Erkundungsleuchtturm entdeckt eine freie, bislang unerforschte und unbeanspruchte Wasserzone. Jede Insel erhält eigene Rohstoffe und eine kleinere, lokal skalierte KI-Siedlung.
 - [x] Unbekanntes Meer einschließlich der Fläche außerhalb der lokalen Kartenränder wird vollständig schwarz maskiert; nur aktiv sichtbare Felder schneiden den Nebel auf.
 - Inselposition, Gelände, Rohstoffe, KI-Ausbau, Sichtbarkeit und Überfahrt werden gespeichert. Alte Spielstände ohne entdeckte KI-Insel erhalten weiterhin erst durch den Leuchtturm die neue Insel.
 
