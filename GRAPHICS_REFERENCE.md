@@ -1,5 +1,9 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 20. September 2026: begehbare Holzbrücke
+
+Für die neue ein Feld lange Holzbrücke wurde kein eindeutig belegtes Brückenasset der PC-Fassung gefunden. Stattdessen wurden Originalbilder von Küste, Hafen und Transportschiffen vollständig betrachtet; Quellen, finaler Built-in-Imagegen-Prompt und Einschränkungen stehen in [assets/BRIDGE_PROMPT.md](assets/BRIDGE_PROMPT.md). Das neue transparente Sprite ist eigenständig, verwendet warmes Holz, helle Steinwiderlager und eine kräftige isometrische Comic-Silhouette. Es ersetzt keine vorhandene Grafik. Beide Achsen, Kartenansicht und laufende Überquerung wurden im Spiel geprüft; eine originalgetreue Siedler-IV-Brücke wird nicht behauptet.
+
 ## Nachtrag 20. September 2026: Leuchtturm und KI-Entdeckung
 
 Vor der Umsetzung wurde nach einem Leuchtturm der PC-Fassung von *Die Siedler IV* beziehungsweise der römischen Gebäudefamilie gesucht. In den gefundenen und vollständig betrachteten Siedlungsbildern ([Gamezone: römische Siedlung](https://www.gamezone.de/Die-Siedler-4-Spiel-21498/Tests/Die-Siedler-4-im-Gamezone-Test-987819/), [Holarse: Küstensiedlung mit Schiff](https://holarse.de/wiki/die_siedler_iv)) war kein eindeutig belegbarer Leuchtturm zu sehen. Deshalb wird kein angeblich originales Gebäude nachgebildet. Der neue Leuchtturm ist eine eigene, direkt im Renderer gezeichnete römisch inspirierte Silhouette: heller Steinturm, rotes Dach und warmes Leuchtfeuer. Vorhandene Rasteratlanten wurden nicht ersetzt; Bauzustände verwenden bewusst das bestehende neutrale Fundament, bis eine passende Originalreferenz belegt ist.

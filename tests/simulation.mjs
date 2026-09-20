@@ -67,7 +67,7 @@ Object.assign(context,{chooseStorage,rerouteStorageAfterDemolition,depotGoods,ti
 context.sessionStorage={getItem:()=>null};context.createSettlerSpacing=createSettlerSpacing;
 vm.createContext(context);
 const source=fs.readFileSync(new URL('../src/main.js',import.meta.url),'utf8').replace(/^import .*\n/gm,'').replaceAll('import.meta.env.DEV','false').replace(/new URL\([^\n]+?import.meta.url\).href/g,"'test-image.png'");
-vm.runInContext(source+`;globalThis.qa={routeTo,workforce,exploration,growTree,nearby,workers,buildings,trees,rocks,traffic,trailEdges,terrain,updateWorkers,save,load,runProduction,strategy,selectedWorkers,placementReason,getBuildSites,hitBuilding,iso,setWorkingArea,demolishBuilding,getResources:()=>resources};`,context);
+vm.runInContext(source+`;globalThis.qa={routeTo,workforce,exploration,growTree,nearby,workers,buildings,roads,trees,rocks,traffic,trailEdges,terrain,updateWorkers,save,load,runProduction,strategy,selectedWorkers,placementReason,getBuildSites,hitBuilding,iso,setWorkingArea,demolishBuilding,placeBridge:g=>{selectedTool='bridge';return place(g)},getResources:()=>resources};`,context);
 const q=context.qa;
 // Pioneers may cross and occupy resource tiles, but not water or buildings.
 {
@@ -85,13 +85,19 @@ const q=context.qa;
  console.log('PASS: pioneer forest/stone traversal and resource-tile targets; water/buildings/carrier rules preserved');
 }
 const catalog=elements.get('.tool-dock').innerHTML;
-assert.equal((catalog.match(/class="building-preview"/g)||[]).length,27,'every buildable building has its in-game preview');
+assert.equal((catalog.match(/class="building-preview"/g)||[]).length,28,'every buildable building has its in-game preview');
 assert.ok(!catalog.includes('undefined'),'all buildings have names, art and descriptions');
 assert.ok(catalog.includes('1 Mehl + 1 Wasser → 2 Brot.'),'menu describes actual strategy recipe, not obsolete flavor text');
 assert.ok(catalog.includes('Bergbau & Metall')&&catalog.includes('Baukategorie'));
 for(const item of ['coal','ironOre','goldOre','sulfur'])assert.ok(catalog.includes('class="mine-resource" data-resource="'+item+'"'),'mine card shows matching deposit/output symbol: '+item);
 assert.equal((catalog.match(/class="mine-resource"/g)||[]).length,4);
 console.log('PASS: complete building catalog, sprite previews, translated categories and current recipes');
+{
+ const g={x:10,y:10},old=q.terrain[g.y][g.x],planks=q.getResources().planks,stone=q.getResources().stone;q.terrain[g.y][g.x]='water';q.exploration.revealCircle(g.x,g.y,2);q.strategy.state.enemySettlement={version:1,discovered:true,center:{x:16,y:10},growthClock:0,recruitClock:0,grace:180,targetBuildings:4,targetArmy:3,islandCreated:true,bridgeHint:g};
+ assert.equal(q.placementReason(g,'bridge'),'');q.placeBridge(g);assert.equal(q.terrain[g.y][g.x],'bridge');assert.equal(JSON.stringify(q.roads.at(-1)),JSON.stringify({x:10,y:10,type:'bridge',axis:'x'}));assert.equal(q.getResources().planks,planks-6);assert.equal(q.getResources().stone,stone-2);
+ q.roads.pop();q.terrain[g.y][g.x]=old;q.getResources().planks=planks;q.getResources().stone=stone;delete q.strategy.state.enemySettlement;
+ console.log('PASS: bridge placement, exact costs, saved axis and real pathfinding connection');
+}
 // Isolate the established economy test from the new optional enemy outpost.
 q.buildings.splice(1);q.workers.splice(8);
 const initial=q.workers.map(w=>[w.x,w.y]);

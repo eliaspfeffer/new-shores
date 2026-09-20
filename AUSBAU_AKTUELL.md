@@ -3,10 +3,11 @@
 ## Leuchtturm und skalierende Gegner-KI · 20. September 2026
 
 - In der Kategorie „Siedlung“ steht ein Leuchtturm für 8 Bretter und 10 Stein. Er muss im eigenen Gebiet höchstens zwei Felder von Wasser entfernt gebaut werden.
-- Bei Fertigstellung entdeckt das Leuchtfeuer einmalig den gegnerischen Siedlungsbereich und hält einen Radius von 13 Feldern dauerhaft sichtbar. Alte Spielstände bleiben unverändert; die KI-Siedlung entsteht erst nach dem Bau.
+- Bei Fertigstellung entdeckt das Leuchtfeuer einmalig die gegnerische Insel und hält einen Radius von 13 Feldern dauerhaft sichtbar. Ein geschlossener, ein Feld breiter Wassergraben trennt sie tatsächlich vom Festland; ohne Übergang findet die Wegsuche keinen Pfad. Alte Spielstände bleiben unverändert, bis der Leuchtturm gebaut wird.
 - Die erzeugte Gegnerbasis wird an der beim Entdecken vorhandenen Spielersiedlung kalibriert: Zielgröße für fertige Wirtschaftsgebäude und Armee jeweils rund 82 %, mit Untergrenzen von vier Gebäuden und drei Soldaten. Bereits vorhandener Außenposten und vorhandene Soldaten zählen mit; Einheiten entstehen nicht unbegrenzt.
 - Danach prüft die KI höchstens alle 90 Sekunden einen weiteren Bauplatz und höchstens alle 75 Sekunden einen Soldatennachschub, jeweils nur bis zum mitwachsenden 82-%-Ziel. Nach 180 Sekunden Schonfrist darf sie die bereits vorhandene Turmangriffslogik verwenden. Bewegung, Reichweite, Treffer und Eroberung bleiben die realen vorhandenen Regeln.
-- Die KI-Wirtschaft ist bewusst eine begrenzte Fortschrittsspiegelung, noch kein zweites vollständiges Waren-/Trägernetz. Schiffe, echte getrennte Inseln, Diplomatie und eine frei planende Produktionswirtschaft bleiben offen.
+- Unter „Grundversorgung“ steht danach die Holzbrücke für 6 Bretter und 2 Stein bereit. Sie darf ausschließlich auf ein einzelnes Wasserfeld zwischen direkt gegenüberliegenden Landufern gesetzt werden. Das Feld wird für dieselbe Wegsuche passierbar, die Träger, Spezialisten und Soldaten verwenden; damit werden reale Transporte, Märsche und Angriffe auf die Insel möglich. Brückenlage, Achse und Insel bleiben im Spielstand erhalten.
+- Die KI-Wirtschaft ist bewusst eine begrenzte Fortschrittsspiegelung, noch kein zweites vollständiges Waren-/Trägernetz. Schiffe, Häfen, Diplomatie und eine frei planende Produktionswirtschaft bleiben offen.
 
 Grafikabgleich und belegte Einschränkungen: [GRAPHICS_REFERENCE.md](GRAPHICS_REFERENCE.md). Prüfung: neuer isolierter KI-/Leuchtturmtest, Simulation, Strategie und Produktionsbuild bestanden; laufende Darstellung visuell geprüft.
 
