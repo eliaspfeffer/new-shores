@@ -131,7 +131,11 @@ export function createStrategy(api){
     while(w.surveyQueue?.length){const site=w.surveyQueue.shift();if(visited.has(site.x+','+site.y)||!reserveSite(w,site))continue;let p={x:site.x+.5,y:site.y+.5},route=routeTo(w,p);if(!route){p=entrance(site);route=p&&routeTo(w,p);}if(!route)continue;Object.assign(w,{workSite:site,route,routeIndex:0,phase:'command',wait:0,surveyStatus:'Autonom: nächste Bodenprobe'});return true;}
     w.phase='guard';w.route=null;w.workSite=null;w.workRetry=8;w.surveyStatus='Arbeitsgebiet untersucht oder blockiert · wartet';return false;
   }
-  function neutralFrontier(g){return terrain[g.y]?.[g.x]==='grass'&&ownerAt(g.x,g.y)===0&&[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>ownerAt(g.x+dx,g.y+dy)===1);}
+  // A coast is walkable terrain.  Requiring only cardinal grass neighbours
+  // made pioneers appear to work on one coast but stop on the mirrored coast
+  // whenever its shoreline met the territory diagonally.  Treat both grass
+  // and shore as an eight-neighbour frontier, while water remains forbidden.
+  function neutralFrontier(g){return ['grass','shore'].includes(terrain[g.y]?.[g.x])&&ownerAt(g.x,g.y)===0&&[-1,0,1].some(dy=>[-1,0,1].some(dx=>(dx||dy)&&ownerAt(g.x+dx,g.y+dy)===1));}
   function nextPioneer(w){
     const area=w.workArea;if(!area)return false;const sites=[];
     for(let y=Math.max(1,area.y-area.radius);y<Math.min(terrain.length-1,area.y+area.radius+1);y++)for(let x=Math.max(1,area.x-area.radius);x<Math.min(terrain[y].length-1,area.x+area.radius+1);x++){const s={x,y};if(dist(s,area)<=area.radius&&neutralFrontier(s)&&reserveSite(w,s))sites.push(s);}
