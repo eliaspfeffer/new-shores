@@ -143,6 +143,17 @@ export function createStrategy(api){
     for(const site of sites){const target={x:site.x+.5,y:site.y+.5},route=routeTo(w,target);if(!route)continue;Object.assign(w,{workSite:site,route,routeIndex:0,phase:'command',order:{...site,building:-1},wait:0,surveyStatus:'Autonom: nächste Grenzfläche'});return true;}
     w.phase='guard';w.route=null;w.workSite=null;w.workRetry=8;w.surveyStatus='Keine erreichbare neutrale Grenzfläche im Arbeitsgebiet';return false;
   }
+  function captureBuilding(w,b){
+    if(!b||b.destroyed||b.progress<1||b.type==='tower'||w.unit!=='swordsman'||(b.owner||1)===(w.owner||1))return false;
+    const defenders=workers.some(o=>!o.dead&&isMilitary(o)&&(o.owner||1)===(b.owner||1)&&Math.hypot(o.x-(b.x+.5),o.y-(b.y+.5))<=3.5);
+    if(defenders)return true;
+    if(w.wait<2.4)return true;
+    const capacity=b.type==='largehouse'?12:b.type==='house'?4:0;
+    b.owner=w.owner||1;b.hp=Math.max(60,b.hp||0);b.stopped=false;
+    if(capacity&&b.completed)stock().beds=(stock().beds||0)+capacity;
+    w.phase='guard';w.order=null;w.route=null;w.wait=0;delete w.autoTower;
+    api.onEvent?.('capture',b);toast((b.name||b.type)+' eingenommen');recalculate();api.hud();return true;
+  }
   function surveyNearest(){const w=workers.find(w=>api.selected.has(w.id)&&w.unit==='geologist'&&!w.dead);if(!w)return toast('Zuerst einen Geologen auswählen');const sites=state.deposits.filter(d=>!d.discovered&&(!api.isSeen||api.isSeen(d.x,d.y))).sort((a,b)=>dist(a,w)-dist(b,w));for(const d of sites){const p=entrance(d);if(p&&routeTo(w,p))return command(d);}toast('Kein erreichbares, unerforschtes Felsgebiet bekannt. Karte erkunden oder Ziel selbst zuweisen.');return false;}
   function depositFor(b){return state.deposits.find(d=>d.discovered&&d.type===recipes[b.type]?.deposit&&d.amount>0&&dist(b,d)<=2);}
   function placement(g,type){if(ownerAt(g.x,g.y)!==1)return 'Build inside your territory; use a pioneer to expand';if(recipes[type]?.deposit&&!depositFor({...g,type}))return 'Geologist must discover the matching deposit nearby';return '';}
@@ -177,7 +188,8 @@ export function createStrategy(api){
         }else if(['swordsman','archer'].includes(w.unit)&&b?.type==='tower'){
           if((b.owner||1)!==(w.owner||1)){if(w.combatStance==='march'){w.phase='guard';w.order=null;delete w.autoTower;return true;}if(fightTowerDefender(w,b,{workers,buildings,damage:damageUnit,onEvent:api.onEvent}))return true;if(w.wait>=1.2){b.hp=(b.hp??100)-(w.unit==='archer'?6:12);w.wait=0;if(b.hp<=0){b.owner=w.owner||1;b.hp=100;b.garrison=0;delete w.autoTower;api.onEvent?.('capture',b);toast('Outpost captured');recalculate();}}}
           else {if((b.garrison||0)>=towerCapacity){w.phase='guard';w.order=null;toast('Turm voll: maximal '+towerCapacity+' Soldaten');return true;}b.garrison=(b.garrison||0)+1;w.garrisonIndex=buildings.indexOf(b);w.phase='garrison';recalculate();}
-        }else if(w.unit==='geologist'){
+        }else if(captureBuilding(w,b))return true;
+        else if(w.unit==='geologist'){
           w.surveyStatus='Untersucht Boden · '+Math.min(100,Math.floor(w.wait/4*100))+' %';
           if(w.wait>=4){const names={coal:'Kohle',ironOre:'Eisenerz',goldOre:'Golderz',sulfur:'Schwefel'};let found=false;for(const d of state.deposits)if(!d.discovered&&dist(w,d)<2.2){d.discovered=true;found=true;toast('Geologe: '+names[d.type]+' gefunden – '+d.amount+' Vorrat. Passende Mine in der Nähe bauen.');api.onEvent?.('discovery',d);}w.surveyDone=(w.surveyDone||0)+1;const site=w.workSite||w.order;if(site){w.surveyVisited??=[];const key=site.x+','+site.y;if(!w.surveyVisited.includes(key))w.surveyVisited.push(key);}if(found){w.surveyStatus='Vorkommen gefunden';}nextSurvey(w);}
         }

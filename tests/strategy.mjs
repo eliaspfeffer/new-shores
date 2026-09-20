@@ -32,6 +32,9 @@ assert.equal(s.ownerAt(39,30),1,'occupied tower projects territory');s.release(t
 const autoTower={type:'tower',x:Math.floor(soldier.x)+3,y:Math.floor(soldier.y),progress:1,owner:2,hp:100};buildings.push(autoTower);s.tickWorker(soldier,.1);assert.equal(soldier.order?.building,buildings.indexOf(autoTower),'nearby enemy tower is attacked automatically');
 selected.clear();selected.add(soldier.id);assert.ok(s.command({x:25,y:27}));assert.equal(soldier.autoTower,undefined,'manual destination cancels automatic tower attack');assert.equal(soldier.order.building,-1);autoTower.owner=1;Object.assign(soldier,{phase:'guard',route:null,order:null});
 const enemy={id:99,x:soldier.x+.5,y:soldier.y,unit:'swordsman',owner:2,hp:10,phase:'guard'};workers.push(enemy);s.tickWorker(soldier,1.3);assert.equal(enemy.dead,true,'melee damages and kills an enemy');
+const enemySawmill={type:'sawmill',name:'KI Sägewerk',x:30,y:27,progress:1,completed:true,owner:2,stopped:true,ready:'planks'};buildings.push(enemySawmill);selected.clear();selected.add(soldier.id);assert.ok(s.command(enemySawmill));for(let i=0;i<500&&enemySawmill.owner===2;i++)s.tickWorker(soldier,.1);
+assert.equal(enemySawmill.owner,1,'swordsman captures a defended-faction civilian building after reaching it');assert.equal(enemySawmill.stopped,false);assert.equal(enemySawmill.ready,'planks','captured building keeps its physical goods');assert.equal(soldier.phase,'guard');
+const enemyHouse={type:'house',name:'KI Wohnhaus',x:31,y:27,progress:1,completed:true,owner:2};buildings.push(enemyHouse);const bedsBefore=resources.beds||0;assert.ok(s.command(enemyHouse));for(let i=0;i<500&&enemyHouse.owner===2;i++)s.tickWorker(soldier,.1);assert.equal(resources.beds,bedsBefore+4,'captured housing adds capacity exactly once');
 // Inputs must physically arrive before smelting can proceed.
 const smelter={type:'smelter',x:27,y:25,progress:1};buildings.push(smelter);
 const carrier={id:101,x:25.5,y:26.5,phase:'idle',t:0};workers.push(carrier);
@@ -46,7 +49,7 @@ assert.equal(site.reserved.planks,0);assert.equal(site.buffer.stone,1);
 assert.equal(new Set([[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]].map(([x,y])=>facing8(x,y))).size,8);
 for(const [type,r] of Object.entries(recipes)){const b={type,x:18,y:22,progress:1,buffer:{...r.inputs},toolChoice:'hammer'};if(r.deposit){s.state.deposits.push({x:18,y:22,type:r.deposit,discovered:true,amount:2});}s.produce(b,r.cycle);assert.equal(b.ready,type==='toolsmith'?'hammer':r.output,type+' produces its output');for(const n of Object.values(b.buffer))assert.equal(n,0,type+' consumes inputs');}
 const snapshot=JSON.parse(JSON.stringify(s.state));s.state.claims=[];s.restore(snapshot);assert.ok(s.state.claims.length,'territory state restores');
-console.log('PASS: territory, surveying, recruitment, commands, tower capture/garrison, combat, physical inputs, building supplies, all recipes, eight directions, strategy restore');
+console.log('PASS: territory, surveying, recruitment, commands, tower and civilian-building capture, combat, physical inputs, building supplies, all recipes, eight directions, strategy restore');
 const walker={id:150,x:25.5,y:26.5,phase:'idle',t:0};workers.push(walker);selected.clear();selected.add(walker.id);
 assert.ok(s.command({x:22,y:26}));for(let i=0;i<100;i++)s.tickWorker(walker,.1);
 assert.equal(walker.x,22.5);assert.equal(walker.y,26.5);assert.equal(walker.phase,'idle');

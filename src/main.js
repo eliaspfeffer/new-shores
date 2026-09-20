@@ -406,7 +406,7 @@ function place(g){if(outdoorOccupied(g))return toast('Hier liegt ein Feld oder e
 const basePlace=place;place=g=>{if(selectedTool!=='ferry')return basePlace(g);const def=buildDefs.ferry,reason=placementReason(g,'ferry');if(reason)return toast(reason);if(resources.planks<def.wood||resources.stone<def.stone)return toast(`Need ${def.wood} planks and ${def.stone} stone`);const beforePlanks=resources.planks,beforeStone=resources.stone;selectedTool='bridge';resources.planks+=buildDefs.bridge.wood;resources.stone+=buildDefs.bridge.stone;basePlace(g);resources.planks=beforePlanks-def.wood;resources.stone=beforeStone-def.stone;const crossing=roads.at(-1);if(crossing?.x===g.x&&crossing?.y===g.y){crossing.type='ferry';terrain[g.y][g.x]='ferry';toast('Fähre fertig – der Weg zur KI-Insel ist offen');save();}};
 function inspect(g){
   const b=buildings.find(b=>b.x===g.x&&b.y===g.y);if(!b)return;
-  if(b.owner===2){toast('Feindlicher Außenposten: Schwertkämpfer zum Erobern schicken');return;}
+  if((b.owner||1)!==1){toast('Gegnerisches Gebäude: Schwertkämpfer auswählen und diesem Gebäude als Ziel zuweisen');return;}
   selectedWorkers.clear();commandMode=false;settingArea=false;inspectedWorker=null;inspectedBuilding=b;configureBuildingActions(b);showCommandPanel('building');
   document.querySelector('#building-actions').classList.remove('hidden');
   document.querySelector('#production-toggle').textContent=b.stopped?'Fortsetzen':'Anhalten';

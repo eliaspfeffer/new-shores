@@ -15,6 +15,7 @@ Stand: 20. September 2026
 - [x] Jeder weitere fertiggestellte Erkundungsleuchtturm entdeckt eine freie, bislang unerforschte und unbeanspruchte Wasserzone. Jede Insel erhält eigene Rohstoffe und eine kleinere, lokal skalierte KI-Siedlung.
 - [x] Unbekanntes Meer einschließlich der Fläche außerhalb der lokalen Kartenränder wird vollständig schwarz maskiert; nur aktiv sichtbare Felder schneiden den Nebel auf.
 - Inselposition, Gelände, Rohstoffe, KI-Ausbau, Sichtbarkeit und Überfahrt werden gespeichert. Alte Spielstände ohne entdeckte KI-Insel erhalten weiterhin erst durch den Leuchtturm die neue Insel.
+- [x] Schwertkämpfer können nach ausgeschalteter naher Verteidigung auch gegnerische Wirtschafts-, Wohn- und Lagergebäude direkt einnehmen. Waren und Produktionszustand bleiben physisch erhalten; Wohnhäuser übertragen ihre Kapazität und die neue Eigentümerschaft wird gespeichert.
 
 ## Umgesetzt: Spielstand-Vorschauen und unterscheidbare Rohstofffelder
 
