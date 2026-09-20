@@ -1,44 +1,28 @@
-// A deliberately bounded opponent economy. It mirrors the player's progress at
-// a discount instead of simulating a second full transport network.
-const layout=[[-2,2,'warehouse'],[2,2,'house'],[-3,-1,'woodcutter'],[3,-1,'quarry'],[-2,-3,'sawmill'],[2,-3,'barracks'],[0,4,'farm'],[-4,3,'tower'],[4,3,'tower']];
+const layout=[[-2,2,'warehouse'],[2,2,'house'],[-3,-1,'woodcutter'],[3,-1,'quarry'],[-2,-3,'sawmill'],[2,-3,'barracks'],[0,4,'farm'],[-4,2,'tower'],[4,2,'tower']];
+const ISLAND={x:42,y:10,landRadius:5,hiddenRadius:9};
 const military=w=>!w.dead&&(w.owner||1)===2&&['swordsman','archer'].includes(w.unit);
-
-export function playerStrength(buildings,workers){
-  const economy=buildings.filter(b=>(b.owner||1)===1&&b.progress>=1&&!['storehouse','lighthouse'].includes(b.type)).length;
-  const army=workers.filter(w=>!w.dead&&(w.owner||1)===1&&['swordsman','archer'].includes(w.unit)).length;
-  return {economy,army,targetBuildings:Math.min(100,Math.max(4,Math.floor(economy*.82))),targetArmy:Math.min(100,Math.max(3,Math.floor(Math.max(army,4)*.82)))};
-}
-
+export function playerStrength(buildings,workers){const economy=buildings.filter(b=>(b.owner||1)===1&&b.progress>=1&&!['storehouse','lighthouse'].includes(b.type)).length,army=workers.filter(w=>!w.dead&&(w.owner||1)===1&&['swordsman','archer'].includes(w.unit)).length;return {economy,army,targetBuildings:Math.min(100,Math.max(4,Math.floor(economy*.82))),targetArmy:Math.min(100,Math.max(3,Math.floor(Math.max(army,4)*.82)))}}
 export function createEnemySettlement(api){
-  const {state,buildings,workers,terrain,trees,rocks,details=[],notify,reveal,recalculate,terrainChanged=()=>{}}=api;
-  const nextId=()=>Math.max(-1,...workers.map(w=>w.id))+1;
-  const free=(x,y)=>terrain[y]?.[x]==='grass'&&!buildings.some(b=>Math.hypot(b.x-x,b.y-y)<1.5);
-  function clear(x,y){for(const list of [trees,rocks])for(let i=list.length-1;i>=0;i--)if(Math.hypot(list[i].x-x,list[i].y-y)<1.5)list.splice(i,1);}
-  function addBuilding(x,y,type){if(!free(x,y))return false;clear(x,y);buildings.push({type,name:'KI '+type,owner:2,x,y,progress:1,completed:true,hp:type==='tower'?100:60,garrison:0});return true;}
-  function addSoldier(type,home,garrisonIndex){const w={id:nextId(),x:home.x+.5,y:home.y+1.5,unit:type,owner:2,rank:1,maxHp:55,hp:55,phase:'guard',t:0};if(garrisonIndex!==undefined){w.phase='garrison';w.garrisonIndex=garrisonIndex;buildings[garrisonIndex].garrison=(buildings[garrisonIndex].garrison||0)+1;}workers.push(w);}
-  function makeIsland(ai){if(ai.islandCreated)return;const {x:cx,y:cy}=ai.center;
-    for(let y=cy-6;y<=cy+6;y++)for(let x=cx-6;x<=cx+6;x++)if(Math.max(Math.abs(x-cx),Math.abs(y-cy))===6&&terrain[y]?.[x]&&!buildings.some(b=>b.x===x&&b.y===y)){terrain[y][x]='water';for(const list of [trees,rocks,details])for(let i=list.length-1;i>=0;i--)if(list[i].x===x&&list[i].y===y)list.splice(i,1);}
-    ai.islandCreated=true;ai.bridgeHint={x:cx-6,y:cy};terrainChanged();
-  }
-  function discover(lighthouse){
-    if(state.enemySettlement?.discovered)return false;
-    const existing=buildings.find(b=>(b.owner||1)===2&&b.type==='tower')||{x:37,y:14};
-    const score=playerStrength(buildings,workers),ai={version:1,discovered:true,center:{x:existing.x,y:existing.y},growthClock:0,recruitClock:0,grace:180,targetBuildings:score.targetBuildings,targetArmy:score.targetArmy};
-    state.enemySettlement=ai;makeIsland(ai);
-    let made=buildings.filter(b=>(b.owner||1)===2).length;
-    for(const [dx,dy,type] of layout){if(made>=score.targetBuildings)break;if(addBuilding(ai.center.x+dx,ai.center.y+dy,type))made++;}
-    const home=buildings.find(b=>(b.owner||1)===2&&b.type==='warehouse')||existing;
-    while(workers.filter(military).length<score.targetArmy)addSoldier(workers.filter(military).length%3===2?'archer':'swordsman',home);
-    reveal(ai.center.x,ai.center.y,13);recalculate();
-    notify(`Leuchtfeuer entdeckt eine KI-Insel: ${made} Gebäude und ${workers.filter(military).length} Soldaten. Baue eine Brücke über den schmalen Wassergraben.`);
-    return true;
-  }
-  function restore(){const ai=state.enemySettlement;if(ai?.discovered){makeIsland(ai);reveal(ai.center.x,ai.center.y,13);}}
-  function tick(dt){const ai=state.enemySettlement;if(!ai?.discovered)return;reveal(ai.center.x,ai.center.y,13);ai.grace=Math.max(0,(ai.grace||0)-dt);ai.growthClock=(ai.growthClock||0)+dt;ai.recruitClock=(ai.recruitClock||0)+dt;
-    const score=playerStrength(buildings,workers);ai.targetBuildings=Math.max(ai.targetBuildings||0,score.targetBuildings);ai.targetArmy=Math.max(ai.targetArmy||0,score.targetArmy);
-    if(ai.growthClock>=90){ai.growthClock=0;const count=buildings.filter(b=>(b.owner||1)===2).length;if(count<ai.targetBuildings){const candidate=layout.find(([dx,dy])=>free(ai.center.x+dx,ai.center.y+dy));if(candidate)addBuilding(ai.center.x+candidate[0],ai.center.y+candidate[1],candidate[2]);recalculate();}}
-    if(ai.recruitClock>=75){ai.recruitClock=0;const count=workers.filter(military).length;if(count<ai.targetArmy){const home=buildings.find(b=>(b.owner||1)===2&&b.type==='warehouse')||ai.center;addSoldier(count%3===2?'archer':'swordsman',home);}}
-    if(ai.grace<=0&&workers.filter(military).length>=3)state.enemyRaids=true;
-  }
-  return {discover,restore,tick};
+ const {state,buildings,workers,terrain,trees,rocks,details=[],notify,reveal,conceal=()=>{},recalculate,terrainChanged=()=>{}}=api;
+ const nextId=()=>Math.max(-1,...workers.map(w=>w.id))+1,free=(x,y)=>terrain[y]?.[x]==='grass'&&!buildings.some(b=>Math.hypot(b.x-x,b.y-y)<1.5);
+ const random=(x,y,s=0)=>{let n=(Math.imul(x+1,374761393)^Math.imul(y+1,668265263)^Math.imul(s+1,1274126177))>>>0;n=Math.imul(n^(n>>>13),1274126177);return ((n^(n>>>16))>>>0)/4294967296;};
+ function clear(x,y,r=1.5){for(const list of [trees,rocks,details])for(let i=list.length-1;i>=0;i--)if(Math.hypot(list[i].x-x,list[i].y-y)<r)list.splice(i,1);}
+ function addBuilding(x,y,type){if(!free(x,y))return false;clear(x,y);buildings.push({type,name:'KI '+type,owner:2,x,y,progress:1,completed:true,hp:type==='tower'?100:60,garrison:0});return true;}
+ function addSoldier(type,home){workers.push({id:nextId(),x:home.x+.5,y:home.y+1.5,unit:type,owner:2,rank:1,maxHp:55,hp:55,phase:'guard',t:0});}
+ function prepare(){if(!state.enemySettlement?.discovered)conceal(ISLAND.x,ISLAND.y,ISLAND.hiddenRadius);}
+ function makeIsland(ai){if(ai.islandCreated)return;const {x:cx,y:cy}=ai.center;clear(cx,cy,8);
+  for(let y=cy-7;y<=cy+7;y++)for(let x=cx-7;x<=cx+7;x++)if(terrain[y]?.[x]){const d=Math.hypot((x-cx)*1.04,y-cy),edge=ISLAND.landRadius+(random(x,y,1)-.5)*1.15;terrain[y][x]=d<=edge?(d>edge-1?'shore':'grass'):'water';}
+  terrain[cy][cx-7]='grass';terrain[cy][cx-6]='water';terrain[cy][cx-5]='shore';ai.bridgeHint={x:cx-6,y:cy};
+  for(let y=cy-4;y<=cy+4;y++)for(let x=cx-4;x<=cx+4;x++)if(terrain[y]?.[x]==='grass'&&Math.hypot(x-cx,y-cy)>2.2){const n=random(x,y,4);if(n>.72)trees.push({x,y,v:random(x,y,5)});else if(n<.15)rocks.push({x,y,amount:6+Math.floor(random(x,y,6)*5)});else if(n>.58)details.push({x,y,type:Math.floor(random(x,y,7)*3)});}
+  state.deposits??=[];for(const [dx,dy,type,amount] of [[-3,1,'coal',70],[3,1,'ironOre',60],[0,-4,'goldOre',45],[0,4,'sulfur',45]])if(!state.deposits.some(d=>d.x===cx+dx&&d.y===cy+dy))state.deposits.push({x:cx+dx,y:cy+dy,type,amount,discovered:false,enemyIsland:true});
+  ai.islandCreated=true;terrainChanged();
+ }
+ function discover(){if(state.enemySettlement?.discovered)return false;const score=playerStrength(buildings,workers),ai={version:2,discovered:true,center:{x:ISLAND.x,y:ISLAND.y},growthClock:0,recruitClock:0,grace:180,targetBuildings:score.targetBuildings,targetArmy:score.targetArmy};state.enemySettlement=ai;makeIsland(ai);
+  const legacy=buildings.find(b=>(b.owner||1)===2&&b.type==='tower');if(legacy){legacy.x=ISLAND.x-4;legacy.y=ISLAND.y+2;clear(legacy.x,legacy.y);}for(const w of workers)if((w.owner||1)===2){w.x=ISLAND.x+.5;w.y=ISLAND.y+1.5;delete w.garrisonIndex;w.phase='guard';}
+  let made=buildings.filter(b=>(b.owner||1)===2).length;for(const [dx,dy,type] of layout){if(made>=score.targetBuildings)break;if(addBuilding(ai.center.x+dx,ai.center.y+dy,type))made++;}const home=buildings.find(b=>(b.owner||1)===2&&b.type==='warehouse')||ai.center;while(workers.filter(military).length<score.targetArmy)addSoldier(workers.filter(military).length%3===2?'archer':'swordsman',home);
+  reveal(ai.center.x,ai.center.y,ISLAND.hiddenRadius);recalculate();notify(`Leuchtfeuer entdeckt eine neue KI-Insel mit Rohstoffen: ${made} Gebäude und ${workers.filter(military).length} Soldaten. Baue Brücke oder Fähre an der schmalen Überfahrt.`);return true;
+ }
+ function restore(){const ai=state.enemySettlement;if(ai?.discovered){if(ai.version<2){const old={...ai.center};for(let y=old.y-6;y<=old.y+6;y++)for(let x=old.x-6;x<=old.x+6;x++)if(terrain[y]?.[x]==='water'&&Math.max(Math.abs(x-old.x),Math.abs(y-old.y))===6)terrain[y][x]='grass';ai.version=2;ai.center={x:ISLAND.x,y:ISLAND.y};ai.islandCreated=false;const enemy=buildings.filter(b=>(b.owner||1)===2);enemy.forEach((b,i)=>{const slot=layout[i%layout.length];b.x=ISLAND.x+slot[0];b.y=ISLAND.y+slot[1];});for(const w of workers)if((w.owner||1)===2){w.x=ISLAND.x+.5;w.y=ISLAND.y+1.5;delete w.garrisonIndex;w.phase='guard';}}makeIsland(ai);reveal(ai.center.x,ai.center.y,ISLAND.hiddenRadius);}else prepare();}
+ function tick(dt){const ai=state.enemySettlement;if(!ai?.discovered)return;reveal(ai.center.x,ai.center.y,ISLAND.hiddenRadius);ai.grace=Math.max(0,(ai.grace||0)-dt);ai.growthClock=(ai.growthClock||0)+dt;ai.recruitClock=(ai.recruitClock||0)+dt;const score=playerStrength(buildings,workers);ai.targetBuildings=Math.max(ai.targetBuildings||0,score.targetBuildings);ai.targetArmy=Math.max(ai.targetArmy||0,score.targetArmy);if(ai.growthClock>=90){ai.growthClock=0;const count=buildings.filter(b=>(b.owner||1)===2).length;if(count<ai.targetBuildings){const c=layout.find(([dx,dy])=>free(ai.center.x+dx,ai.center.y+dy));if(c)addBuilding(ai.center.x+c[0],ai.center.y+c[1],c[2]);recalculate();}}if(ai.recruitClock>=75){ai.recruitClock=0;const count=workers.filter(military).length;if(count<ai.targetArmy){const home=buildings.find(b=>(b.owner||1)===2&&b.type==='warehouse')||ai.center;addSoldier(count%3===2?'archer':'swordsman',home);}}if(ai.grace<=0&&workers.filter(military).length>=3)state.enemyRaids=true;}
+ return {prepare,discover,restore,tick};
 }

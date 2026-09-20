@@ -1,8 +1,18 @@
 # New Shores – Zukunfts-Backlog
 
-Stand: 16. September 2026
+Stand: 20. September 2026
 
-> Dieses Dokument sammelt ausschließlich spätere Arbeiten. In diesem Durchgang wird **keines** der folgenden Features implementiert und kein bestehendes Spielverhalten verändert.
+> Dieses Dokument sammelt spätere Arbeiten und konkretisiert bereits umgesetzte Ausbaustufen. Der folgende Leuchtturm-/KI-Insel-Stand ist implementiert; weiterführende See- und Mehrspielersysteme bleiben Backlog.
+
+## Umgesetzt: Leuchtturm und separate KI-Insel
+
+- Die KI-Siedlung liegt nicht mehr in einem viereckigen Wassergraben auf der Heimatinsel. Für sie ist eine getrennte Weltzone reserviert.
+- Vor Fertigstellung des Leuchtturms bleibt diese gesamte Zone vollständig schwarz. Normale Gebäude, Einheiten und Erkundung können sie nicht vorzeitig aufdecken; dadurch ist weder leeres Gelände noch eine vorab fehlende Insel sichtbar.
+- Beim Leuchtturmabschluss entsteht dort deterministisch eine eigenständige, annähernd runde Insel mit unregelmäßigem Küstenrand und umlaufendem Wasser.
+- Die Insel erhält Wald, Stein und zusätzliche Kohle-, Eisen-, Gold- und Schwefelvorkommen. Die Vorkommen bleiben geologisch unentdeckt, bis sie regulär untersucht werden.
+- Bestehender KI-Außenposten und Soldaten werden auf die neue Insel versetzt; weitere Gebäude und Soldaten skalieren weiterhin etwas unterhalb der Spielersiedlung.
+- Das Leuchtfeuer deckt die komplette Inselzone dauerhaft auf. Eine einzelne schmale Westpassage akzeptiert wahlweise Holzbrücke oder Fähre; ohne Überfahrt bleibt die Insel für die normale Wegsuche isoliert.
+- Inselposition, Gelände, Rohstoffe, KI-Ausbau, Sichtbarkeit und Überfahrt werden gespeichert. Alte Spielstände ohne entdeckte KI-Insel erhalten weiterhin erst durch den Leuchtturm die neue Insel.
 
 ## 1. Aktuelle Fehler und UI-Nacharbeiten
 
