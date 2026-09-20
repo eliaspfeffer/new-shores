@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {parseSave} from '../src/savegames.js';
 const data={version:6,resources:{wood:2},buildings:[{type:'storehouse',x:25,y:25,progress:1}],roads:[],workers:[{id:1,x:25.5,y:26.5,taskIndex:-1,employerIndex:0}]};
 const types=['storehouse'];assert.equal(parseSave(JSON.stringify(data),types).resources.wood,2);
+const expanded={...data,worldSize:72,terrain:Array.from({length:72},()=>Array(72).fill('water'))};assert.equal(parseSave(JSON.stringify(expanded),types).worldSize,72);
+assert.throws(()=>parseSave(JSON.stringify({...data,worldSize:64}),types));
 assert.throws(()=>parseSave(JSON.stringify({...data,version:10}),types));
 assert.throws(()=>parseSave(JSON.stringify({...data,workers:[{...data.workers[0],employerIndex:8}]}),types));
 assert.throws(()=>parseSave(JSON.stringify({...data,workers:[...data.workers,...data.workers]}),types));

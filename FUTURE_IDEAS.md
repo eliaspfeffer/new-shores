@@ -6,12 +6,12 @@ Stand: 20. September 2026
 
 ## Umgesetzt: Leuchtturm und separate KI-Insel
 
-- Die KI-Siedlung liegt nicht mehr in einem viereckigen Wassergraben auf der Heimatinsel. Für sie ist eine getrennte Weltzone reserviert.
+- Die KI-Siedlung liegt nicht mehr in einem viereckigen Wassergraben auf der Heimatinsel. Bestehende 50×50-Spielstände werden kompatibel um einen verdeckten 72×72-Reserveozean erweitert.
 - Vor Fertigstellung des Leuchtturms bleibt diese gesamte Zone vollständig schwarz. Normale Gebäude, Einheiten und Erkundung können sie nicht vorzeitig aufdecken; dadurch ist weder leeres Gelände noch eine vorab fehlende Insel sichtbar.
-- Beim Leuchtturmabschluss entsteht dort deterministisch eine eigenständige, annähernd runde Insel mit unregelmäßigem Küstenrand und umlaufendem Wasser.
+- Erst beim Leuchtturmabschluss wird abhängig vom Standort des Leuchtturms eine freie Stelle im unerforschten Reserveozean gewählt und dort eine eigenständige, annähernd runde Insel mit unregelmäßigem Küstenrand und umlaufendem Wasser erzeugt. Es liegt vorher keine fertige Gegnerinsel unter dem Nebel.
 - Die Insel erhält Wald, Stein und zusätzliche Kohle-, Eisen-, Gold- und Schwefelvorkommen. Die Vorkommen bleiben geologisch unentdeckt, bis sie regulär untersucht werden.
 - Bestehender KI-Außenposten und Soldaten werden auf die neue Insel versetzt; weitere Gebäude und Soldaten skalieren weiterhin etwas unterhalb der Spielersiedlung.
-- Das Leuchtfeuer deckt die komplette Inselzone dauerhaft auf. Eine einzelne schmale Westpassage akzeptiert wahlweise Holzbrücke oder Fähre; ohne Überfahrt bleibt die Insel für die normale Wegsuche isoliert.
+- Das Leuchtfeuer deckt die komplette Inselzone dauerhaft auf. Eine einzelne schmale, zum auslösenden Leuchtturm ausgerichtete Passage akzeptiert wahlweise Holzbrücke oder Fähre; ohne Überfahrt bleibt die Insel für die normale Wegsuche isoliert.
 - [x] Jeder weitere fertiggestellte Erkundungsleuchtturm entdeckt eine freie, bislang unerforschte und unbeanspruchte Wasserzone. Jede Insel erhält eigene Rohstoffe und eine kleinere, lokal skalierte KI-Siedlung.
 - [x] Unbekanntes Meer einschließlich der Fläche außerhalb der lokalen Kartenränder wird vollständig schwarz maskiert; nur aktiv sichtbare Felder schneiden den Nebel auf.
 - Inselposition, Gelände, Rohstoffe, KI-Ausbau, Sichtbarkeit und Überfahrt werden gespeichert. Alte Spielstände ohne entdeckte KI-Insel erhalten weiterhin erst durch den Leuchtturm die neue Insel.
