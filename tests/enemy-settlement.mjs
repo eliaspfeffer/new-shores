@@ -19,4 +19,7 @@ terrain[hint.y][hint.x]='bridge';assert.ok(findPath({x:landing.x+.5,y:landing.y+
 assert(trees.length>0&&rocks.length>0,'new island contains timber and stone');assert.equal(state.deposits.filter(d=>d.enemyIsland).length,8,'each discovered island contains four mineral resources');
 assert.equal(state.enemySettlement.version,3);
 state.enemySettlement.grace=0;state.enemySettlement.recruitClock=74;ai.tick(2);assert.equal(state.enemyRaids,true);
+const recoveryTerrain=Array.from({length:72},(_,y)=>Array.from({length:72},(_,x)=>x<50&&y<50?'grass':'water')),recoveryState={deposits:[]},recoveryBuildings=[{type:'storehouse',owner:1,x:25,y:25,progress:1},{type:'lighthouse',owner:1,x:48,y:40,progress:1}],recoveryWorkers=[];
+createEnemySettlement({state:recoveryState,buildings:recoveryBuildings,workers:recoveryWorkers,terrain:recoveryTerrain,trees:[],rocks:[],details:[],notify:()=>{},reveal:()=>{},isSeen:(x,y)=>x<50&&y<50,ownerAt:(x,y)=>x<46&&y<46?1:0,recalculate:()=>{}}).restore();
+assert.equal(recoveryState.enemySettlement?.discovered,true,'a lighthouse completed before the fix receives its missing island when the save is restored');
 console.log('PASS lighthouse reveals a concealed organic resource island with a bounded weaker opponent; one crossing opens the route');
