@@ -13,6 +13,7 @@ assert.equal(s.ownerAt(37,14),2,'protected enemy territory is never taken by a p
 const restored=JSON.parse(JSON.stringify(pioneer));Object.assign(pioneer,restored);const count=s.state.claims.length;for(let i=0;i<40;i++)s.tickWorker(pioneer,1);assert.ok(s.state.claims.length>=count);
 s.stop();const stopped=s.state.claims.length;for(let i=0;i<100;i++)s.tickWorker(pioneer,1);assert.equal(s.state.claims.length,stopped,'halt cancels autonomous expansion');assert.equal(pioneer.autoWork,false);
 s.command({x:15,y:25});assert.equal(pioneer.workArea.x,15,'new order replaces work area');
+s.command({x:45,y:25});for(let i=0;i<240;i++)s.tickWorker(pioneer,1);assert.equal(s.ownerAt(49,25),1,'pioneer can claim the final land tile at the world edge');
 workers.push({id:3,x:25.5,y:25.5,phase:'idle'});const geo=s.recruit('geologist');s.command({x:26,y:23});
 for(let i=0;i<600;i++)s.tickWorker(geo,1);
 assert.ok(s.state.deposits.filter(d=>d.discovered).length>=3,'one central survey order discovers several nearby deposits');

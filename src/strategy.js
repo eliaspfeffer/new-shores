@@ -138,7 +138,7 @@ export function createStrategy(api){
   function neutralFrontier(g){return ['grass','shore'].includes(terrain[g.y]?.[g.x])&&ownerAt(g.x,g.y)===0&&[-1,0,1].some(dy=>[-1,0,1].some(dx=>(dx||dy)&&ownerAt(g.x+dx,g.y+dy)===1));}
   function nextPioneer(w){
     const area=w.workArea;if(!area)return false;const sites=[];
-    for(let y=Math.max(1,area.y-area.radius);y<Math.min(terrain.length-1,area.y+area.radius+1);y++)for(let x=Math.max(1,area.x-area.radius);x<Math.min(terrain[y].length-1,area.x+area.radius+1);x++){const s={x,y};if(dist(s,area)<=area.radius&&neutralFrontier(s)&&reserveSite(w,s))sites.push(s);}
+    for(let y=Math.max(0,area.y-area.radius);y<Math.min(terrain.length,area.y+area.radius+1);y++)for(let x=Math.max(0,area.x-area.radius);x<Math.min(terrain[y].length,area.x+area.radius+1);x++){const s={x,y};if(dist(s,area)<=area.radius&&neutralFrontier(s)&&reserveSite(w,s))sites.push(s);}
     sites.sort((a,b)=>dist(a,w)+dist(a,area)*.3-dist(b,w)-dist(b,area)*.3);
     for(const site of sites){const target={x:site.x+.5,y:site.y+.5},route=routeTo(w,target);if(!route)continue;Object.assign(w,{workSite:site,route,routeIndex:0,phase:'command',order:{...site,building:-1},wait:0,surveyStatus:'Autonom: nächste Grenzfläche'});return true;}
     w.phase='guard';w.route=null;w.workSite=null;w.workRetry=8;w.surveyStatus='Keine erreichbare neutrale Grenzfläche im Arbeitsgebiet';return false;
