@@ -1,6 +1,7 @@
 import {depotGoods,storageModes} from './storage.js';
 import {validMapConfig} from './map-generator.js';
 import {validateGroundGoods} from './ground-goods.js';
+import {validSaveThumbnail} from './save-thumbnail.js';
 export function parseSave(text,types,width=50,height=50){
   if(typeof text!=='string'||text.length>8_000_000)throw new Error('Spielstand fehlt oder ist zu groß.');
   const s=JSON.parse(text);
@@ -8,6 +9,7 @@ export function parseSave(text,types,width=50,height=50){
   check(s);if(!s||typeof s!=='object'||!Number.isInteger(s.version)||s.version<1||s.version>9)throw new Error('Diese Spielstandversion wird nicht unterstützt.');
   if(s.playerColor!==undefined&&!['red','blue','green','violet'].includes(s.playerColor))throw new Error('Ungültige Spielerfarbe.');
   if(s.saveName!==undefined&&(typeof s.saveName!=='string'||!s.saveName.trim()||s.saveName.length>48))throw new Error('Ungültiger Spielstandname.');
+  if(s.mapPreview!==undefined&&!validSaveThumbnail(s.mapPreview))throw new Error('Ungültige Spielstandvorschau.');
   const point=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.y>=0&&p.x<width&&p.y<height;
   validateGroundGoods(s.strategy,s.workers,point);
   for(const key of ['coalStarterToolUsed','ironStarterToolUsed'])if(s.strategy?.[key]!==undefined&&typeof s.strategy[key]!=='boolean')throw new Error('Ungültige Bergbaureserve.');

@@ -14,6 +14,12 @@ Stand: 20. September 2026
 - Das Leuchtfeuer deckt die komplette Inselzone dauerhaft auf. Eine einzelne schmale Westpassage akzeptiert wahlweise Holzbrücke oder Fähre; ohne Überfahrt bleibt die Insel für die normale Wegsuche isoliert.
 - Inselposition, Gelände, Rohstoffe, KI-Ausbau, Sichtbarkeit und Überfahrt werden gespeichert. Alte Spielstände ohne entdeckte KI-Insel erhalten weiterhin erst durch den Leuchtturm die neue Insel.
 
+## Umgesetzt: Spielstand-Vorschauen und unterscheidbare Rohstofffelder
+
+- Jeder neu gespeicherte Spielstand enthält ein kompaktes Kartenbild der momentan erforschten Welt. Nicht erkundete Felder bleiben darin schwarz; Gelände, Küsten, Gebäude, Bäume, Felsen und Rohstofffelder des sichtbaren Bereichs sind erkennbar.
+- Die Vorschau wird bei jedem Speichern neu erstellt und direkt auf der jeweiligen Spielstandkarte gezeigt. Ältere Spielstände ohne Bild bleiben weiterhin ladbar.
+- Steinbruchfelsen und Bodenschätze sind nun als eigene Comic-Silhouetten lesbar: heller Stein, schwarze Kohle, rostrot geädertes Eisenerz, goldene Quarzadern und gelber Schwefel. Die geologische Markeranzeige verwendet dieselben klaren Formen.
+
 ## 1. Aktuelle Fehler und UI-Nacharbeiten
 
 ### 1.1 „Auswahl aufheben“ auf dem Laptop
@@ -136,10 +142,10 @@ Stand: 20. September 2026
 
 ## 5. Einzelspieler-Leuchtturm und KI-Inseln
 
-- Ein eigener, klar erkennbarer **Erkundungsleuchtturm** erschließt eine weitere Inselwelt.
-- Nach Fertigstellung beziehungsweise einem bestätigten Erkundungsauftrag wird eine neue, anders aussehende Insel erzeugt.
-- Die Insel wird an einer freien, stabilen Weltposition relativ zur Heimatinsel platziert.
-- Beispiel: Eine nordöstlich entdeckte KI-Insel bleibt dauerhaft nordöstlich und wechselt nach Neuladen oder einem späteren Multiplayer-Beitritt nicht ihre Position.
+- [x] Ein eigener, klar erkennbarer **Erkundungsleuchtturm** erschließt eine weitere Inselwelt.
+- [x] Nach Fertigstellung beziehungsweise einem bestätigten Erkundungsauftrag wird eine neue, anders aussehende Insel erzeugt.
+- [x] Die Insel wird an einer freien, stabilen Weltposition relativ zur Heimatinsel platziert.
+- [x] Beispiel: Eine nordöstlich entdeckte KI-Insel bleibt dauerhaft nordöstlich und wechselt nach Neuladen nicht ihre Position. Multiplayer-Beitritt bleibt ein späteres Thema.
 - Die Minikarte beziehungsweise Weltkarte erweitert ihren Ausschnitt und zeigt Inseln, Seewege, Häfen und Sichtbarkeit.
 
 ### 5.1 Fortschrittsabhängige Gegner-KI

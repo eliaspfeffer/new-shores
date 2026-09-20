@@ -2,13 +2,15 @@ import assert from 'node:assert/strict';
 import {createSaveLibrary,saveEntries} from '../src/save-library.js';
 import {parseSave} from '../src/savegames.js';
 import {playerColors,colorForOwner} from '../src/player-colors.js';
-const base={version:6,resources:{wood:2},buildings:[{type:'storehouse',x:25,y:25,progress:1}],roads:[]};
+const png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL7GQAAAABJRU5ErkJggg==';
+const base={version:6,resources:{wood:2},buildings:[{type:'storehouse',x:25,y:25,progress:1}],roads:[],mapPreview:png};
 const text=JSON.stringify(base),map=new Map(),storage={getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v)};
 const parse=text=>parseSave(text,['storehouse']),library=createSaveLibrary(storage,parse);
 assert(library.list().every(e=>e.empty));assert.equal(library.list().length,saveEntries.length);
 library.write('new-shores-slot-1',text,'Mein Hafen');assert.equal(library.read('new-shores-slot-1').data.saveName,'Mein Hafen');
 library.rename('new-shores-slot-1','Tal');assert.equal(library.read('new-shores-slot-1').data.saveName,'Tal');
 assert.deepEqual(library.read('new-shores-slot-1').data.resources,base.resources);
+assert.equal(library.read('new-shores-slot-1').data.mapPreview,png,'save previews survive named-slot writes');
 assert.throws(()=>library.rename('new-shores-slot-1','   '));assert.throws(()=>library.write('new-shores-save',text,'x'));
 assert.throws(()=>library.write('unknown',text,'x'));assert.throws(()=>library.rename('new-shores-slot-2','x'));
 library.write('new-shores-quicksave',text,'Erster');const first=storage.getItem('new-shores-quicksave');
@@ -19,5 +21,6 @@ assert.throws(()=>library.write('new-shores-quicksave',text,'Dritter'));assert.e
 map.set('new-shores-slot-2','broken');assert(library.list().find(e=>e.key==='new-shores-slot-2').error);
 for(const color of Object.keys(playerColors)){assert.equal(parse(JSON.stringify({...base,playerColor:color})).playerColor,color);assert.notEqual(colorForOwner(1,color).base,colorForOwner(2,color).base);}
 assert.throws(()=>parse(JSON.stringify({...base,playerColor:'black'})));assert.throws(()=>parse(JSON.stringify({...base,saveName:'x'.repeat(49)})));
+assert.throws(()=>parse(JSON.stringify({...base,mapPreview:'javascript:alert(1)'})));
 assert.deepEqual(colorForOwner(1,'bogus'),playerColors.blue);assert.equal(parse(text).playerColor,undefined);
 console.log('PASS: named snapshots, protected entries, empty/corrupt states, quicksave backup, quota preservation, legacy saves and distinct player colors');

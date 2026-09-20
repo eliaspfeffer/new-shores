@@ -15,6 +15,8 @@
 #save-library-dialog header{background:#f4e2b7;border-radius:12px;padding:12px;}
 #save-library-dialog small,#save-library-dialog article p{color:#755235}
 #save-library-dialog article{padding:16px;border:2px solid #c2a16c;border-radius:16px;margin:12px 0;background:#fff4d580;}
+.save-map-preview{float:right;width:96px;height:96px;object-fit:cover;image-rendering:pixelated;margin:0 0 8px 14px;border:2px solid #805731;border-radius:10px;background:#030604;box-shadow:inset 0 0 0 2px #fff0c3;}
+.save-library-actions{clear:both;}
 #save-library-dialog button{border:2px solid #805731;border-radius:12px;background:linear-gradient(#fff1be,#e1ad61);color:#58391e;box-shadow:inset 0 2px #fff9df,0 3px #82532e;font-weight:bold;}
 #save-library-dialog button:not(:disabled):hover{background:#f4d398;}
 #save-library-dialog input{background:#fff6de;color:#593b24;border:2px solid #b58a52;border-radius:10px;}
@@ -28,3 +30,4 @@
 .player-color-picker{display:flex;align-items:center;gap:12px;justify-content:space-between;margin:12px 0;font-size:14px}
 .title-card{max-height:94dvh;overflow-y:auto}
 @media(max-height:500px){#save-library-dialog{max-height:94dvh;padding:12px}#save-library-dialog article{padding:10px 0}#save-library-dialog header{top:-12px}#save-library-dialog header h2{font-size:21px;margin-bottom:0}}
+@media(max-width:460px){.save-map-preview{width:72px;height:72px;margin-left:8px;}}

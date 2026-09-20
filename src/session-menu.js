@@ -16,6 +16,7 @@ export function initSessionMenu(api){
     const list=dialog.querySelector('#save-library-list');list.replaceChildren();
     for(const item of library.list()){
       const row=document.createElement('article');row.dataset.saveKey=item.key;
+      if(item.data?.mapPreview){const preview=document.createElement('img');preview.className='save-map-preview';preview.src=item.data.mapPreview;preview.alt='Kartenansicht von '+(item.data.saveName||item.label);preview.width=96;preview.height=96;row.append(preview);}
       const heading=document.createElement('strong');heading.textContent=item.data?.saveName||item.label;
       const summary=document.createElement('p');
       summary.textContent=item.error?'Nicht ladbar: '+item.error:item.empty?'Noch kein Spielstand':item.label+' · '+(Number.isFinite(item.data.savedAt)?new Date(item.data.savedAt).toLocaleString('de-DE'):'Datum unbekannt')+' · '+Math.floor((item.data.elapsed||0)/60)+' Min. · '+item.data.buildings.length+' Gebäude · '+(item.data.resources.people||0)+' Siedler';
