@@ -6,12 +6,14 @@ const terrain=Array.from({length:72},(_,y)=>Array.from({length:72},(_,x)=>x<50&&
 const buildings=[{type:'storehouse',owner:1,x:25,y:25,progress:1},{type:'sawmill',owner:1,x:24,y:25,progress:1},{type:'farm',owner:1,x:23,y:25,progress:1},{type:'tower',owner:2,x:37,y:14,progress:1,garrison:0}];
 const workers=[{id:0,owner:1,x:25,y:26,role:'carrier',phase:'idle'},{id:1,owner:2,x:37,y:15,unit:'swordsman',hp:55,phase:'guard'}];
 const state={deposits:[]};let revealed=0,concealed=0,recalculated=0,message='';const trees=[],rocks=[];
-const ai=createEnemySettlement({state,buildings,workers,terrain,trees,rocks,details:[],notify:m=>message=m,reveal:()=>revealed++,conceal:()=>concealed++,isSeen:(x,y)=>x<50&&y<50,ownerAt:(x,y)=>x<46&&y<46?1:0,recalculate:()=>recalculated++});ai.prepare();assert.equal(concealed,0,'future islands never conceal existing map land');
+const ai=createEnemySettlement({state,buildings,workers,terrain,trees,rocks,details:[],notify:m=>message=m,reveal:()=>revealed++,conceal:()=>concealed++,isSeen:(x,y)=>x<50&&y<50,ownerAt:(x,y)=>x<50&&y<50?1:0,recalculate:()=>recalculated++});ai.prepare();assert.equal(concealed,0,'future islands never conceal existing map land');
 assert.deepEqual(playerStrength(buildings,workers),{economy:2,army:0,targetBuildings:4,targetArmy:3});
 assert.equal(ai.discover({x:48,y:40}),true);assert.equal(ai.discover({x:48,y:40}),true,'each completed lighthouse spawns another island');
 assert.equal(state.enemySettlement.discovered,true);const first=state.enemySettlement.center;assert.ok(first.x>=50||first.y>=50,'first island is generated in ocean outside the fully explored legacy map');assert.ok(buildings.filter(b=>b.owner===2&&Math.hypot(b.x-first.x,b.y-first.y)<9).length<=playerStrength(buildings,workers).targetBuildings+1);
 assert.equal(state.enemySettlements.length,1);assert.ok(Math.hypot(state.enemySettlements[0].center.x-first.x,state.enemySettlements[0].center.y-first.y)>=16,'additional lighthouse chooses a separate sea island');
 assert.equal(workers.filter(w=>w.owner===2&&w.unit).length,4);assert.ok(revealed>0);assert.ok(recalculated>0);assert.match(message,/Brücke/);
+assert.ok(state.enemySettlement.crossingChain.length>1,'distant island receives a crossing chain to player territory');
+for(const p of state.enemySettlement.crossingChain)if(terrain[p.y][p.x]==='water')assert.ok((['grass','shore'].includes(terrain[p.y]?.[p.x-1])&&['grass','shore'].includes(terrain[p.y]?.[p.x+1]))||(['grass','shore'].includes(terrain[p.y-1]?.[p.x])&&['grass','shore'].includes(terrain[p.y+1]?.[p.x])),'every remaining water step accepts a normal bridge');
 const hint=state.enemySettlement.bridgeHint,vx=Math.sign(first.x-hint.x),vy=Math.sign(first.y-hint.y),landing={x:hint.x-vx,y:hint.y-vy},shore={x:hint.x+vx,y:hint.y+vy};
 assert.equal(terrain[hint.y][hint.x],'water');assert.equal(terrain[shore.y][shore.x],'shore');assert.equal(terrain[landing.y][landing.x],'grass');
 assert.equal(findPath({x:landing.x+.5,y:landing.y+.5},{x:first.x+.5,y:first.y+.5},terrain,new Set(),new Map()),null,'round island is separated by real water');
@@ -20,6 +22,6 @@ assert(trees.length>0&&rocks.length>0,'new island contains timber and stone');as
 assert.equal(state.enemySettlement.version,3);
 state.enemySettlement.grace=0;state.enemySettlement.recruitClock=74;ai.tick(2);assert.equal(state.enemyRaids,true);
 const recoveryTerrain=Array.from({length:72},(_,y)=>Array.from({length:72},(_,x)=>x<50&&y<50?'grass':'water')),recoveryState={deposits:[]},recoveryBuildings=[{type:'storehouse',owner:1,x:25,y:25,progress:1},{type:'lighthouse',owner:1,x:48,y:40,progress:1}],recoveryWorkers=[];
-createEnemySettlement({state:recoveryState,buildings:recoveryBuildings,workers:recoveryWorkers,terrain:recoveryTerrain,trees:[],rocks:[],details:[],notify:()=>{},reveal:()=>{},isSeen:(x,y)=>x<50&&y<50,ownerAt:(x,y)=>x<46&&y<46?1:0,recalculate:()=>{}}).restore();
+createEnemySettlement({state:recoveryState,buildings:recoveryBuildings,workers:recoveryWorkers,terrain:recoveryTerrain,trees:[],rocks:[],details:[],notify:()=>{},reveal:()=>{},isSeen:(x,y)=>x<50&&y<50,ownerAt:(x,y)=>x<50&&y<50?1:0,recalculate:()=>{}}).restore();
 assert.equal(recoveryState.enemySettlement?.discovered,true,'a lighthouse completed before the fix receives its missing island when the save is restored');
 console.log('PASS lighthouse reveals a concealed organic resource island with a bounded weaker opponent; one crossing opens the route');

@@ -16,6 +16,7 @@ Stand: 20. September 2026
 - [x] Unbekanntes Meer einschließlich der Fläche außerhalb der lokalen Kartenränder wird vollständig schwarz maskiert; nur aktiv sichtbare Felder schneiden den Nebel auf.
 - Inselposition, Gelände, Rohstoffe, KI-Ausbau, Sichtbarkeit und Überfahrt werden gespeichert. Alte Spielstände ohne entdeckte KI-Insel erhalten weiterhin erst durch den Leuchtturm die neue Insel.
 - [x] Schwertkämpfer können nach ausgeschalteter naher Verteidigung auch gegnerische Wirtschafts-, Wohn- und Lagergebäude direkt einnehmen. Waren und Produktionszustand bleiben physisch erhalten; Wohnhäuser übertragen ihre Kapazität und die neue Eigentümerschaft wird gespeichert.
+- [x] Weit entfernte KI-Inseln erhalten eine gespeicherte, sichtbare Kette aus Landstegen bis zum Spielergebiet. Die einzelnen Wasserlücken lassen sich mit mehreren normalen Brücken oder Fähren überqueren; bestehende Inseln werden beim Laden nachgerüstet.
 
 ## Umgesetzt: Spielstand-Vorschauen und unterscheidbare Rohstofffelder
 
