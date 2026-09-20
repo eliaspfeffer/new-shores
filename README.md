@@ -60,7 +60,7 @@ Der Mac muss dabei eingeschaltet bleiben und den Server ausführen. Das ist ein 
 - Materiallieferungen zu Baustellen, lokale Eingangsvorräte und direkte Transporte zwischen Betrieben.
 - Sichtbare Waren an Trägern und Gebäuden; Facharbeiterzuweisung mit Werkzeugbedarf.
 - Arbeitsgebiete für Holzfäller, Förster und Steinmetze; nachwachsender Wald.
-- Automatisch entstehende Trägerwege, Territorien, Erkundung und Kriegsnebel.
+- Automatisch entstehende Trägerwege, Territorien, Erkundung und Kriegsnebel; Brücke oder Fähre zur entdeckten KI-Insel.
 - Pioniere, Geologen, Schwertkämpfer und Bogenschützen; einfache Kämpfe, Turmeroberung und drei Rekrutierungsränge.
 - Auswahlgruppen, Gebäudestopp, Prioritäten und Abriss mit Rückgabevorschau.
 - Automatisches Speichern, drei lokale Speicherplätze, JSON-Export/-Import und Sicherheitskopie.
@@ -83,7 +83,7 @@ Beschäftigte Träger schließen eine Lieferung ab, bevor sie einen Marschauftra
 
 ## Was noch fehlt
 
-Unter anderem: eigenständig aufbauende Gegner-KI, vollständige Völker, Gelände/Höhen und Planierung, Feldphasen und Tierhaltung, weitere Militärsysteme, Handel und Schiffe, Religion, Kampagnen, Siegbedingungen, Mehrspieler sowie vollständige Arbeits-/Trage-/Kampfanimationen. Kosten und Zeiten sind teilweise eigene Balancewerte.
+Unter anderem: vollständige Völker, Gelände/Höhen und Planierung, weitere Militärsysteme, Hochseeschiffe und Häfen, Echtzeithandel, Religion, Kampagnen, synchroner Mehrspieler sowie vollständige Arbeits-/Trage-/Kampfanimationen. Die vorhandene Gegner-KI und die kurze Fähre sind bewusst begrenzte spielbare Ausbaustufen. Kosten und Zeiten sind teilweise eigene Balancewerte.
 
 Den genauen, ehrlichen Funktionsstand und die bisherigen Prüfungen findest du in [AUSBAU_AKTUELL.md](AUSBAU_AKTUELL.md). Ältere Audit-Dokumente sind als historische Stände gekennzeichnet.
 

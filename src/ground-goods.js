@@ -60,7 +60,6 @@ export function createGroundGoods(api){
   function assign(w,dt){
     if(!freeCarrier(w)||w.waypoints?.length||!piles().length)return false;
     w.salvageRetry=(w.salvageRetry||0)-dt;if(w.salvageRetry>0)return false;w.salvageRetry=2;
-    if(workers.filter(o=>!o.dead&&['salvagePickup','salvageReturn'].includes(o.phase)).length>=2)return false;
     for(const pile of [...piles()].filter(owned).sort((a,b)=>Math.hypot(a.x-w.x,a.y-w.y)-Math.hypot(b.x-w.x,b.y-w.y))){
       for(const item of Object.keys(pile.goods)){
         const reserved=workers.filter(o=>!o.dead&&o.phase==='salvagePickup'&&o.salvageTarget?.x===pile.x&&o.salvageTarget?.y===pile.y&&o.salvageTarget.item===item).length;if(pile.goods[item]<=reserved)continue;

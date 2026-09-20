@@ -14,8 +14,14 @@ function fixture(){
 }
 {
  const f=fixture();f.goods.drop({x:6,y:5},{stone:2,planks:3});assert.equal(pileTotal(f.state.groundPiles[0]),5);
- f.tick();assert.equal(f.workers.filter(w=>w.phase==='salvagePickup').length,2);assert.ok(f.workers.every(w=>!w.carry));assert.equal(f.state.groundPiles[0].goods.stone,2);
+ f.tick();assert.equal(f.workers.filter(w=>w.phase==='salvagePickup').length,3,'every free carrier takes an actionable open pickup');assert.ok(f.workers.every(w=>!w.carry));assert.equal(f.state.groundPiles[0].goods.stone,2);
  for(let i=0;i<200;i++)f.tick();assert.deepEqual(f.stock,{stone:2,planks:3});assert.equal(f.state.groundPiles.length,0);assert.ok(f.workers.every(w=>w.phase==='idle'));
+}
+{
+ const f=fixture();f.workers.push(...Array.from({length:9},(_,i)=>({id:i+3,x:2.5,y:2.5,phase:'idle'})));f.goods.drop({x:6,y:5},{stone:12});f.tick();
+ assert.equal(f.workers.filter(w=>w.phase==='salvagePickup').length,12,'large reachable backlog activates all twelve free carriers');
+ assert.equal(new Set(f.workers.map(w=>JSON.stringify(w.salvageTarget))).size,1,'one pile supports parallel reservations without duplicating goods');
+ for(let i=0;i<200;i++)f.tick();assert.equal(f.stock.stone,12);assert.equal(f.state.groundPiles.length,0);
 }
 {
  const f=fixture();f.goods.drop({x:6,y:5},{stone:1});f.tick();assert.equal(f.workers.filter(w=>w.salvageTarget).length,1,'one item cannot have two collectors');

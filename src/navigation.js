@@ -7,7 +7,7 @@ export function walkSpeed(visits = 0) { return 9 / [9, 8, 7][roadStage(visits)];
 export function findPath(start, goal, terrain, blocked = new Set(), traffic = new Map()) {
   const sx = Math.floor(start.x), sy = Math.floor(start.y), gx = Math.floor(goal.x), gy = Math.floor(goal.y);
   const startKey = keyOf(sx, sy), endKey = keyOf(gx, gy);
-  const passable = (x, y) => ['grass', 'shore', 'bridge'].includes(terrain[y]?.[x]) && (!blocked.has(keyOf(x,y)) || keyOf(x,y) === startKey);
+  const passable = (x, y) => ['grass', 'shore', 'bridge', 'ferry'].includes(terrain[y]?.[x]) && (!blocked.has(keyOf(x,y)) || keyOf(x,y) === startKey);
   if (!passable(gx, gy)) return null;
   const open = [{x:sx,y:sy,g:0,f:0}], best = new Map([[startKey,0]]), parent = new Map();
   const h = (x,y) => Math.hypot(gx-x,gy-y) * 7/9;

@@ -1,5 +1,9 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 20. September 2026: Fähre
+
+Für die neue Fähre wurde die vollständig betrachtete [römische Landung mit Schiff aus Die Siedler IV](https://www.old-games.ru/game/screenshots/10163.html) als Referenz für Farbigkeit, Holzrumpf und isometrische Lesbarkeit verwendet. Das transparente Sprite ist eine eigenständige kompakte Ein-Feld-Fähre, kein kopiertes oder als original behauptetes Spielasset. Prompt, Ausgabe und Einschränkungen stehen in [assets/FERRY_PROMPT.md](assets/FERRY_PROMPT.md). Beide Kartenachsen verwenden wie die Brücke Original und horizontale Spiegelung; die laufende Menüansicht wurde visuell geprüft.
+
 ## Nachtrag 20. September 2026: begehbare Holzbrücke
 
 Für die neue ein Feld lange Holzbrücke wurde kein eindeutig belegtes Brückenasset der PC-Fassung gefunden. Stattdessen wurden Originalbilder von Küste, Hafen und Transportschiffen vollständig betrachtet; Quellen, finaler Built-in-Imagegen-Prompt und Einschränkungen stehen in [assets/BRIDGE_PROMPT.md](assets/BRIDGE_PROMPT.md). Das neue transparente Sprite ist eigenständig, verwendet warmes Holz, helle Steinwiderlager und eine kräftige isometrische Comic-Silhouette. Es ersetzt keine vorhandene Grafik. Beide Achsen, Kartenansicht und laufende Überquerung wurden im Spiel geprüft; eine originalgetreue Siedler-IV-Brücke wird nicht behauptet.

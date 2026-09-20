@@ -67,7 +67,7 @@ Object.assign(context,{chooseStorage,rerouteStorageAfterDemolition,depotGoods,ti
 context.sessionStorage={getItem:()=>null};context.createSettlerSpacing=createSettlerSpacing;
 vm.createContext(context);
 const source=fs.readFileSync(new URL('../src/main.js',import.meta.url),'utf8').replace(/^import .*\n/gm,'').replaceAll('import.meta.env.DEV','false').replace(/new URL\([^\n]+?import.meta.url\).href/g,"'test-image.png'");
-vm.runInContext(source+`;globalThis.qa={routeTo,workforce,exploration,growTree,nearby,workers,buildings,roads,trees,rocks,traffic,trailEdges,terrain,updateWorkers,save,load,runProduction,strategy,selectedWorkers,placementReason,getBuildSites,hitBuilding,iso,setWorkingArea,demolishBuilding,placeBridge:g=>{selectedTool='bridge';return place(g)},getResources:()=>resources};`,context);
+vm.runInContext(source+`;globalThis.qa={routeTo,workforce,exploration,growTree,nearby,workers,buildings,roads,trees,rocks,traffic,trailEdges,terrain,updateWorkers,save,load,runProduction,strategy,selectedWorkers,placementReason,getBuildSites,hitBuilding,iso,setWorkingArea,demolishBuilding,placeBridge:g=>{selectedTool='bridge';return place(g)},placeFerry:g=>{selectedTool='ferry';return place(g)},getResources:()=>resources};`,context);
 const q=context.qa;
 // Pioneers may cross and occupy resource tiles, but not water or buildings.
 {
@@ -85,7 +85,7 @@ const q=context.qa;
  console.log('PASS: pioneer forest/stone traversal and resource-tile targets; water/buildings/carrier rules preserved');
 }
 const catalog=elements.get('.tool-dock').innerHTML;
-assert.equal((catalog.match(/class="building-preview"/g)||[]).length,28,'every buildable building has its in-game preview');
+assert.equal((catalog.match(/class="building-preview"/g)||[]).length,29,'every buildable building has its in-game preview');
 assert.ok(!catalog.includes('undefined'),'all buildings have names, art and descriptions');
 assert.ok(catalog.includes('1 Mehl + 1 Wasser → 2 Brot.'),'menu describes actual strategy recipe, not obsolete flavor text');
 assert.ok(catalog.includes('Bergbau & Metall')&&catalog.includes('Baukategorie'));
@@ -98,8 +98,9 @@ console.log('PASS: complete building catalog, sprite previews, translated catego
  q.roads.pop();q.terrain[g.y][g.x]=old;q.getResources().planks=planks;q.getResources().stone=stone;
  const vertical={x:12,y:12},changed=[[12,12],[11,12],[13,12],[12,11],[12,13]].map(([x,y])=>({x,y,value:q.terrain[y][x]}));q.terrain[12][12]='water';q.terrain[12][11]='water';q.terrain[12][13]='water';q.terrain[11][12]='grass';q.terrain[13][12]='grass';q.exploration.revealCircle(vertical.x,vertical.y,2);
  assert.equal(q.placementReason(vertical,'bridge'),'');q.placeBridge(vertical);assert.equal(q.roads.at(-1).axis,'y','north/south shores select the mirrored bridge orientation');
- q.roads.pop();for(const tile of changed)q.terrain[tile.y][tile.x]=tile.value;q.getResources().planks=planks;q.getResources().stone=stone;delete q.strategy.state.enemySettlement;
- console.log('PASS: bridge placement, exact costs, both saved orientations and real pathfinding connection');
+ q.roads.pop();q.terrain[vertical.y][vertical.x]='water';q.getResources().planks=planks;q.getResources().stone=stone;q.placeFerry(vertical);assert.equal(q.terrain[vertical.y][vertical.x],'ferry');assert.equal(q.roads.at(-1).type,'ferry');assert.equal(q.roads.at(-1).axis,'y');assert.equal(q.getResources().planks,planks-8);assert.equal(q.getResources().stone,stone);
+ assert(q.save());assert(q.load());assert.equal(q.roads.at(-1).type,'ferry','ferry crossing survives save/load');q.roads.pop();for(const tile of changed)q.terrain[tile.y][tile.x]=tile.value;q.getResources().planks=planks;q.getResources().stone=stone;delete q.strategy.state.enemySettlement;
+ console.log('PASS: bridge and ferry placement, exact costs, both saved orientations and real pathfinding connection');
 }
 // Isolate the established economy test from the new optional enemy outpost.
 q.buildings.splice(1);q.workers.splice(8);

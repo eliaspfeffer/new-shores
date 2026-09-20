@@ -1,5 +1,11 @@
 # Aktueller Ausbau – 13. September 2026
 
+## Voll ausgelastete Trägerlogistik · 20. September 2026
+
+Erreichbare Bodenwaren haben keine künstliche Begrenzung auf zwei Bergungsträger mehr. Jeder freie eigene Träger kann im selben Simulationsschritt einen noch nicht reservierten Gegenstand übernehmen; Einzelwaren bleiben atomar reserviert, sodass parallele Abholung nichts dupliziert. Baustoffversorgung, Produktionszulieferung, Lagerumlagerung und fertige Waren behalten ihre Vorrang- und Erreichbarkeitsregeln. Untätig bleiben Träger nur, wenn kein noch unreservierter, erreichbarer und lagerbarer Auftrag existiert. Ein Regressionstest prüft zwölf Träger auf zwölf Steinen bis zur vollständigen Anlieferung.
+
+Neben der Holzbrücke steht nach der Leuchtturmentdeckung nun eine Fähre als zweite Inselüberfahrt bereit. Sie kostet 8 Bretter, benötigt dasselbe einzelne Wasserfeld zwischen gegenüberliegenden Ufern, richtet sich automatisch an beiden Kartenachsen aus und wird von der normalen Wegsuche für Träger, Spezialisten und Soldaten verwendet. Grafiknachweis und Prompt: [assets/FERRY_PROMPT.md](assets/FERRY_PROMPT.md).
+
 ## Leuchtturm und skalierende Gegner-KI · 20. September 2026
 
 - In der Kategorie „Siedlung“ steht ein Leuchtturm für 8 Bretter und 10 Stein. Er muss im eigenen Gebiet höchstens zwei Felder von Wasser entfernt gebaut werden.
