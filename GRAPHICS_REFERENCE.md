@@ -6,9 +6,9 @@ Für die neue ein Feld lange Holzbrücke wurde kein eindeutig belegtes Brückena
 
 ## Nachtrag 20. September 2026: Leuchtturm und KI-Entdeckung
 
-Vor der Umsetzung wurde nach einem Leuchtturm der PC-Fassung von *Die Siedler IV* beziehungsweise der römischen Gebäudefamilie gesucht. In den gefundenen und vollständig betrachteten Siedlungsbildern ([Gamezone: römische Siedlung](https://www.gamezone.de/Die-Siedler-4-Spiel-21498/Tests/Die-Siedler-4-im-Gamezone-Test-987819/), [Holarse: Küstensiedlung mit Schiff](https://holarse.de/wiki/die_siedler_iv)) war kein eindeutig belegbarer Leuchtturm zu sehen. Deshalb wird kein angeblich originales Gebäude nachgebildet. Der neue Leuchtturm ist eine eigene, direkt im Renderer gezeichnete römisch inspirierte Silhouette: heller Steinturm, rotes Dach und warmes Leuchtfeuer. Vorhandene Rasteratlanten wurden nicht ersetzt; Bauzustände verwenden bewusst das bestehende neutrale Fundament, bis eine passende Originalreferenz belegt ist.
+Vor der Umsetzung wurde nach einem Leuchtturm der PC-Fassung von *Die Siedler IV* beziehungsweise der römischen Gebäudefamilie gesucht. In den gefundenen und vollständig betrachteten Siedlungsbildern ([Gamezone: römische Siedlung](https://www.gamezone.de/Die-Siedler-4-Spiel-21498/Tests/Die-Siedler-4-im-Gamezone-Test-987819/), [Holarse: Küstensiedlung mit Schiff](https://holarse.de/wiki/die_siedler_iv)) war kein eindeutig belegbarer Leuchtturm zu sehen. Deshalb wird kein angeblich originales Gebäude nachgebildet. Der neue Leuchtturm ist ein eigenes transparentes Raster-Sprite: heller römisch inspirierter Steinturm, Terrakotta-Dächer und warmes Leuchtfeuer. Vorhandene Rasteratlanten wurden nicht ersetzt; Bauzustände verwenden weiterhin das bestehende neutrale Fundament. Quellen, Prompt und Einschränkungen stehen in [assets/LIGHTHOUSE_PROMPT.md](assets/LIGHTHOUSE_PROMPT.md).
 
-Umgesetzt ist die Spielmechanik (Küstenstandort, Leuchtfeuer und aufgedeckter KI-Siedlungsbereich), nicht eine originalgetreue Siedler-IV-Leuchtturmgrafik. Ein direkter Vergleich mit einem belegten Originalasset bleibt offen.
+Umgesetzt sind Spielmechanik und eigenständige Comic-Grafik, nicht eine originalgetreue Siedler-IV-Leuchtturmgrafik. Ein direkter Vergleich mit einem belegten Originalasset bleibt offen.
 
 ## Nachtrag: einheitliche große Befehlsmedaillons
 

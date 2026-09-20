@@ -95,8 +95,11 @@ console.log('PASS: complete building catalog, sprite previews, translated catego
 {
  const g={x:10,y:10},old=q.terrain[g.y][g.x],planks=q.getResources().planks,stone=q.getResources().stone;q.terrain[g.y][g.x]='water';q.exploration.revealCircle(g.x,g.y,2);q.strategy.state.enemySettlement={version:1,discovered:true,center:{x:16,y:10},growthClock:0,recruitClock:0,grace:180,targetBuildings:4,targetArmy:3,islandCreated:true,bridgeHint:g};
  assert.equal(q.placementReason(g,'bridge'),'');q.placeBridge(g);assert.equal(q.terrain[g.y][g.x],'bridge');assert.equal(JSON.stringify(q.roads.at(-1)),JSON.stringify({x:10,y:10,type:'bridge',axis:'x'}));assert.equal(q.getResources().planks,planks-6);assert.equal(q.getResources().stone,stone-2);
- q.roads.pop();q.terrain[g.y][g.x]=old;q.getResources().planks=planks;q.getResources().stone=stone;delete q.strategy.state.enemySettlement;
- console.log('PASS: bridge placement, exact costs, saved axis and real pathfinding connection');
+ q.roads.pop();q.terrain[g.y][g.x]=old;q.getResources().planks=planks;q.getResources().stone=stone;
+ const vertical={x:12,y:12},changed=[[12,12],[11,12],[13,12],[12,11],[12,13]].map(([x,y])=>({x,y,value:q.terrain[y][x]}));q.terrain[12][12]='water';q.terrain[12][11]='water';q.terrain[12][13]='water';q.terrain[11][12]='grass';q.terrain[13][12]='grass';q.exploration.revealCircle(vertical.x,vertical.y,2);
+ assert.equal(q.placementReason(vertical,'bridge'),'');q.placeBridge(vertical);assert.equal(q.roads.at(-1).axis,'y','north/south shores select the mirrored bridge orientation');
+ q.roads.pop();for(const tile of changed)q.terrain[tile.y][tile.x]=tile.value;q.getResources().planks=planks;q.getResources().stone=stone;delete q.strategy.state.enemySettlement;
+ console.log('PASS: bridge placement, exact costs, both saved orientations and real pathfinding connection');
 }
 // Isolate the established economy test from the new optional enemy outpost.
 q.buildings.splice(1);q.workers.splice(8);
