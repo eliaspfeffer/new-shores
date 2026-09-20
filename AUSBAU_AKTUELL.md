@@ -1,5 +1,15 @@
 # Aktueller Ausbau – 13. September 2026
 
+## Leuchtturm und skalierende Gegner-KI · 20. September 2026
+
+- In der Kategorie „Siedlung“ steht ein Leuchtturm für 8 Bretter und 10 Stein. Er muss im eigenen Gebiet höchstens zwei Felder von Wasser entfernt gebaut werden.
+- Bei Fertigstellung entdeckt das Leuchtfeuer einmalig den gegnerischen Siedlungsbereich und hält einen Radius von 13 Feldern dauerhaft sichtbar. Alte Spielstände bleiben unverändert; die KI-Siedlung entsteht erst nach dem Bau.
+- Die erzeugte Gegnerbasis wird an der beim Entdecken vorhandenen Spielersiedlung kalibriert: Zielgröße für fertige Wirtschaftsgebäude und Armee jeweils rund 82 %, mit Untergrenzen von vier Gebäuden und drei Soldaten. Bereits vorhandener Außenposten und vorhandene Soldaten zählen mit; Einheiten entstehen nicht unbegrenzt.
+- Danach prüft die KI höchstens alle 90 Sekunden einen weiteren Bauplatz und höchstens alle 75 Sekunden einen Soldatennachschub, jeweils nur bis zum mitwachsenden 82-%-Ziel. Nach 180 Sekunden Schonfrist darf sie die bereits vorhandene Turmangriffslogik verwenden. Bewegung, Reichweite, Treffer und Eroberung bleiben die realen vorhandenen Regeln.
+- Die KI-Wirtschaft ist bewusst eine begrenzte Fortschrittsspiegelung, noch kein zweites vollständiges Waren-/Trägernetz. Schiffe, echte getrennte Inseln, Diplomatie und eine frei planende Produktionswirtschaft bleiben offen.
+
+Grafikabgleich und belegte Einschränkungen: [GRAPHICS_REFERENCE.md](GRAPHICS_REFERENCE.md). Prüfung: neuer isolierter KI-/Leuchtturmtest, Simulation, Strategie und Produktionsbuild bestanden; laufende Darstellung visuell geprüft.
+
 ## Nachtrag 14. September: flächiges Scrollen, Standplätze und Comic-Menüs
 
 Die gesamte Startansicht scrollt jetzt, auch bei Mausrad/Touch auf dem Hintergrund neben der Menükarte. Kein eigener Scrollbereich mehr innerhalb der Karte. Helle Holz-/Pergamentflächen, kräftigere Konturen und plastische Knöpfe nach den mobilen Nutzerreferenzen; bestehende Weltgrafiken bleiben unverändert (siehe GRAPHICS_REFERENCE.md).

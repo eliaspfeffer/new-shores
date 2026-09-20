@@ -9,6 +9,7 @@ import {wheelAction,demolitionRefund} from '../src/interaction.js';
 import {buildingClearance,groundDeposit} from '../src/build-space.js';
 import {lostCivilianBuildings,collapseCivilian} from '../src/conquest-losses.js';
 import {createExploration} from '../src/exploration.js';
+import {createEnemySettlement} from '../src/enemy-settlement.js';
 import {createWorkforce} from '../src/workforce.js';
 import {parseSave} from '../src/savegames.js';
 import {ensureStarterSupply} from '../src/starter-supply.js';
@@ -32,7 +33,7 @@ assert.deepEqual([roadStage(9),roadStage(10),roadStage(49),roadStage(50)],[0,1,1
 assert.equal(walkSpeed(50),9/7);
 const elements=new Map(),storage=new Map();
 const node=()=>({classList:{add(){},remove(){},toggle(){},contains(){return true}},setAttribute(){},addEventListener(){},append(){},prepend(){},before(){},after(){},remove(){},querySelector:()=>node(),querySelectorAll:()=>[],style:{},getContext:()=>({}),textContent:''});
-const context={constructionLayers,createConstructionArt:()=>({has:()=>false}),constructionStage,workActivity,createSound:()=>({play(){},setEnabled(){}}),parseSave,createWorkforce,createExploration,goodsOrder,goodsNames,buildingNames,hasVisibleCargo,cargoPose,createGoodsArt:()=>({draw(){}}),wheelAction,demolitionRefund,createStrategy,recipes,extraBuildings,facing8,findPath,keyOf,roadStage,walkSpeed,Image:class{},document:{querySelector(k){if(!elements.has(k))elements.set(k,node());return elements.get(k)},querySelectorAll:()=>[],createElement:node,hidden:false},localStorage:{setItem:(k,v)=>storage.set(k,v),getItem:k=>storage.get(k)},addEventListener(){},requestAnimationFrame(){},setTimeout(){},innerWidth:1600,innerHeight:900,devicePixelRatio:1,console};
+const context={constructionLayers,createConstructionArt:()=>({has:()=>false}),constructionStage,workActivity,createSound:()=>({play(){},setEnabled(){}}),parseSave,createWorkforce,createExploration,createEnemySettlement,goodsOrder,goodsNames,buildingNames,hasVisibleCargo,cargoPose,createGoodsArt:()=>({draw(){}}),wheelAction,demolitionRefund,createStrategy,recipes,extraBuildings,facing8,findPath,keyOf,roadStage,walkSpeed,Image:class{},document:{querySelector(k){if(!elements.has(k))elements.set(k,node());return elements.get(k)},querySelectorAll:()=>[],createElement:node,hidden:false},localStorage:{setItem:(k,v)=>storage.set(k,v),getItem:k=>storage.get(k)},addEventListener(){},requestAnimationFrame(){},setTimeout(){},innerWidth:1600,innerHeight:900,devicePixelRatio:1,console};
 context.document.addEventListener=()=>{};
 context.initAudioControls=()=>{};
 context.initCloud=()=>{};
@@ -84,7 +85,7 @@ const q=context.qa;
  console.log('PASS: pioneer forest/stone traversal and resource-tile targets; water/buildings/carrier rules preserved');
 }
 const catalog=elements.get('.tool-dock').innerHTML;
-assert.equal((catalog.match(/class="building-preview"/g)||[]).length,26,'every buildable building has its in-game preview');
+assert.equal((catalog.match(/class="building-preview"/g)||[]).length,27,'every buildable building has its in-game preview');
 assert.ok(!catalog.includes('undefined'),'all buildings have names, art and descriptions');
 assert.ok(catalog.includes('1 Mehl + 1 Wasser → 2 Brot.'),'menu describes actual strategy recipe, not obsolete flavor text');
 assert.ok(catalog.includes('Bergbau & Metall')&&catalog.includes('Baukategorie'));

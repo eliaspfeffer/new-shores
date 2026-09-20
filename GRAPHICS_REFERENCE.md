@@ -1,5 +1,11 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 20. September 2026: Leuchtturm und KI-Entdeckung
+
+Vor der Umsetzung wurde nach einem Leuchtturm der PC-Fassung von *Die Siedler IV* beziehungsweise der römischen Gebäudefamilie gesucht. In den gefundenen und vollständig betrachteten Siedlungsbildern ([Gamezone: römische Siedlung](https://www.gamezone.de/Die-Siedler-4-Spiel-21498/Tests/Die-Siedler-4-im-Gamezone-Test-987819/), [Holarse: Küstensiedlung mit Schiff](https://holarse.de/wiki/die_siedler_iv)) war kein eindeutig belegbarer Leuchtturm zu sehen. Deshalb wird kein angeblich originales Gebäude nachgebildet. Der neue Leuchtturm ist eine eigene, direkt im Renderer gezeichnete römisch inspirierte Silhouette: heller Steinturm, rotes Dach und warmes Leuchtfeuer. Vorhandene Rasteratlanten wurden nicht ersetzt; Bauzustände verwenden bewusst das bestehende neutrale Fundament, bis eine passende Originalreferenz belegt ist.
+
+Umgesetzt ist die Spielmechanik (Küstenstandort, Leuchtfeuer und aufgedeckter KI-Siedlungsbereich), nicht eine originalgetreue Siedler-IV-Leuchtturmgrafik. Ein direkter Vergleich mit einem belegten Originalasset bleibt offen.
+
 ## Nachtrag: einheitliche große Befehlsmedaillons
 
 15. September 2026: Die vier vom Nutzer angehängten aktuellen UI-Ausschnitte und die bereits dokumentierten Gameloft-Handybilder wurden direkt als Größen-, Anordnungs- und Kontrastreferenz verwendet. Nachrichten, Karte, Eckbefehle und Kontextaktionen verwenden nun dieselbe große Medaillongröße mit separaten, kontrastreichen Pergamentbeschriftungen. Einfache Gebäude öffnen keinen Einstellungsdialog mehr; ihre maximal drei Aktionen stehen zusammen mit „Auswahl aufheben“ unten links. Nur die Kaserne und Werkzeugschmiede öffnen über Rekrutieren beziehungsweise Herstellen ein Untermenü. Vorhandene eigene Befehlsmedaillons wurden skaliert; keine Originalgrafik wurde kopiert und keine neue Rastergrafikfamilie eingeführt.
