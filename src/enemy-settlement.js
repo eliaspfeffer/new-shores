@@ -42,7 +42,7 @@ export function createEnemySettlement(api){
   const start={...ai.bridgeHint},out={x:start.x+Math.sign(start.x-ai.center.x),y:start.y+Math.sign(start.y-ai.center.y)};
   if(ownerAt(out.x,out.y)!==1&&terrain[out.y]?.[out.x]==='grass')terrain[out.y][out.x]='water';
   const key=p=>p.x+','+p.y,queue=[start],previous=new Map([[key(start),null]]),land=t=>['grass','shore','bridge','ferry'].includes(t);let end=null;
-  for(let n=0;n<queue.length&&!end;n++){const p=queue[n];if(!(p.x===start.x&&p.y===start.y)&&[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>ownerAt(p.x+dx,p.y+dy)===1&&land(terrain[p.y+dy]?.[p.x+dx]))){end=p;break;}for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const q={x:p.x+dx,y:p.y+dy},k=key(q),tile=terrain[q.y]?.[q.x];if(previous.has(k)||!['water','void','bridge','ferry'].includes(tile))continue;previous.set(k,p);queue.push(q);}}
+  for(let n=0;n<queue.length&&!end;n++){const p=queue[n];if(!(p.x===start.x&&p.y===start.y)&&[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>{const x=p.x+dx,y=p.y+dy;return land(terrain[y]?.[x])&&Math.hypot(x-ai.center.x,y-ai.center.y)>9;})){end=p;break;}for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const q={x:p.x+dx,y:p.y+dy},k=key(q),tile=terrain[q.y]?.[q.x];if(previous.has(k)||!['water','void','bridge','ferry'].includes(tile))continue;previous.set(k,p);queue.push(q);}}
   if(!end)return;const path=[];for(let p=end;p;p=previous.get(key(p)))path.push(p);path.reverse();
   for(let i=0;i<path.length;i++){const p=path[i];if(i%2===1&&terrain[p.y][p.x]!=='bridge'&&terrain[p.y][p.x]!=='ferry')terrain[p.y][p.x]='grass';reveal(p.x,p.y,1.5);}ai.crossingChain=path;terrainChanged();
  }
