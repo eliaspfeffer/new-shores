@@ -11,6 +11,7 @@
 #unit-search{min-height:44px;width:100%;min-width:0;padding:8px;box-sizing:border-box;background:#22281c;color:#f1e6c5;border:1px solid #a19866;border-radius:3px;font:inherit}
 #unit-search-results{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:310px;overflow:auto}
 #unit-search-results .unit-result{display:flex;align-items:center;gap:5px;min-height:54px;padding:6px;text-align:left;background:#3e452d;color:#ede2be;border:1px solid #777449;font-size:12px}
+.unit-category>span:last-child{display:grid;gap:3px}.unit-category small{font-size:10px;opacity:.8}#unit-search-detail{width:100%;min-height:38px;margin-bottom:7px;border:1px solid #8f8758;background:#59603d;color:inherit}
 .unit-result .unit-preview{width:26px;height:34px;min-width:26px;margin:0}
 .unit-help{margin-top:16px;border-top:1px solid #858059;padding-top:10px}
 .unit-help summary{min-height:35px;cursor:pointer;font-size:13px}

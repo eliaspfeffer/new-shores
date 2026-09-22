@@ -8,32 +8,43 @@ import {token,digest,emailAddress,passwordHash,passwordMatches,limiter} from './
 import {parseSave} from '../src/savegames.js';
 import {extraBuildings} from '../src/strategy.js';
 import {sendDelivery} from './deliveries.mjs';
+import {createEmailService} from './email.mjs';
 
 export const saveTypes=['largehouse','storehouse','woodcutter','forester','sawmill','house','quarry','farm','mill','bakery','fisher','warehouse','tower','hospital',...Object.keys(extraBuildings)];
 const root=resolve(fileURLToPath(new URL('../dist',import.meta.url)));
 const uuid=value=>/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value||'');
 const fail=(status,message)=>Object.assign(new Error(message),{status});
 const name=value=>typeof value==='string'&&value.trim()?value.trim().slice(0,48):'Meine Insel';
-export async function createApp({pool,origin,origins=[origin],secure=true}){
+export async function createApp({pool,origin,origins=[origin],secure=true,emailService={enabled:false}}){
   const allowedOrigins=new Set(origins);let authBusy=0,apiBusy=0;
   const authLimit=limiter(20,15*60_000),apiLimit=limiter(240,60_000);
+  const messageLimit=limiter(8,60_000),streams=new Map(),leases=new Map();
   const dummy=await passwordHash(token());
   async function body(req,max=8_100_000){let data='';for await(const chunk of req){data+=chunk;if(Buffer.byteLength(data)>max)throw fail(413,'Anfrage zu groß.');}try{return JSON.parse(data||'{}');}catch{throw fail(400,'Ungültige Anfrage.');}}
   const cookie=(res,value,age)=>res.setHeader('Set-Cookie',`ns_session=${value}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${age}${secure?'; Secure':''}`);
   async function session(req){const raw=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('ns_session='))?.slice(11);
-    if(!raw)return null;return (await pool.query('SELECT p.id,p.email FROM sessions s JOIN players p ON p.id=s.player_id WHERE s.hash=$1 AND s.expires_at>now()',[digest(raw)])).rows[0]||null;}
+    if(!raw)return null;return (await pool.query('SELECT p.id,p.email,p.email_verified_at,s.hash session_hash FROM sessions s JOIN players p ON p.id=s.player_id WHERE s.hash=$1 AND s.expires_at>now()',[digest(raw)])).rows[0]||null;}
   async function access(player,id){if(!uuid(id))throw fail(404,'Insel nicht gefunden.');const result=await pool.query(`SELECT i.*,CASE WHEN i.owner_id=$2 THEN 'owner' ELSE m.permission END permission FROM islands i LEFT JOIN island_members m ON m.island_id=i.id AND m.player_id=$2 WHERE i.id=$1 AND (i.owner_id=$2 OR m.player_id=$2)`,[id,player.id]);if(!result.rows.length)throw fail(404,'Insel nicht gefunden.');return result.rows[0];}
   const validate=s=>{try{return parseSave(JSON.stringify(s),saveTypes);}catch(e){throw fail(400,e.message);}};
+  const publish=(islandId,event)=>{for(const res of streams.get(islandId)||[]){if(res.destroyed)continue;res.write(`event: ${event.type||'update'}\ndata: ${JSON.stringify(event)}\n\n`);}};
+  async function issueAccountToken(player,purpose){
+    const raw=token(),minutes=purpose==='reset'?30:1440;
+    await pool.query('DELETE FROM account_tokens WHERE player_id=$1 AND purpose=$2',[player.id,purpose]);
+    await pool.query("INSERT INTO account_tokens(hash,player_id,purpose,expires_at) VALUES($1,$2,$3,now()+($4 || ' minutes')::interval)",[digest(raw),player.id,purpose,String(minutes)]);
+    const sent=purpose==='reset'?await emailService.reset?.(player.email,raw):await emailService.verify?.(player.email,raw);
+    return Boolean(sent);
+  }
   return http.createServer(async(req,res)=>{
     res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','same-origin');res.setHeader('X-Frame-Options','DENY');
     res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
     res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=(), payment=(), usb=()');
+    if(secure)res.setHeader('Strict-Transport-Security','max-age=31536000; includeSubDomains');
     const json=(status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
     try{
       const url=new URL(req.url,origin),path=url.pathname;
       if(path.startsWith('/api/')){
-        if(apiBusy>=8)throw fail(429,'Server ausgelastet. Kurz warten.');
-        apiBusy++;let released=false;const release=()=>{if(!released){released=true;apiBusy--;}};res.once('finish',release);res.once('close',release);
+        const streaming=req.method==='GET'&&/^\/api\/islands\/[^/]+\/events$/.test(path);
+        if(!streaming){if(apiBusy>=8)throw fail(429,'Server ausgelastet. Kurz warten.');apiBusy++;let released=false;const release=()=>{if(!released){released=true;apiBusy--;}};res.once('finish',release);res.once('close',release);}
         if(!apiLimit(req.socket.remoteAddress))throw fail(429,'Zu viele Anfragen. Kurz warten.');
         if(!['GET','HEAD'].includes(req.method)&&(!allowedOrigins.has(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json')))throw fail(403,'Anfrage nur aus dem Spiel erlaubt.');
         if(path==='/api/health'&&req.method==='GET'){await pool.query('SELECT 1');return json(200,{ok:true});}
@@ -47,15 +58,41 @@ export async function createApp({pool,origin,origins=[origin],secure=true}){
             // Retrying a successful registration with the same credentials is safe.
             // Never overwrite the password or data of an existing account.
             if(player){if(!await passwordMatches(data.password,player.password_hash))throw fail(409,'Für diese E-Mail besteht bereits ein Konto. Bitte mit dem ursprünglichen Passwort anmelden. Dein Konto und deine Inseln bleiben unverändert.');}
-            else{let hash;try{hash=await passwordHash(data.password);}catch(e){throw fail(400,e.message);}player={id:randomUUID(),email};
-            await pool.query('INSERT INTO players(id,email,password_hash) VALUES($1,$2,$3)',[player.id,email,hash]);}
+            else{let hash;try{hash=await passwordHash(data.password);}catch(e){throw fail(400,e.message);}player={id:randomUUID(),email,email_verified_at:emailService.enabled?null:new Date()};
+            await pool.query('INSERT INTO players(id,email,password_hash,email_verified_at) VALUES($1,$2,$3,$4)',[player.id,email,hash,player.email_verified_at]);}
           }else if(!await passwordMatches(data.password,player?.password_hash||dummy)||!player)throw fail(401,'E-Mail oder Passwort stimmt nicht.');
+          if(path==='/api/register'&&emailService.enabled&&!player.email_verified_at){const sent=await issueAccountToken(player,'verify');return json(202,{verificationRequired:true,emailSent:sent});}
+          if(path==='/api/login'&&emailService.enabled&&!player.email_verified_at)throw fail(403,'E-Mail-Adresse noch nicht bestätigt. Bitte den Bestätigungslink verwenden.');
           const raw=token();await pool.query('DELETE FROM sessions WHERE expires_at<now()');
           await pool.query("INSERT INTO sessions VALUES($1,$2,now()+interval '30 days')",[digest(raw),player.id]);cookie(res,raw,30*86400);return json(200,{id:player.id,email:player.email});
           }finally{authBusy--;}
         }
+        if(path==='/api/forgot-password'&&req.method==='POST'){
+          const data=await body(req,4096);let email;try{email=emailAddress(data.email);}catch(e){throw fail(400,e.message);}
+          if(!authLimit('forgot-ip:'+req.socket.remoteAddress)||!authLimit('forgot-email:'+email))throw fail(429,'Zu viele Anfragen. Bitte später erneut versuchen.');
+          const player=(await pool.query('SELECT id,email FROM players WHERE email=$1',[email])).rows[0];
+          if(player&&emailService.enabled)await issueAccountToken(player,'reset');
+          return json(200,{ok:true,emailAvailable:emailService.enabled});
+        }
+        if(['/api/verify-email','/api/reset-password'].includes(path)&&req.method==='POST'){
+          const data=await body(req,4096);if(typeof data.token!=='string'||data.token.length<20||data.token.length>200)throw fail(400,'Link ungültig oder unvollständig.');
+          const purpose=path==='/api/verify-email'?'verify':'reset',client=await pool.connect();try{await client.query('BEGIN');const row=(await client.query('SELECT t.*,p.email FROM account_tokens t JOIN players p ON p.id=t.player_id WHERE t.hash=$1 AND t.purpose=$2 AND t.used_at IS NULL AND t.expires_at>now() FOR UPDATE',[digest(data.token),purpose])).rows[0];if(!row)throw fail(400,'Link ungültig, abgelaufen oder bereits verwendet.');
+            if(purpose==='verify')await client.query('UPDATE players SET email_verified_at=now() WHERE id=$1',[row.player_id]);
+            else{let hash;try{hash=await passwordHash(data.password);}catch(e){throw fail(400,e.message);}await client.query('UPDATE players SET password_hash=$2,email_verified_at=COALESCE(email_verified_at,now()) WHERE id=$1',[row.player_id,hash]);await client.query('DELETE FROM sessions WHERE player_id=$1',[row.player_id]);}
+            await client.query('UPDATE account_tokens SET used_at=now() WHERE hash=$1',[row.hash]);await client.query('COMMIT');return json(200,{ok:true});
+          }catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
+        }
         const player=await session(req);if(!player)throw fail(401,'Bitte anmelden.');
-        if(path==='/api/me'&&req.method==='GET')return json(200,player);
+        if(path==='/api/me'&&req.method==='GET')return json(200,{id:player.id,email:player.email,verified:Boolean(player.email_verified_at),emailAvailable:emailService.enabled});
+        if(path==='/api/change-password'&&req.method==='POST'){
+          const data=await body(req,4096),record=(await pool.query('SELECT password_hash FROM players WHERE id=$1',[player.id])).rows[0];
+          if(!record||!await passwordMatches(data.currentPassword,record.password_hash))throw fail(401,'Aktuelles Passwort stimmt nicht.');
+          let hash;try{hash=await passwordHash(data.newPassword);}catch(e){throw fail(400,e.message);}await pool.query('UPDATE players SET password_hash=$2 WHERE id=$1',[player.id,hash]);await pool.query('DELETE FROM sessions WHERE player_id=$1 AND hash<>$2',[player.id,player.session_hash]);return json(200,{ok:true});
+        }
+        if(path==='/api/account'&&req.method==='DELETE'){
+          const data=await body(req,4096),record=(await pool.query('SELECT password_hash FROM players WHERE id=$1',[player.id])).rows[0];if(!record||!await passwordMatches(data.password,record.password_hash))throw fail(401,'Passwort stimmt nicht.');
+          const client=await pool.connect();try{await client.query('BEGIN');await client.query('DELETE FROM goods_transfers WHERE sender_id=$1 OR source_id IN (SELECT id FROM islands WHERE owner_id=$1) OR target_id IN (SELECT id FROM islands WHERE owner_id=$1)',[player.id]);await client.query('DELETE FROM invitations WHERE island_id IN (SELECT id FROM islands WHERE owner_id=$1) OR used_by=$1',[player.id]);await client.query('DELETE FROM island_members WHERE player_id=$1 OR island_id IN (SELECT id FROM islands WHERE owner_id=$1)',[player.id]);await client.query('DELETE FROM island_history WHERE island_id IN (SELECT id FROM islands WHERE owner_id=$1)',[player.id]);await client.query('DELETE FROM island_messages WHERE player_id=$1 OR island_id IN (SELECT id FROM islands WHERE owner_id=$1)',[player.id]);await client.query('DELETE FROM islands WHERE owner_id=$1',[player.id]);await client.query('DELETE FROM sessions WHERE player_id=$1',[player.id]);await client.query('DELETE FROM players WHERE id=$1',[player.id]);await client.query('COMMIT');cookie(res,'',0);return json(200,{ok:true});}catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
+        }
         if(path==='/api/deliveries'&&req.method==='POST')return json(200,await sendDelivery(pool,player,await body(req),validate));
         if(path==='/api/deliveries'&&req.method==='GET')return json(200,(await pool.query('SELECT g.id,g.item,g.amount,g.created_at,g.delivery_x,g.delivery_y,s.name source_name,t.name target_name,CASE WHEN t.owner_id=$1 THEN true ELSE false END incoming FROM goods_transfers g JOIN islands s ON s.id=g.source_id JOIN islands t ON t.id=g.target_id WHERE s.owner_id=$1 OR t.owner_id=$1 ORDER BY g.created_at DESC LIMIT 50',[player.id])).rows);
         if(path==='/api/logout'&&req.method==='POST'){const raw=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('ns_session='))?.slice(11);if(raw)await pool.query('DELETE FROM sessions WHERE hash=$1',[digest(raw)]);cookie(res,'',0);return json(200,{ok:true});}
@@ -71,20 +108,35 @@ export async function createApp({pool,origin,origins=[origin],secure=true}){
             await client.query('INSERT INTO island_members VALUES($1,$2,$3) ON CONFLICT(island_id,player_id) DO UPDATE SET permission=EXCLUDED.permission',[inv.island_id,player.id,inv.permission]);await client.query('UPDATE invitations SET used_by=$2 WHERE hash=$1',[inv.hash,player.id]);await client.query('COMMIT');return json(200,{id:inv.island_id});
           }catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
         }
-        const match=path.match(/^\/api\/islands\/([^/]+)(?:\/(invite|members|history|deliveries))?$/);
+        const match=path.match(/^\/api\/islands\/([^/]+)(?:\/(invite|members|history|deliveries|events|messages|lease))?$/);
         if(match){
           const island=await access(player,match[1]),action=match[2];
+          if(action==='events'&&req.method==='GET'){
+            if((streams.get(island.id)?.size||0)>=32)throw fail(429,'Zu viele Live-Verbindungen.');
+            res.writeHead(200,{'Content-Type':'text/event-stream; charset=utf-8','Cache-Control':'no-store','Connection':'keep-alive','X-Accel-Buffering':'no'});res.write(`event: ready\ndata: ${JSON.stringify({revision:island.revision})}\n\n`);
+            const set=streams.get(island.id)||new Set();set.add(res);streams.set(island.id,set);publish(island.id,{type:'presence',count:set.size});const ping=setInterval(()=>res.write(': heartbeat\n\n'),20000);req.on('close',()=>{clearInterval(ping);set.delete(res);if(!set.size)streams.delete(island.id);else publish(island.id,{type:'presence',count:set.size});});return;
+          }
+          if(action==='lease'&&req.method==='POST'){
+            if(island.permission==='view')throw fail(403,'Nur mit Baufreigabe.');const now=Date.now(),key=player.id+':'+player.session_hash,current=leases.get(island.id),data=await body(req,1024);
+            if(data.release===true){if(current?.key===key){leases.delete(island.id);publish(island.id,{type:'lease',active:false});return json(200,{active:false});}return json(200,{active:Boolean(current&&current.until>now)});}
+            if(current&&current.until>now&&current.key!==key)throw fail(423,'Ein anderer Mitspieler steuert diese Insel gerade. Live-Zuschauen bleibt möglich.');leases.set(island.id,{key,until:now+45000});publish(island.id,{type:'lease',active:true});return json(200,{active:true,expiresIn:45});
+          }
+          if(action==='messages'&&req.method==='GET')return json(200,(await pool.query("SELECT m.id,m.body,m.kind,m.created_at,CASE WHEN m.player_id=$2 THEN 'Du' ELSE 'Mitspieler '||substring(m.player_id::text,1,6) END sender FROM island_messages m WHERE m.island_id=$1 ORDER BY m.created_at DESC LIMIT 50",[island.id,player.id])).rows.reverse());
+          if(action==='messages'&&req.method==='POST'){
+            if(!messageLimit(player.id+':'+island.id))throw fail(429,'Bitte kurz warten, bevor du eine weitere Nachricht sendest.');const data=await body(req,2048),message=typeof data.message==='string'?data.message.trim():'';if(!message||message.length>280)throw fail(400,'Nachricht muss 1 bis 280 Zeichen enthalten.');const kind=['message','trade','warning','diplomacy'].includes(data.kind)?data.kind:'message';const row=(await pool.query('INSERT INTO island_messages(island_id,player_id,body,kind) VALUES($1,$2,$3,$4) RETURNING id,body,kind,created_at',[island.id,player.id,message,kind])).rows[0];publish(island.id,{type:'message'});return json(201,{...row,sender:'Du'});
+          }
           if(action==='deliveries'&&req.method==='POST'){if(island.permission!=='owner')throw fail(403,'Nur der Besitzer kann Lieferungen erlauben.');const data=await body(req);if(typeof data.enabled!=='boolean')throw fail(400,'Ungültige Lieferfreigabe.');await pool.query('UPDATE islands SET accept_deliveries=$2 WHERE id=$1',[island.id,data.enabled]);return json(200,{enabled:data.enabled});}
           if(!action&&req.method==='GET')return json(200,{id:island.id,name:island.name,revision:island.revision,snapshot:island.snapshot,permission:island.permission});
           if(action==='history'&&req.method==='GET')return json(200,(await pool.query('SELECT revision,created_at,snapshot FROM island_history WHERE island_id=$1 ORDER BY revision DESC LIMIT 5',[island.id])).rows);
           if(!action&&req.method==='PUT'){
             if(island.permission==='view')throw fail(403,'Diese Insel ist nur zum Anschauen freigegeben.');
+            const lease=leases.get(island.id),leaseKey=player.id+':'+player.session_hash;if(lease&&lease.until>Date.now()&&lease.key!==leaseKey)throw fail(423,'Ein anderer Mitspieler steuert diese Insel gerade.');if(lease?.key===leaseKey)lease.until=Date.now()+45000;
             const data=await body(req),snapshot=validate(data.snapshot);if(!Number.isInteger(data.revision))throw fail(400,'Spielstandversion fehlt.');
             const client=await pool.connect();try{await client.query('BEGIN');const current=(await client.query('SELECT * FROM islands WHERE id=$1 FOR UPDATE',[island.id])).rows[0];
               if(current.revision!==data.revision)throw fail(409,'Die Insel wurde auf einem anderen Gerät geändert. Dein Stand bleibt lokal erhalten. Bitte Serverstand laden oder lokale Insel als neue Kopie sichern.');
               await client.query('INSERT INTO island_history(island_id,revision,snapshot) VALUES($1,$2,$3)',[island.id,current.revision,current.snapshot]);
               await client.query('UPDATE islands SET snapshot=$2,revision=revision+1,updated_at=now() WHERE id=$1',[island.id,snapshot]);
-              await client.query('DELETE FROM island_history WHERE island_id=$1 AND revision<$2',[island.id,Math.max(1,current.revision-4)]);await client.query('COMMIT');return json(200,{revision:current.revision+1});
+              await client.query('DELETE FROM island_history WHERE island_id=$1 AND revision<$2',[island.id,Math.max(1,current.revision-4)]);await client.query('COMMIT');publish(island.id,{type:'snapshot',revision:current.revision+1});return json(200,{revision:current.revision+1});
             }catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
           }
           if(action==='invite'&&req.method==='POST'){
@@ -114,7 +166,8 @@ if(process.argv[1]===fileURLToPath(import.meta.url)){
   if(!process.env.DATABASE_URL||!process.env.APP_ORIGIN)throw new Error('DATABASE_URL und APP_ORIGIN erforderlich');
   const pool=new pg.Pool({connectionString:process.env.DATABASE_URL,max:5});
   await pool.query(await readFile(new URL('./schema.sql',import.meta.url),'utf8'));
-  const server=await createApp({pool,origin:process.env.APP_ORIGIN,origins:(process.env.APP_ORIGINS||process.env.APP_ORIGIN).split(',').map(x=>x.trim()),secure:process.env.NODE_ENV!=='test'});
+  const emailService=createEmailService(process.env);
+  const server=await createApp({pool,origin:process.env.APP_ORIGIN,origins:(process.env.APP_ORIGINS||process.env.APP_ORIGIN).split(',').map(x=>x.trim()),secure:process.env.NODE_ENV!=='test',emailService});
   server.requestTimeout=30000;server.headersTimeout=10000;server.maxRequestsPerSocket=1000;
-  server.listen(Number(process.env.PORT||8791),'127.0.0.1',()=>console.log('New Shores server ready'));
+  server.listen(Number(process.env.PORT||8791),'127.0.0.1',()=>console.log('New Shores server ready · email '+(emailService.enabled?'enabled':'disabled')));
 }

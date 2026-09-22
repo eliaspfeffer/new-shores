@@ -1,6 +1,6 @@
 # New Shores – Zukunfts-Backlog
 
-Stand: 20. September 2026
+Stand: 22. September 2026
 
 > Dieses Dokument sammelt spätere Arbeiten und konkretisiert bereits umgesetzte Ausbaustufen. Der folgende Leuchtturm-/KI-Insel-Stand ist implementiert; weiterführende See- und Mehrspielersysteme bleiben Backlog.
 
@@ -28,6 +28,8 @@ Stand: 20. September 2026
 
 ### 1.1 „Auswahl aufheben“ auf dem Laptop
 
+**[x] Umgesetzt und browsergeprüft:** Der Medaillon-Knopf leert Einheiten- und Gebäudeauswahl, Kartenkarte und Kontextstatus mit derselben Routine wie `Escape`.
+
 - Der sichtbare Button hebt die aktuelle Auswahl derzeit nicht zuverlässig auf.
 - `Escape` funktioniert als Umweg, darf aber nicht erforderlich sein.
 - Spätere Abnahmekriterien:
@@ -37,6 +39,8 @@ Stand: 20. September 2026
 
 ### 1.2 Fehlende einheitliche Comic-Symbole
 
+**[~] Teilweise umgesetzt:** „Auswahl aufheben“ verwendet jetzt das vorhandene Comic-Medaillon statt des Hand-Emojis. Die vollständige Asset-Inventur und neue Bildfamilien bleiben wegen der vorgeschriebenen Referenzprüfung offen.
+
 - „Auswahl aufheben“ benötigt ein eigenes Comic-Medaillon anstelle des jetzigen Hand-Emojis.
 - Alle noch vorhandenen Text-, Emoji- oder generischen Symbole inventarisieren.
 - Für jede Hauptaktion ein zum vorhandenen Set passendes Medaillon erstellen.
@@ -44,6 +48,8 @@ Stand: 20. September 2026
 - Bereits vorhandene eigene Bilder bewahren; neue Bildfamilien nach `GRAPHICS_REFERENCE.md` mit Referenz und Quellenvermerk erstellen.
 
 ### 1.3 Direkte Gebäudebefehle und Untermenüs
+
+**[x] Umgesetzt:** Einfache Aktionen bleiben direkt; Kaserne, Waffen- und Bogenschmiede öffnen nur für Warteschlangen, Stückzahl und Produktionsauftrag ein Untermenü. Rohstoffe und Auftragsstand sind sichtbar.
 
 - Einfache Gebäude behalten höchstens vier direkt sichtbare Befehle unten links und öffnen kein zusätzliches Einstellungsmenü.
 - Untermenüs nur für tatsächlich komplexe Auswahlvorgänge, beispielsweise Rekrutierung oder die Wahl einer herzustellenden Ware.
@@ -53,6 +59,8 @@ Stand: 20. September 2026
 - Keine doppelt vorhandenen Aktionen zwischen unterer Leiste und Dialog.
 
 ### 1.4 Zielbefehle starten teilweise erst beim zweiten Versuch
+
+**[x] Umgesetzt und durch Strategietests abgedeckt:** Jeder berechtigten Einheit wird beim ersten Klick ein eigenes erreichbares Formationsziel zugewiesen; nicht erreichbare Einheiten werden gemeldet.
 
 - Bei einer ausgewählten Gruppe laufen gelegentlich nicht alle Einheiten nach der ersten Zielzuweisung los.
 - Erst eine zweite Zuweisung desselben oder eines anderen Ziels setzt die übrigen Einheiten in Bewegung.
@@ -64,6 +72,8 @@ Stand: 20. September 2026
   - Maus, Touch, gemischte Einheitengruppen und gespeicherte/neu geladene Gruppen verhalten sich identisch.
 
 ### 1.5 Ungültige Arbeitsbereiche unmittelbar farblich anzeigen
+
+**[x] Umgesetzt:** Vorschau und Bestätigung verwenden dieselbe Prüfung. Gültige Punkte sind grüne Kreise, ungültige rote Rauten mit Kontur und Textgrund.
 
 - Beim Festlegen eines Arbeitsbereichs, beispielsweise für einen Holzfäller, bleiben die Vorschaupunkte derzeit auch dann grün, wenn der gewählte Bereich außerhalb der zulässigen Reichweite liegt.
 - Ungültige beziehungsweise nicht erreichbare Punkte sollen unmittelbar **rot** dargestellt werden, damit der Grund schon auf der Karte erkennbar ist und nicht erst aus einem Text gelesen werden muss.
@@ -78,6 +88,8 @@ Stand: 20. September 2026
   - Kartenzoom, mobile Ansicht und Laptop-Ansicht zeigen denselben Gültigkeitszustand.
 
 ### 1.6 „Siedler finden“ nach Kategorien statt Einzelpersonen
+
+**[x] Umgesetzt:** Desktop und Mobil gruppieren standardmäßig nach Beruf/Einheit und zeigen Gesamt-, Aktiv- und Leerlaufzahl. Ein Klick markiert und fokussiert die Gruppe; einzelne Personen liegen in einer bewusst geöffneten Detailansicht.
 
 - Das Menü listet derzeit einzelne Figuren wie „Holzfäller #0“ und „Holzfäller #4“ auf und wird bei größeren Siedlungen unnötig voll.
 - Die erste Ebene soll stattdessen zusammengefasste Berufs- und Einheitengruppen zeigen, beispielsweise:
@@ -102,6 +114,8 @@ Stand: 20. September 2026
 
 ## 2. Wuselfaktor, Abstand und Gruppenbewegung
 
+**[x] Umgesetzt:** Räumlich begrenztes Ausweichen, natürliche Stellplätze sowie eine goldener-Winkel-Verteilung für Gruppen verhindern den gemeinsamen Zielpunkt. Weg- und Kampflogik bleiben davon getrennt; Speichern lädt gültige getrennte Positionen.
+
 - Laufende Siedler und Soldaten dürfen nicht dauerhaft ineinander stehen oder optisch zu einer einzigen Figur verschmelzen.
 - Einheiten sollen beim Gehen, Warten, Arbeiten und Ankommen kleine natürliche Abstände einhalten.
 - Gruppen brauchen individuelle, leicht variierende Zielpositionen rund um den befohlenen Punkt statt eines gemeinsamen exakten Mittelpunkts.
@@ -119,6 +133,8 @@ Stand: 20. September 2026
 
 ## 3. Sichtbare Ausbildung in der Kaserne
 
+**[~] Spielbar, aber noch nicht vollständig inszeniert:** Rekrutierungen sind als speicherbare Warteschlange mit Ausbildungstakt, exakten Kosten, Abbruch, Pause und Sammelpunkt umgesetzt. Der fertige Soldat läuft über die Kaserne zum Sammelpunkt; der Träger läuft vor Ausbildungsbeginn noch nicht als eigene sichtbare Eintrittsphase hinein.
+
 - Ein freier Siedler wird für einen konkreten Rekrutierungsauftrag reserviert.
 - Er läuft sichtbar zur ausgewählten Kaserne und durch deren Eingang hinein.
 - Erst nach absolvierter Ausbildungszeit werden Waffe und gegebenenfalls Gold verbraucht beziehungsweise endgültig gebucht.
@@ -128,6 +144,8 @@ Stand: 20. September 2026
 - Abbruch, Abriss, blockierter Eingang und fehlende Ressourcen benötigen definierte, verlustfreie Zustände.
 
 ## 4. Seefahrt und neue Gebäude
+
+**[~] Kleiner spielbarer Vertikalschnitt:** Orientierte Holzbrücken und Fähren verbinden echte Wasserlücken, werden gespeichert und von der Wegsuche benutzt. Mehrere Übergänge hintereinander erschließen entfernte KI-Inseln. Hafen, Werft, frei fahrende Waren-/Truppen-/Kriegsschiffe bleiben ein eigener großer Simulationsausbau und sind nicht als fertig markiert.
 
 ### 4.1 Hafen
 
@@ -154,6 +172,8 @@ Stand: 20. September 2026
 
 ### 5.1 Fortschrittsabhängige Gegner-KI
 
+**[~] Teilweise umgesetzt:** Jede entdeckte Insel erhält abhängig von Spielerfortschritt eine etwas schwächere, gespeicherte Siedlung mit Rohstoffen, Wirtschaftsgebäuden, Türmen und Militär. Ausbau und Gefechtsverhalten laufen weiter; eine vollständig physische KI-Warenwirtschaft ohne begrenzte Aufbauhilfen bleibt offen.
+
 - Keine reine Attrappe aus Turm und wenigen Soldaten.
 - Beim Erzeugen wird der Fortschritt der eigenen Zivilisation bewertet, unter anderem anhand von:
   - Einwohnerzahl und Wohnraum,
@@ -168,6 +188,8 @@ Stand: 20. September 2026
 - Schwierigkeit und Aufholmechanik müssen begrenzt sein: glaubwürdiger Gegner statt exakter Kopie oder unfairer Ressourcenbeschaffung.
 
 ## 6. Multiplayer-Leuchtturm und gemeinsame Inselwelt
+
+**[~] Produktionsfähiger Koop-Grundstand:** Konten können Inseln teilen, Einladungen und Rollen vergeben, atomar Waren senden, Anwesenheit live sehen, Nachrichten austauschen und neue Revisionen sofort übernehmen. Eine 45-Sekunden-Steuerlease verhindert widersprüchliche gleichzeitige Befehle von Handy und Laptop. Die globale räumliche MMO-Welt mit mehreren unabhängig gleichzeitig simulierten Völkern bleibt bewusst offen.
 
 - Ein zweiter, größerer und optisch eindeutig anderer **Multiplayer-Leuchtturm** verbindet die eigene Insel mit einer gemeinsamen Welt.
 - Die eigene bestehende Insel wird übernommen; Bauwerke, Waren und relative Nachbarinseln bleiben erhalten.
@@ -187,6 +209,8 @@ Stand: 20. September 2026
 
 ### 6.2 Live-Synchronisation
 
+**[~] Für gemeinsames Inselspiel umgesetzt:** Server-Sent Events übertragen Anwesenheit, Nachrichten, Sperrstatus und neue Spielstandrevisionen. Besitz- und Revisionsprüfung erfolgen serverseitig. Bewegungen einzelner Figuren werden weiterhin als geprüfter Inselstand statt als hochfrequenter Ereignisstrom synchronisiert.
+
 - Andere Spieler sehen relevante Änderungen zeitnah: Schiffe, Einheiten, Kämpfe, Gebäude, Warenübergaben und Nachrichten.
 - Der Server ist maßgeblich für Besitz, Positionen, Ressourcen, Kampf und Handel; Clients dürfen diese Daten nicht selbst verbindlich festlegen.
 - Ereignisbasierte Übertragung statt ständiger kompletter Spielstände.
@@ -197,6 +221,8 @@ Stand: 20. September 2026
 
 ### 6.3 Beitritt, Anwesenheit und Nachrichtenhinweise
 
+**[x] Für freigegebene Inseln umgesetzt:** Das Kontofenster zeigt Live-Anwesenheit, Steuerstatus und die letzten typisierten Nachrichten (Nachricht, Handel, Warnung, Diplomatie), ohne E-Mail-Adressen offenzulegen.
+
 - Beim Erscheinen eines neuen benachbarten Spielers erzeugt das Nachrichtensystem einen auffälligen Hinweis, beispielsweise „Eine neue Siedlung ist in deiner Nähe aufgetaucht“.
 - Der Nachrichtenbutton zeigt große, gut erkennbare Ausrufezeichen für neue wichtige Ereignisse.
 - Unterscheidung zwischen Information, Warnung, Angriff, Handel und diplomatischer Nachricht.
@@ -204,6 +230,8 @@ Stand: 20. September 2026
 - Nur die letzten relevanten Nachrichten behalten; Spam zusammenfassen und wiederholte Ereignisse begrenzen.
 
 ## 7. Boten und Diplomatie
+
+**[~] Sichere Nachrichtenbasis umgesetzt:** Bekannte Mitspieler einer freigegebenen Insel können kurze typisierte Nachrichten senden. Länge, Berechtigung und Rate sind serverseitig begrenzt, private Kontaktdaten bleiben verborgen. Ein physisch über die Karte reisender und abfangbarer Bote bleibt offen.
 
 - Spieler können einen Boten mit einer kurzen Nachricht zu einer bekannten fremden Insel schicken.
 - Der Bote startet sichtbar an einem passenden Gebäude oder Hafen, reist physisch und kann sein Ziel verfehlen beziehungsweise aufgehalten werden.
@@ -213,6 +241,17 @@ Stand: 20. September 2026
 - Private Kontaktdaten dürfen nicht automatisch offengelegt werden.
 
 ## 8. Leistung, Sicherheit und Betrieb
+
+**[x] Produktionsbasis umgesetzt:** Sitzungen und Einmal-Token werden nur gehasht gespeichert; Schreibzugriffe prüfen Origin, Content-Type, Rolle, Revision und Größenlimits. Passwortprüfung, API-Aufrufe, Nachrichten und offene Streams sind begrenzt. Der Dienst läuft unprivilegiert, nur auf Loopback und mit erweitertem systemd-Sandboxing. Tägliche PostgreSQL-Sicherungen werden unmittelbar per `pg_restore --list` geprüft und 14 Tage aufbewahrt. Ein externer Penetrationstest und quantitative Langzeit-Lastmessungen bleiben naturgemäß fortlaufende Betriebsaufgaben.
+
+## 9. Konten, Auffindbarkeit und heller Menüstil
+
+- [x] Registrierung und Anmeldung mit gesalzenem Passwort-Hash und sicheren Sitzungs-Cookies.
+- [x] E-Mail-Verifizierung und Einmal-Link zum Zurücksetzen, sobald `RESEND_API_KEY`, `MAIL_FROM` und `APP_ORIGIN` gesetzt sind; ohne Mailkonfiguration bleibt die bestehende Registrierung kompatibel statt Nutzer auszusperren.
+- [x] Passwortänderung mit aktuellem Passwort, Widerruf anderer Sitzungen und passwortbestätigte Kontolöschung.
+- [x] Konto-, Mehrspieler-, Start- und Befehlsoberflächen verwenden den hellen Pergament-/Holzstil; alte dunkle Dialogflächen wurden ersetzt.
+- [x] Suchmaschinen-Grundlagen: kanonische URL, Sprachvarianten, Open Graph, strukturierte Videospiel-Daten, Sitemap, `robots.txt`, `llms.txt`, beschreibender Inhalt, FAQ und transparente Fanprojekt-Abgrenzung.
+- [ ] Vollständiges deutsches Impressum und eine juristisch geprüfte Datenschutzerklärung ergänzen, sobald ladungsfähige Betreiberanschrift und gewünschte Kontaktangaben vorliegen. Diese Daten werden nicht erfunden.
 
 - Simulation in feste, messbare Teilsysteme zerlegen; keine vollständige Weltberechnung in jedem Renderframe.
 - Inseln ohne aktive Spieler serverseitig mit reduzierter Frequenz oder ereignisbasiert fortschreiben.
@@ -225,7 +264,7 @@ Stand: 20. September 2026
 - Regelmäßige Backups, atomare Speicherungen und Wiederherstellungstests einplanen.
 - CPU-, Speicher- und Datenverkehrsbudgets für Server, Vercel-Variante, Laptop und Mobilgeräte messen.
 
-## 9. Sinnvolle spätere Umsetzungsetappen
+## 10. Sinnvolle spätere Umsetzungsetappen
 
 1. Die aktuellen UI-/Funktionsfehler aus Abschnitt 1 beheben.
 2. Gruppenbefehle zuverlässig machen und kollisionsarme Wuselbewegung aus Abschnitt 2 entwickeln.

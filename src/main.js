@@ -1,5 +1,6 @@
 import {mobile,initMobile,initOffline} from './mobile.js';
 import './comic-menu.css';
+import './bright-theme.css';
 import {initTitleMenu} from './title-menu.js';
 import {initPauseMenu} from './pause-menu.js';
 import {commandArt} from './command-art.js';
@@ -136,6 +137,7 @@ let dpr=1, camera={x:0,y:0,zoom:1}, drag=null, selectedTool='inspect', hovered=n
 let resources={wood:24,stone:20,food:18,people:8,beds:12,planks:24,grain:0,flour:0,tools:0,axe:2,hammer:3,shovel:2,sickle:1,pickaxe:2,saw:1,rod:1};
 let productionClock=0, hungerClock=0, elapsed=0;
 let priorityOrder=['food','wood','stone','grain','planks','flour'];
+document.querySelector('#clear-selection').innerHTML=commandArt('×');
 const terrain=[], buildings=[], roads=[], particles=[], workers=[];
 const exploration=createExploration(MAP_W,MAP_H);
 const toolsAtlasURL=new URL('../assets/tools-specialized-v1.png',import.meta.url).href;
@@ -523,17 +525,21 @@ function inspectAt(p,add=false){
   if(!(mobile.enabled&&mobile.select)&&selectedWorkers.size&&strategy.command(screenToGrid(p.x,p.y),false,null,document.querySelector('#march-formation').value))return;
   selectedWorkers.clear();inspectedWorker=null;inspectedBuilding=null;document.querySelector('#info-panel').classList.add('hidden');
 }
-function setWorkingArea(b,g){if(!b||!['forester','woodcutter','quarry'].includes(b.type))return false;if(terrain[g.y]?.[g.x]!=='grass'||strategy.ownerAt(g.x,g.y)!==1||Math.abs(g.x-b.x)+Math.abs(g.y-b.y)>8){toast('Choose grass in your territory within 8 tiles of the building');return false;}if(b.type==='quarry'&&!nearby(rocks,g)){toast('Stonecutter working area needs stone');return false;}
+function workingAreaReason(b,g,resource=true){if(!b||!['forester','woodcutter','quarry'].includes(b.type))return 'Kein einstellbarer Betrieb';if(terrain[g.y]?.[g.x]!=='grass')return 'Wasser oder ungeeigneter Boden';if(strategy.ownerAt(g.x,g.y)!==1)return 'Nicht im eigenen Gebiet';if(Math.abs(g.x-b.x)+Math.abs(g.y-b.y)>8)return 'Mehr als 8 Felder entfernt';const door=entrance(b);if(door&&!routeTo(door,{x:g.x+.5,y:g.y+.5}))return 'Kein erreichbarer Weg';if(resource&&b.type==='quarry'&&!nearby(rocks,g))return 'Keine Felsen in diesem Bereich';return '';}
+function setWorkingArea(b,g){const reason=workingAreaReason(b,g);if(reason){toast('Arbeitsbereich ungültig: '+reason);return false;}
   b.area={x:g.x,y:g.y};for(const w of workers)if(w.task===b&&w.gather&&!w.carry){returnTool(resources,w.jobTool);delete w.jobTool;w.task=null;w.gather=null;w.route=null;w.phase='idle';}settingArea=false;inspect(b);save();return true;
 }
+const workingAreaHint=document.createElement('div');workingAreaHint.className='working-area-legend hidden';workingAreaHint.setAttribute('role','status');game.append(workingAreaHint);
 function drawWorkingArea(){
-  const b=inspectedBuilding;if(!b||!['forester','woodcutter','quarry'].includes(b.type))return;
+  const b=inspectedBuilding;if(!b||!['forester','woodcutter','quarry'].includes(b.type)){workingAreaHint.classList.add('hidden');return;}
   const area=settingArea&&hovered?hovered:b.area||b,z=camera.zoom;
+  const centerReason=settingArea?workingAreaReason(b,area):'';workingAreaHint.classList.toggle('hidden',!settingArea);workingAreaHint.textContent=centerReason?'✕ Ungültig: '+centerReason:'✓ Gültiger Arbeitsbereich · anklicken zum Bestätigen';workingAreaHint.dataset.valid=String(!centerReason);
   ctx.save();
   // Dense centre, then progressively sparser rings; no filled tiles or grid lines.
-  const dot=(dx,dy,outer=false)=>{const x=area.x+.5+dx,y=area.y+.5+dy;if(terrain[Math.floor(y)]?.[Math.floor(x)]!=='grass')return;const p=iso(x,y),r=(outer?2.3:2.7)*z;ctx.fillStyle='#384322cc';ctx.beginPath();ctx.ellipse(p.x+.5*z,p.y+1*z,r+z,r*.7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=outer?'#c5cc56':'#e0df68';ctx.beginPath();ctx.ellipse(p.x,p.y,r,r*.65,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff7b9';ctx.fillRect(p.x-r*.4,p.y-r*.35,Math.max(1,z),Math.max(1,z));};
+  const dot=(dx,dy,outer=false)=>{const x=area.x+.5+dx,y=area.y+.5+dy,g={x:Math.floor(x),y:Math.floor(y)},invalid=settingArea&&Boolean(workingAreaReason(b,g,false)),p=iso(x,y),r=(outer?2.3:2.7)*z;ctx.fillStyle='#38251dcc';ctx.beginPath();ctx.ellipse(p.x+.5*z,p.y+1*z,r+z,r*.7+1,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=invalid?'#d44735':outer?'#78b85b':'#a5d66d';ctx.beginPath();if(invalid){ctx.moveTo(p.x,p.y-r);ctx.lineTo(p.x+r,p.y);ctx.lineTo(p.x,p.y+r);ctx.lineTo(p.x-r,p.y);ctx.closePath();}else ctx.ellipse(p.x,p.y,r,r*.65,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff7d0';ctx.fillRect(p.x-r*.35,p.y-r*.35,Math.max(1,z),Math.max(1,z));};
   for(let y=-1.2;y<=1.21;y+=.3)for(let x=-1.2;x<=1.21;x+=.3)if(Math.hypot(x,y)<=1.2)dot(x,y);
   for(const [radius,count] of [[1.65,24],[2.25,20],[3,16]])for(let i=0;i<count;i++){const a=i/count*Math.PI*2;dot(Math.cos(a)*radius,Math.sin(a)*radius,true);}
+  if(settingArea){const p=iso(area.x+.5,area.y+.5);ctx.strokeStyle=centerReason?'#8f160d':'#245f2f';ctx.lineWidth=3*z;ctx.setLineDash(centerReason?[5*z,3*z]:[]);ctx.beginPath();ctx.ellipse(p.x,p.y,17*z,9*z,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
   ctx.restore();
 }
 function drawFields(){for(const b of buildings)for(const f of b.fields||[]){
@@ -583,7 +589,7 @@ canvas.addEventListener('pointerup',e=>{const p=pointerPos(e);pointers.delete(e.
 canvas.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);drag=null;pinch=null;selectionBox=null;});
 canvas.addEventListener('wheel',e=>{e.preventDefault();const action=wheelAction(e);if(action.zoom)zoomAt(pointerPos(e),action.zoom);else {camera.x+=action.x;camera.y+=action.y;}},{passive:false});
 document.querySelector('#zoom-slider').oninput=e=>zoomAt({x:innerWidth/2,y:innerHeight/2},Number(e.target.value)/camera.zoom);
-document.querySelector('#clear-selection').onclick=()=>{selectedWorkers.clear();if(mobile.enabled)inspectedBuilding=null;commandMode=false;inspectedWorker=null;settingArea=false;selectedTool='inspect';document.querySelector('#info-panel').classList.add('hidden');};
+document.querySelector('#clear-selection').onclick=()=>{selectedWorkers.clear();inspectedBuilding=null;commandMode=false;inspectedWorker=null;settingArea=false;selectedTool='inspect';document.querySelector('#info-panel').classList.add('hidden');const card=document.querySelector('#building-map-card');if(card)card.hidden=true;document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('active',x.dataset.tool==='inspect'));showCommandPanel('build');updateUnitStatus();};
 document.querySelector('#production-toggle').onclick=()=>{if(inspectedBuilding){inspectedBuilding.stopped=!inspectedBuilding.stopped;inspect(inspectedBuilding);buildingSettings?.feedback(inspectedBuilding.stopped?'Betrieb angehalten':'Betrieb fortgesetzt',save());}};
 document.querySelector('#priority-toggle').onclick=()=>{if(inspectedBuilding){inspectedBuilding.priority=!inspectedBuilding.priority;inspect(inspectedBuilding);buildingSettings?.feedback(inspectedBuilding.priority?'Priorität auf hoch gesetzt':'Priorität auf normal gesetzt',save());}};
 document.querySelector('#area-toggle').onclick=()=>{if(inspectedBuilding&&['forester','woodcutter','quarry'].includes(inspectedBuilding.type)){settingArea=true;selectedTool='inspect';toast('Choose a work area inside your territory (within 8 tiles of this building)');}};
@@ -847,7 +853,7 @@ unitMenu=initUnitMenu({workers,selected:selectedWorkers,names:unitNames,art:unit
   selectedWorkers.clear();selectedWorkers.add(w.id);inspectedWorker=w.id;inspectedBuilding=null;settingArea=false;commandMode=false;selectedTool='inspect';
   const b=w.garrisonIndex!==undefined?buildings[w.garrisonIndex]:null,p=iso(b?b.x+.5:w.x,b?b.y+.5:w.y);
   camera.x+=innerWidth/2-p.x;camera.y+=innerHeight/2-p.y;document.documentElement.classList.remove('mobile-panel');updateHud();
-}});
+},focusGroup:group=>{selectedWorkers.clear();for(const w of group)selectedWorkers.add(w.id);inspectedWorker=null;inspectedBuilding=null;settingArea=false;commandMode=false;selectedTool='inspect';const minX=Math.min(...group.map(w=>w.x)),maxX=Math.max(...group.map(w=>w.x)),minY=Math.min(...group.map(w=>w.y)),maxY=Math.max(...group.map(w=>w.y)),p=iso((minX+maxX)/2,(minY+maxY)/2);camera.x+=innerWidth/2-p.x;camera.y+=innerHeight/2-p.y;document.documentElement.classList.remove('mobile-panel');updateHud();}});
 initCloud({capture:()=>hasSession&&save(),freeze:()=>{const wasPaused=paused;paused=true;return ()=>{paused=wasPaused;last=0;};},validate:s=>parseSave(JSON.stringify(s),['storehouse',...Object.keys(buildDefs)]),notify:toast,pause:()=>{if(active){paused=true;document.querySelector('#pause-modal').classList.remove('hidden');}}});
 initTitleMenu();
 initPauseMenu();

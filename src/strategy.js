@@ -112,7 +112,8 @@ export function createStrategy(api){
       delete w.autoTower;
       if(append&&(w.manualTarget||!['idle','guard'].includes(w.phase))){w.waypoints??=[];if(w.waypoints.length<32){w.waypoints.push({x:g.x,y:g.y});issued++;}return;}
       if(spreading&&isMilitary(w)&&!spread.has(w.id))return;
-      let target=spread?.get(w.id)?.point||(b?entrance(b):{x:g.x+.5+(i%3)*.15,y:g.y+.5+Math.floor(i/3)*.15});
+      const angle=i*2.3999632297,radius=Math.min(2.4,.42*Math.sqrt(i));
+      let target=spread?.get(w.id)?.point||(b?entrance(b):{x:g.x+.5+Math.cos(angle)*radius,y:g.y+.5+Math.sin(angle)*radius});
       if(!target)return;let route=spread?.get(w.id)?.route||routeTo(w,target);if(!route&&['geologist','pioneer'].includes(w.unit)){target=entrance(g);route=target&&routeTo(w,target);}if(!route)return;
       if(!append&&!targets)w.waypoints=[];
       if(!w.unit){if(w.phase==='manual'){w.phase='idle';w.route=null;}w.manualTarget=target;issued++;return;}
@@ -120,7 +121,7 @@ export function createStrategy(api){
       clearHealing(w);Object.assign(w,{route,routeIndex:0,phase:'command',order:{x:g.x,y:g.y,building:b?buildings.indexOf(b):-1},wait:0});
       if(['geologist','pioneer'].includes(w.unit)){w.autoWork=true;w.workArea={x:g.x,y:g.y,radius:10};w.workRetry=0;w.surveyVisited=[];w.workSite=null;w.surveyStatus='Unterwegs ins Arbeitsgebiet';}
       if(w.unit==='geologist'){w.surveyQueue=surveySites(g);w.surveyDone=0;}issued++;
-    });recalculate();api.hud();toast(issued?`${issued} Einheiten beauftragt`:'Ziel ist nicht erreichbar');return true;
+    });recalculate();api.hud();const missed=chosen.length-issued;toast(issued?`${issued} Einheiten beauftragt${missed?' · '+missed+' ohne erreichbaren Weg':''}`:'Ziel ist für die ausgewählten Einheiten nicht erreichbar');return issued>0;
   }
   function stop(){for(const w of workers)if(api.selected.has(w.id)){clearHealing(w);delete w.patrol;w.waypoints=[];delete w.manualTarget;if(w.unit){w.route=null;w.order=null;w.surveyQueue=[];w.workSite=null;w.autoWork=false;w.surveyStatus='Angehalten';w.phase='guard';}else if(w.phase==='manual'){w.route=null;w.phase='idle';}}}
   function isRocky(x,y){return state.deposits.some(d=>dist(d,{x,y})<=2.7);}

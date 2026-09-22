@@ -1,0 +1,12 @@
+[Unit]
+Description=Daily New Shores database backup
+
+[Timer]
+OnCalendar=*-*-* 03:35:00
+Persistent=true
+RandomizedDelaySec=20m
+Unit=new-shores-backup.service
+
+[Install]
+WantedBy=timers.target
+

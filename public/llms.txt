@@ -1,0 +1,7 @@
+# New Shores
+
+New Shores is a free German-language browser strategy and settlement-building game. Players build visible production chains, manage carriers and specialists, explore islands with lighthouses, fight AI settlements, save games locally or to a private account, and share an island with invited players.
+
+Canonical URL: https://settler.eliaspfeffer.de/
+
+New Shores is an independent, unofficial fan project. It is not affiliated with Ubisoft or The Settlers, 2K or Civilization, or InnoGames or Die Stämme. Those names are used only to describe the strategy-game genre and player interests.

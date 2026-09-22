@@ -21,6 +21,8 @@ try{
   const member=await request('/register','POST',{email:'friend@example.com',password:'test-only-password-123'},'','https://settler.eliaspfeffer.de');assert.equal(member.status,200);
   assert.equal((await request('/login','POST',{email:'test@example.com',password:'wrong-password'})).status,401);
   const login=await request('/login','POST',{email:'test@example.com',password:'test-only-password-123'});assert.equal(login.status,200);
+  const me=await request('/me','GET',undefined,owner.cookie);assert.equal(me.status,200);assert.equal(me.data.email,'test@example.com');assert.equal(me.data.emailAvailable,false);
+  const forgot=await request('/forgot-password','POST',{email:'nobody@example.com'});assert.equal(forgot.status,200);assert.equal(forgot.data.emailAvailable,false);
   const snapshot={version:6,resources:{wood:20,planks:20,stone:20},buildings:[{type:'storehouse',x:25,y:25,progress:1}],roads:[],workers:[]};
   const island=await request('/islands','POST',{name:'Test island',snapshot},owner.cookie);assert.equal(island.status,201);const path='/islands/'+island.data.id;
   assert.equal((await request(path,'GET',undefined,member.cookie)).status,404);
@@ -36,7 +38,14 @@ try{
   assert.equal((await request(path+'/invite','POST',{permission:'edit'},member.cookie)).status,403);
   const edit=await request(path+'/invite','POST',{permission:'edit'},owner.cookie);
   await request('/join','POST',{code:edit.data.code},member.cookie);
+  const ownerLease=await request(path+'/lease','POST',{},owner.cookie);assert.equal(ownerLease.status,200);assert.equal(ownerLease.data.active,true);
+  assert.equal((await request(path+'/lease','POST',{},member.cookie)).status,423);
+  assert.equal((await request(path+'/lease','POST',{release:true},owner.cookie)).status,200);
+  assert.equal((await request(path+'/lease','POST',{},member.cookie)).status,200);
   assert.equal((await request(path,'PUT',{snapshot,revision:2},member.cookie)).status,200);
+  const message=await request(path+'/messages','POST',{message:'Treffen am Hafen','kind':'diplomacy'},member.cookie);assert.equal(message.status,201);assert.equal(message.data.sender,'Du');
+  const messages=await request(path+'/messages','GET',undefined,owner.cookie);assert.equal(messages.status,200);assert.equal(messages.data[0].body,'Treffen am Hafen');assert.equal(messages.data[0].kind,'diplomacy');assert.ok(!JSON.stringify(messages.data).includes('friend@example.com'));
+  assert.equal((await request(path+'/lease','POST',{release:true},member.cookie)).status,200);
   assert.equal((await request(path+'/members','DELETE',{playerId:member.data.id},owner.cookie)).status,200);
   assert.equal((await request(path,'GET',undefined,member.cookie)).status,404);
   const salvage={...snapshot,version:7,strategy:{physicalSalvage:true,groundPiles:[{x:26,y:25,goods:{stone:3}}]}};
@@ -47,7 +56,14 @@ try{
   assert.equal((await request(path,'GET',undefined,owner.cookie)).data.snapshot.version,8);
   assert.equal((await request(path,'PUT',{snapshot:{...conquest,version:7},revision:5},owner.cookie)).status,400);
   assert.equal((await request(path,'PUT',{snapshot:{...salvage,version:6},revision:4},owner.cookie)).status,400);
+  assert.equal((await request('/change-password','POST',{currentPassword:'wrong-password',newPassword:'new-test-password-123'},owner.cookie)).status,401);
+  assert.equal((await request('/change-password','POST',{currentPassword:'test-only-password-123',newPassword:'new-test-password-123'},owner.cookie)).status,200);
+  assert.equal((await request('/login','POST',{email:'test@example.com',password:'test-only-password-123'})).status,401);
+  assert.equal((await request('/login','POST',{email:'test@example.com',password:'new-test-password-123'})).status,200);
   assert.equal((await request('/logout','POST',{},owner.cookie)).status,200);
   assert.equal((await request('/me','GET',undefined,owner.cookie)).status,401);
-  console.log('PASS PostgreSQL/API: registration, login, CSRF, private saves, CAS conflicts, history, validation, one-use invites, view/edit permission, revocation, logout');
+  const memberLogin=await request('/login','POST',{email:'friend@example.com',password:'test-only-password-123'});assert.equal(memberLogin.status,200);
+  assert.equal((await request('/account','DELETE',{password:'test-only-password-123'},memberLogin.cookie)).status,200);
+  assert.equal((await request('/login','POST',{email:'friend@example.com',password:'test-only-password-123'})).status,401);
+  console.log('PASS PostgreSQL/API: accounts, password change/delete, login, CSRF, private saves, CAS conflicts, live lease/messages, history, validation, one-use invites, permissions, revocation and logout');
 }finally{if(server)await new Promise(r=>server.close(r));await pool.end();await admin.query('DROP SCHEMA '+schema+' CASCADE');await admin.end();}

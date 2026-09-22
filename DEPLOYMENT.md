@@ -6,7 +6,7 @@
 
 Die Layoutwahl erfolgt nach primärem Zeiger, Hover und Touch-Fähigkeit. Alte `mobile=0/1`-Links ändern das nicht mehr. Nur für absichtliche Vorschauen gibt es `ui=mobile` bzw. `ui=desktop`. Laptop-Hauptmenü mit breiter Zweispaltenkarte; neue Siedlung in eigenem Dialog. Keine neuen Grafikassets.
 
-Registrierung mit bereits vorhandenem Konto und identischem Passwort stellt eine Sitzung her. Ein anderes Passwort überschreibt niemals das vorhandene Konto. Ohne ursprüngliches Passwort ist weiterhin keine Selbstbedienungs-Wiederherstellung möglich.
+Registrierung mit bereits vorhandenem Konto und identischem Passwort stellt eine Sitzung her. Ein anderes Passwort überschreibt niemals das vorhandene Konto. Konten können ihr Passwort mit dem bisherigen Passwort ändern und alle anderen Sitzungen widerrufen. Für Verifizierung und Selbstbedienungs-Wiederherstellung werden optional `RESEND_API_KEY`, `MAIL_FROM` und die öffentliche `APP_ORIGIN` in `/etc/new-shores.env` gesetzt. Einmal-Token liegen ausschließlich gehasht und zeitlich begrenzt in PostgreSQL; ohne Mailkonfiguration bleiben bestehende Konten und Registrierung nutzbar.
 
 Gerätewechsel: eine lokale Welt einmal als neue Serverinsel sichern; anschließend „Speichern & Gerätewechsel“. Das alte Gerät pausiert und sendet für diese Bindung keine weiteren automatischen Updates. Auf dem anderen Gerät mit demselben Konto anmelden und diese Insel laden. Bei Rückkehr ebenfalls die neueste Serverinsel laden. Veraltete Schreibversuche bleiben durch Revisionsvergleich geschützt. Keine gleichzeitige Echtzeitsimulation.
 
@@ -42,7 +42,11 @@ Browser: Online-Navigation bevorzugt aktuelle HTML-Dateien; Offline-Navigation b
 
 Passwörter: gesalzenes scrypt; Sitzungstoken nur gehasht in PostgreSQL; Secure/HttpOnly/SameSite-Cookies; explizite Origin-Allowlist statt Wildcard-CORS; parametrisierte SQL-Abfragen und Inselberechtigungen. Begrenzte Anfragen/Bodygrößen, höchstens zwei parallele Passwortprüfungen und acht API-Anfragen, Sicherheitsheader/CSP. Der Node-Dienst bleibt auf Loopback gebunden und ohne Root-Rechte, Umgebungsdatei root-only. IP-Limits nutzen absichtlich keine ungesicherten Forwarded-Header; hinter dem vorhandenen Proxy sind sie konservativ für mehrere Nutzer gemeinsam. Kein Schutzversprechen gegen alle Angriffe oder große DDoS-Angriffe.
 
-Offen: E-Mail-Verifizierung, Passwort-Reset, MFA, umfassender Penetrationstest sowie Prüfung/Absicherung der anderen Serverdienste. Der vorhandene Server hat weitere öffentlich gebundene Dienste (u.a. 3000/6432); diese wurden nicht für das Spiel verändert. Ob diese von außen erreichbar sind, hängt zusätzlich von Host-/Provider-Firewalls ab. Ein isolierter Spielehost wäre eine zusätzliche Trennung, ist hier aber nicht eingerichtet.
+Offen: Zugangsdaten eines transaktionalen Mailproviders, MFA, ein unabhängiger Penetrationstest sowie die laufende Prüfung anderer Serverdienste. Der vorhandene Server hat weitere lokal gebundene Dienste; diese werden nicht ungeprüft verändert. Ob sie von außen erreichbar sind, hängt zusätzlich von Host-/Provider-Firewalls ab. Ein isolierter Spielehost wäre eine zusätzliche Trennung, ist hier aber nicht eingerichtet.
+
+Gemeinsames Inselspiel nutzt Server-Sent Events für Anwesenheit, Nachrichten, Sperrstatus und neue Revisionen. Eine kurze, erneuerte Steuerlease sorgt dafür, dass immer nur ein Gerät verbindlich schreibt. Das ist konfliktgeschützter Live-Koop auf einer Insel, keine behauptete hochfrequente MMO-Simulation einzelner Einheiten.
+
+`new-shores-backup.timer` erzeugt täglich ein PostgreSQL-Custom-Dump unter `/var/backups/new-shores`, prüft es sofort mit `pg_restore --list` und hält 14 Tage vor. `new-shores-hardening.conf` ergänzt den Dienst um leere Linux-Capability-Sets, private Geräte, eingeschränkte Adressfamilien und Kernel-/Prozessschutz. Nach Änderungen immer einen echten Backup-Lauf und `/api/health` prüfen.
 
 ## Spätere Vercel-Nutzung und Kosten
 

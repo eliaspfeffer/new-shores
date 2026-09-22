@@ -40,7 +40,7 @@ export function initThumbUI(mobile,api){
     if(!items.length)content.append(el('p','','Noch keine passenden Siedler vorhanden.'));
   });}
   function goods(){paged('Warenmenü',api.goods(),key=>{const cell=el('div','thumb-good');cell.innerHTML=api.good(key)+'<b data-thumb-stock="'+key+'">'+Math.floor(api.stock()[key]||0)+'</b>';cell.append(el('span','',api.goodName(key)));return cell;});}
-  function findUnits(filter=()=>true,name='Siedler finden'){const workers=api.workers().filter(filter);paged(name,workers,w=>button(api.unitName(w)+' #'+w.id,art(w.unit||w.role,true),()=>{closeSheet();api.select([w]);page='map';lastContext='';refresh(true);},'thumb-choice'));}
+  function findUnits(filter=null,name='Siedler finden'){const workers=api.workers().filter(filter||(()=>true));if(!filter){const groups=new Map();for(const w of workers){const key=api.unitName(w),list=groups.get(key)||[];list.push(w);groups.set(key,list);}return paged(name,[...groups].sort((a,b)=>a[0].localeCompare(b[0],'de')),(entry)=>button(entry[0]+' · '+entry[1].length,art(entry[1][0].unit||entry[1][0].role,true),()=>{closeSheet();api.select(entry[1]);page='map';lastContext='';refresh(true);},'thumb-choice'));}paged(name,workers,w=>button(api.unitName(w)+' #'+w.id,art(w.unit||w.role,true),()=>{closeSheet();api.select([w]);page='map';lastContext='';refresh(true);},'thumb-choice'));}
   function requestCount(name,icon,have,need,apply,max=20,initial=0){let count=initial;openSheet(name,(content,foot)=>{
     const summary=el('div','thumb-request-summary');summary.innerHTML=icon;summary.append(el('p','','Vorhanden: '+have));const amount=el('strong','','Auftrag: '+count);summary.append(amount);
     const controls=el('div','thumb-quantity');for(const n of [1,5,-1,-5])controls.append(button((n>0?'+':'')+n,String(n>0?'+'+n:n),()=>{count=Math.max(0,Math.min(max,count+n));amount.textContent='Auftrag: '+count;}));
@@ -95,9 +95,9 @@ export function initThumbUI(mobile,api){
     if(mode==='catalog'){caption.textContent=categories.find(c=>c[0]===category)[2];actions.classList.add('catalog');setCorner(left,'Zurück','×',()=>navigate('build'));for(const source of document.querySelectorAll('.building-card:not([hidden])')){const type=source.dataset.tool;add(api.buildName(type),art(type),()=>buildInfo(type));}}
     else actions.classList.remove('catalog');
     if(mode==='units'){caption.textContent='Siedler';setCorner(right,'Abbrechen','×',clear);add('Alle Militäreinheiten','⚔',()=>{api.select(api.workers().filter(w=>api.military(w)&&w.garrisonIndex===undefined),false);page='map';lastContext='';});add('Siedler finden','⌕',()=>findUnits());add('Grundberufe',api.good('hammer'),basicJobs);add('Spezialisten anwerben','♟+',specialists);}
-    if(mode==='selected'){caption.textContent=selected.length+' Siedler ausgewählt';setCorner(left,'Auswahl aufheben','✋',clear);setCorner(right,'Siedlermenü','♟',()=>{api.clear();page='units';lastContext='';});add('Markieren','⌗',()=>{mobile.select=!mobile.select;lastContext='';});add('Ziel zuweisen','➜',()=>invoke('move-units'));add('Halt','■',()=>invoke('halt-units'));if(selected.some(w=>['pioneer','geologist'].includes(w.unit)))add('Zum Träger','➜♟',()=>{api.returnSpecialists();lastContext='';});}
+    if(mode==='selected'){caption.textContent=selected.length+' Siedler ausgewählt';setCorner(left,'Auswahl aufheben','×',clear);setCorner(right,'Siedlermenü','♟',()=>{api.clear();page='units';lastContext='';});add('Markieren','⌗',()=>{mobile.select=!mobile.select;lastContext='';});add('Ziel zuweisen','➜',()=>invoke('move-units'));add('Halt','■',()=>invoke('halt-units'));if(selected.some(w=>['pioneer','geologist'].includes(w.unit)))add('Zum Träger','➜♟',()=>{api.returnSpecialists();lastContext='';});}
     if(mode==='building'){
-      caption.textContent=api.buildName(b.type)+' · '+api.buildStatus(b);setCorner(left,'Auswahl aufheben','✋',clear);right.hidden=true;
+      caption.textContent=api.buildName(b.type)+' · '+api.buildStatus(b);setCorner(left,'Auswahl aufheben','×',clear);right.hidden=true;
       if(b.type==='tower')return;
       if(b.type!=='storehouse'){
         add('Abriss','✹',()=>invoke('demolish-building'));
