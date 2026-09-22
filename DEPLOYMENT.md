@@ -46,7 +46,9 @@ Offen: Zugangsdaten eines transaktionalen Mailproviders, MFA, ein unabhängiger 
 
 Gemeinsames Inselspiel nutzt Server-Sent Events für Anwesenheit, Nachrichten, Sperrstatus und neue Revisionen. Eine kurze, erneuerte Steuerlease sorgt dafür, dass immer nur ein Gerät verbindlich schreibt. Das ist konfliktgeschützter Live-Koop auf einer Insel, keine behauptete hochfrequente MMO-Simulation einzelner Einheiten.
 
-`new-shores-backup.timer` erzeugt täglich ein PostgreSQL-Custom-Dump unter `/var/backups/new-shores`, prüft es sofort mit `pg_restore --list` und hält 14 Tage vor. `new-shores-hardening.conf` ergänzt den Dienst um leere Linux-Capability-Sets, private Geräte, eingeschränkte Adressfamilien und Kernel-/Prozessschutz. Nach Änderungen immer einen echten Backup-Lauf und `/api/health` prüfen.
+`new-shores-backup.tmpfiles` legt das rootgeschützte Zielverzeichnis an. `new-shores-backup.timer` erzeugt dort täglich ein PostgreSQL-Custom-Dump, prüft es sofort mit `pg_restore --list` und hält 14 Tage vor. `new-shores-hardening.conf` ergänzt den Dienst um leere Linux-Capability-Sets, private Geräte, eingeschränkte Adressfamilien und Kernel-/Prozessschutz. Nach Änderungen immer `systemd-tmpfiles --create`, einen echten Backup-Lauf und `/api/health` prüfen.
+
+`prune-releases.sh` entfernt ausschließlich validierte 40-stellige Release-Verzeichnisse und bewahrt die aktive sowie insgesamt vier neueste Fassungen. Es darf erst nach erfolgreichem Healthcheck ausgeführt werden. `sshd-new-shores-hardening.conf` lässt Schlüsselanmeldung einschließlich des vorhandenen Admin-Schlüssels zu, deaktiviert Passwort-/Tastatur- und X11-Anmeldung und reduziert Loginzeit und Fehlversuche; vor Reload immer `sshd -t`, danach eine zweite neue SSH-Verbindung prüfen.
 
 ## Spätere Vercel-Nutzung und Kosten
 
