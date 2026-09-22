@@ -7,6 +7,8 @@ export function buildingContext(b,resources,staffStatus=''){
   else if(b.type==='tower')status='Besatzung: '+(b.garrison||0)+' · Stärke: '+Math.ceil(b.hp??100);
   else if(b.type==='house')status='Wohnplätze insgesamt: '+resources.people+' / '+resources.beds;
   else if(b.type==='barracks'){status='Rekrutierung bereit · Vorräte im Hauptlager';items=['swords','bows','gold'].map(key=>({key,value:resources[key]||0}));}
+  else if(b.type==='shipyard'){status=b.shipStatus||'Werft bereit';items=['planks','iron'].map(key=>({key,value:resources[key]||0}));}
+  else if(b.type==='harbor'){status='Hafenlager und Seefahrt bereit';items=Object.entries(b.stored||{}).map(([key,value])=>({key,value}));}
   else {status=b.ready?(b.outputInTransit?'Ware unterwegs zum Ausgang':'Ware wartet auf Abholung'):staffStatus||'Bereit';items=(r?.deposit?meals:Object.keys(r?.inputs||{})).map(key=>({key,value:b.buffer?.[key]||0}));if(b.ready)items.push({key:b.ready,value:b.outputAmount||2,output:true});}
   if(b.stopped)status='Angehalten';
   else if(b.productionRemaining===0&&!b.ready)status='Produktionsauftrag fertig / pausiert';

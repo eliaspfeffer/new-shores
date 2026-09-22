@@ -1,5 +1,11 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 22. September 2026: römisch inspirierte Seefahrt
+
+Vor der Generierung wurden die statischen Originalbilder der römischen [Hafenanlage](https://www.siedlercommunity.de/media/die-siedler-IV-4/gebaeude/roemer/Hafen.png), [Werft](https://www.siedlercommunity.de/media/die-siedler-IV-4/gebaeude/roemer/Werft.png), des [Handelsschiffs](https://www.siedlercommunity.de/media/die-siedler-IV-4/schiffe/Roemer-Handelsschiff.png) und [Kriegsschiffs](https://www.siedlercommunity.de/media/die-siedler-IV-4/schiffe/Roemer-Kriegsschiff.png) im Browser vollständig betrachtet. Übernommen wurden nur die allgemeine Materialhierarchie, isometrische Leserichtung und deutlich unterschiedlichen Silhouetten.
+
+Implementiert sind vier eigenständige transparente Bilddateien: `assets/harbor-comic-v1.png`, `assets/shipyard-comic-v1.png`, `assets/ships-roman-comic-v1.png` (Waren-, Truppen- und Kriegsschiff) und `assets/messenger-skiff-comic-v1.png`. Keine Originalpixel oder ausgeschnittenen Screenshots sind enthalten. Prompts und Runtime-Zuordnung stehen in [assets/NAVAL_PROMPT.md](assets/NAVAL_PROMPT.md).
+
 ## Nachtrag 20. September 2026: Fähre
 
 Für die neue Fähre wurde die vollständig betrachtete [römische Landung mit Schiff aus Die Siedler IV](https://www.old-games.ru/game/screenshots/10163.html) als Referenz für Farbigkeit, Holzrumpf und isometrische Lesbarkeit verwendet. Das transparente Sprite ist eine eigenständige kompakte Ein-Feld-Fähre, kein kopiertes oder als original behauptetes Spielasset. Prompt, Ausgabe und Einschränkungen stehen in [assets/FERRY_PROMPT.md](assets/FERRY_PROMPT.md). Beide Kartenachsen verwenden wie die Brücke Original und horizontale Spiegelung; die laufende Menüansicht wurde visuell geprüft.

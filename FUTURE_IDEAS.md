@@ -133,7 +133,7 @@ Stand: 22. September 2026
 
 ## 3. Sichtbare Ausbildung in der Kaserne
 
-**[~] Spielbar, aber noch nicht vollständig inszeniert:** Rekrutierungen sind als speicherbare Warteschlange mit Ausbildungstakt, exakten Kosten, Abbruch, Pause und Sammelpunkt umgesetzt. Der fertige Soldat läuft über die Kaserne zum Sammelpunkt; der Träger läuft vor Ausbildungsbeginn noch nicht als eigene sichtbare Eintrittsphase hinein.
+**[x] Umgesetzt:** Rekrutierungen sind als speicherbare Warteschlange mit Ausbildungstakt, exakten Kosten, Abbruch, Pause und Sammelpunkt umgesetzt. Ein konkreter freier Träger wird reserviert, läuft sichtbar zum Eingang, verschwindet nur während der Ausbildung im Gebäude und verlässt dieselbe Kaserne als Soldat. Abbruch und Abriss geben den reservierten Träger verlustfrei am Eingang frei.
 
 - Ein freier Siedler wird für einen konkreten Rekrutierungsauftrag reserviert.
 - Er läuft sichtbar zur ausgewählten Kaserne und durch deren Eingang hinein.
@@ -145,15 +145,19 @@ Stand: 22. September 2026
 
 ## 4. Seefahrt und neue Gebäude
 
-**[~] Kleiner spielbarer Vertikalschnitt:** Orientierte Holzbrücken und Fähren verbinden echte Wasserlücken, werden gespeichert und von der Wegsuche benutzt. Mehrere Übergänge hintereinander erschließen entfernte KI-Inseln. Hafen, Werft, frei fahrende Waren-/Truppen-/Kriegsschiffe bleiben ein eigener großer Simulationsausbau und sind nicht als fertig markiert.
+**[x] Spielbarer Seefahrt-Vertikalschnitt:** Orientierte Holzbrücken und Fähren verbinden echte Wasserlücken. Zusätzlich gibt es Hafen und Werft mit eigener Comic-Grafik sowie frei fahrende Waren-, Truppen- und Kriegsschiffe. Bauaufträge, Kosten, Wasserwege, Ladung, Passagiere und laufende Fahrten werden gespeichert.
 
 ### 4.1 Hafen
+
+**[x] Umgesetzt:** Der Hafen benötigt eine freie Küste, besitzt ein lokales Ziellager und bietet direkte Aufträge für priorisierte Waren, Massentransport naher Truppen und Botenboote. Ohne durchgängige Wasserroute startet kein Auftrag.
 
 - Küstengebäude mit gültiger Wasserzufahrt und einem landseitigen Warenanschluss.
 - Bau, Lagerung, Be- und Entladung sowie Schiffsaufträge müssen physisch sichtbar sein.
 - Ein Hafen darf keine Wasserroute anbieten, wenn sie durch Küste oder Inseln blockiert ist.
 
 ### 4.2 Werft und Schiffstypen
+
+**[x] Umgesetzt:** Die Werft reserviert Bretter und Eisen atomar und baut in einer gespeicherten Warteschlange Warenschiffe (64 Waren), Truppentransporter (40 Einheiten) und Kriegsschiffe. Schiffswerte, Bauzeit, Trefferpunkte, Geschwindigkeit, Reichweite und Schaden liegen zentral in `src/naval.js`. Unterbrochene Fahrten, Ladung und Passagierkennungen bleiben im Spielstand erhalten; Waren werden beim Start abgezogen und erst am Ziel gutgeschrieben.
 
 - Werft oder Hafen-Unterfunktion zur Herstellung von Schiffen.
 - **Warenschiff:** transportiert definierte Warenmengen zwischen Häfen.
@@ -231,7 +235,7 @@ Stand: 22. September 2026
 
 ## 7. Boten und Diplomatie
 
-**[~] Sichere Nachrichtenbasis umgesetzt:** Bekannte Mitspieler einer freigegebenen Insel können kurze typisierte Nachrichten senden. Länge, Berechtigung und Rate sind serverseitig begrenzt, private Kontaktdaten bleiben verborgen. Ein physisch über die Karte reisender und abfangbarer Bote bleibt offen.
+**[x] Umgesetzt:** Bekannte Mitspieler einer freigegebenen Insel können kurze typisierte Nachrichten senden; Länge, Berechtigung und Rate sind serverseitig begrenzt. Im Inselspiel kann ein Hafen zusätzlich ein physisches, gespeichertes Botenboot zur nächsten erreichbaren Gegnerinsel schicken. Die Nachricht erscheint erst bei Ankunft; das Boot bleibt als leichtes, angreifbares Seeobjekt sichtbar.
 
 - Spieler können einen Boten mit einer kurzen Nachricht zu einer bekannten fremden Insel schicken.
 - Der Bote startet sichtbar an einem passenden Gebäude oder Hafen, reist physisch und kann sein Ziel verfehlen beziehungsweise aufgehalten werden.

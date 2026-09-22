@@ -27,7 +27,7 @@ export function initThumbUI(mobile,api){
   function advanced(panel){closeSheet();$('#resume-button').click();page='advanced';api.panel(panel);document.documentElement.classList.add('mobile-panel');lastContext='';}
   function setCorner(b,label,icon,fn){b.setAttribute('aria-label',label);b.title=label;b.querySelector('.thumb-icon').innerHTML=iconHTML(icon);b.querySelector('small').textContent=label;b.onclick=fn;b.disabled=false;}
   const invoke=id=>{const source=document.getElementById(id);if(source&&!source.disabled){source.click();hideSidebar();lastContext='';}};
-  const categories=[['basic','⚒','Grundgebäude'],['food',api.good('meat'),'Nahrung'],['metal','anvil','Bergbau & Metall'],['military','⚔','Militärgebäude'],['town','⌂','Wohnhäuser & Lager']];
+  const categories=[['basic','⚒','Grundgebäude'],['food',api.good('meat'),'Nahrung'],['metal','anvil','Bergbau & Metall'],['military','⚔','Militärgebäude'],['town','⌂','Wohnhäuser & Lager'],['naval','⚓','Seefahrt']];
   function categoryMenu(key){category=key;page='catalog';document.querySelector('[data-category="'+key+'"]').click();hideSidebar();lastContext='';refresh(true);}
   function buildInfo(type){const source=$('.building-card[data-tool="'+type+'"]');openSheet(api.buildName(type),(content,foot)=>{
     const summary=el('div','thumb-build-summary');summary.innerHTML=art(type)+'<div>'+source.querySelector('.building-cost').innerHTML+'</div>';content.append(summary,el('p','thumb-description',source.querySelector('.building-purpose').textContent));
@@ -103,7 +103,8 @@ export function initThumbUI(mobile,api){
         add('Abriss','✹',()=>invoke('demolish-building'));
         const productive=!['house','largehouse'].includes(b.type);
         if(productive)add(b.stopped?'Fortsetzen':'Anhalten',b.stopped?'▶':'Ⅱ',()=>invoke('production-toggle'));
-        if(b.type==='barracks')add('Krieger rekrutieren','⚔',()=>military(b));
+        if(['harbor','shipyard'].includes(b.type))add('Seefahrt verwalten','⚓',()=>invoke('building-settings'));
+        else if(b.type==='barracks')add('Krieger rekrutieren','⚔',()=>military(b));
         else if(b.type==='toolsmith')add('Werkzeuge herstellen',api.good('hammer'),()=>tools(b));
         else if(['woodcutter','quarry','forester'].includes(b.type))add('Arbeitsbereich','◎',()=>invoke('area-toggle'));
         else if(productive)add(b.priority?'Priorität: hoch':'Priorität: normal','↑',()=>invoke('priority-toggle')).setAttribute('aria-pressed',String(Boolean(b.priority)));

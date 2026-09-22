@@ -91,8 +91,8 @@ export function createStrategy(api){
     const military=isMilitary({unit:type}),resource=military?(type==='archer'?'bows':'swords'):'tools';
     if(military&&barracks&&(!buildings.includes(barracks)||!own(barracks)||barracks.type!=='barracks'||barracks.progress<1||barracks.stopped))return toast('Diese Kaserne ist noch nicht einsatzbereit');
     if(military&&!buildings.some(b=>own(b)&&b.type==='barracks'&&b.progress>=1&&!b.stopped))return toast('Build an active barracks first');
-    const eligible=workers.filter(freeCarrier);if(eligible.length<=(state.carrierReserve||0))return toast('Trägerreserve erreicht');
-    const w=options.candidate&&eligible.includes(options.candidate)?options.candidate:eligible[0];
+    const eligible=workers.filter(freeCarrier);if(!options.reserved&&eligible.length<=(state.carrierReserve||0))return toast('Trägerreserve erreicht');
+    const w=options.reserved&&options.candidate&&!options.candidate.dead&&!options.candidate.unit?options.candidate:options.candidate&&eligible.includes(options.candidate)?options.candidate:eligible[0];
     if(!w)return toast('No idle carrier available');
     if(military&&(stock()[resource]||0)<1)return toast('Need 1 '+resource);
     const gold=military?rank-1:0;if((stock().gold||0)<gold)return toast('Benötigt '+gold+' Gold für Rang '+rank);
@@ -217,7 +217,7 @@ export function createStrategy(api){
           if((b.buffer?.[item]||0)+pending>=amount*(construction?1:2))continue;
           const dest=entrance(b);if(!dest)continue;
           const candidates=[];if(home&&source?.[item]>0)candidates.push({point:home,source});
-          if(!construction)for(const depot of buildings)if(depot.type==='warehouse'&&own(depot)&&depot.progress>=1&&!depot.stopped&&depot.stored?.[item]>0){const p=entrance(depot);if(p)candidates.push({point:p,source:depot.stored});}
+          if(!construction)for(const depot of buildings)if(['warehouse','harbor'].includes(depot.type)&&own(depot)&&depot.progress>=1&&!depot.stopped&&depot.stored?.[item]>0){const p=entrance(depot);if(p)candidates.push({point:p,source:depot.stored});}
           if(!construction&&api.directSupply)for(const producer of buildings)if(producer!==b&&own(producer)&&producer.progress>=1&&!producer.outputInTransit&&producer.ready===item&&!workers.some(o=>!o.dead&&o.task===producer&&o.phase!=='inbound')){const p=entrance(producer);if(p)candidates.push({point:p,producer});}
           const routes=candidates.map(c=>({...c,pickup:routeTo(w,c.point),delivery:routeTo(c.point,dest)})).filter(c=>c.pickup&&c.delivery).sort((a,b)=>Number(Boolean(b.producer))-Number(Boolean(a.producer))||(a.pickup.length+a.delivery.length)-(b.pickup.length+b.delivery.length));
           const chosen=routes[0];if(!chosen)continue;const {pickup,delivery}=chosen;
@@ -241,7 +241,7 @@ export function createStrategy(api){
     if(b.productionRemaining>0)b.productionRemaining--;if(d){d.initialAmount??=d.amount;d.amount--;}b.ready=b.type==='toolsmith'?b.activeTool:r.output;if(b.type==='toolsmith'&&b.toolOrderMode&&b.toolOrders?.[b.activeTool]>0)b.toolOrders[b.activeTool]--;delete b.activeTool;b.outputAmount=d?1:r.amount;return true;
   }
   function damageUnit(target,damage){if(target.dead)return;target.hp-=damage;if(target.hp<=0){target.hp=0;target.dead=true;if(target.garrisonIndex!==undefined){const b=buildings[target.garrisonIndex];if(b)b.garrison=Math.max(0,(b.garrison||0)-1);delete target.garrisonIndex;recalculate();}api.onEvent?.('death',target);api.selected.delete(target.id);if(own(target))stock().people=Math.max(0,(stock().people||0)-1);}}
-  const armyOrders=createArmyOrders({buildings,workers,state,stock,entrance,routeTo,recruit,terrain,visible:api.isSeen});
+  const armyOrders=createArmyOrders({buildings,workers,state,stock,entrance,routeTo,followRoute,recruit,terrain,visible:api.isSeen});
   const raids=createEnemyRaids({workers,buildings,state,entrance,routeTo,capacity:towerCapacity,notify:(b,n)=>{if(own(b))toast(n+' gegnerische Soldaten greifen einen Turm an');}});
   function tick(dt){
     if(api.tacticalAI)raids.tick(dt);
