@@ -39,13 +39,13 @@ Stand: 22. September 2026
 
 ### 1.2 Fehlende einheitliche Comic-Symbole
 
-**[~] Teilweise umgesetzt:** „Auswahl aufheben“ verwendet jetzt das vorhandene Comic-Medaillon statt des Hand-Emojis. Die vollständige Asset-Inventur und neue Bildfamilien bleiben wegen der vorgeschriebenen Referenzprüfung offen.
+**[x] Für die spielrelevanten Daumen-Menüs umgesetzt:** „Auswahl aufheben“ verwendet das vorhandene Comic-Medaillon. Nahrung, Bergbau und Metall, Seefahrt, Grundberufe, Siedler finden, Spezialisten, Träger, Bauarbeiter, Pioniere, Geologen, Markieren, Ziel zuweisen, Halt und Rückkehr zum Träger verwenden nun eine gemeinsame neue Comic-Medaillonfamilie. Die Siedlersuche gruppiert Berufe und Spezialisten und kann damit beispielsweise alle Pioniere mit einem Knopf auswählen. Die doppelte Auswahlanzeige im hellen Desktop-Menü ist entfernt.
 
-- „Auswahl aufheben“ benötigt ein eigenes Comic-Medaillon anstelle des jetzigen Hand-Emojis.
-- Alle noch vorhandenen Text-, Emoji- oder generischen Symbole inventarisieren.
-- Für jede Hauptaktion ein zum vorhandenen Set passendes Medaillon erstellen.
-- Größe, Rand, Lichtquelle, Druckzustand, Deaktivierung und Beschriftung auf Laptop und Mobilgerät vereinheitlichen.
-- Bereits vorhandene eigene Bilder bewahren; neue Bildfamilien nach `GRAPHICS_REFERENCE.md` mit Referenz und Quellenvermerk erstellen.
+- [x] „Auswahl aufheben“ verwendet ein eigenes Comic-Medaillon anstelle des Hand-Emojis.
+- [x] Spielrelevante Text-, Emoji- und generische Symbole der Daumen-Menüs inventarisiert.
+- [x] Für die fehlenden Hauptaktionen passende Medaillons erstellt.
+- [x] Größe, Rand, Lichtquelle, Druckzustand, Deaktivierung und Beschriftung auf Laptop und Mobilgerät vereinheitlicht.
+- [x] Bereits vorhandene eigene Bilder bewahrt; neue Bildfamilie mit Referenz- und Promptvermerk dokumentiert.
 
 ### 1.3 Direkte Gebäudebefehle und Untermenüs
 

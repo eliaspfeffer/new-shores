@@ -25,4 +25,5 @@ html:not(.mobile) #command-sidebar .resource-bar.has-unit-selection>.resource{di
 html:not(.mobile) #command-sidebar .resource-bar.has-unit-selection>.round-button{width:42px;min-width:42px;max-width:42px;flex:0 0 42px;height:42px}
 html:not(.mobile) #command-sidebar .resource-bar.has-unit-selection>.selected-unit-bar{flex:1;min-width:0}
 .mobile .selected-unit-bar{display:none}
+:is(.mobile,.desktop-thumb) #mobile-resources .selected-unit-bar{display:none!important}
 @media(max-height:500px){#unit-search-results{max-height:170px}.unit-subtabs{margin-bottom:8px}}

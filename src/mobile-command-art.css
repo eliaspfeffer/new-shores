@@ -1,0 +1,3 @@
+.mobile-command-medallion{display:inline-block;width:100%;height:100%;min-width:32px;min-height:32px;background-size:400% 400%;background-repeat:no-repeat;vertical-align:middle}
+.thumb-button:has(.mobile-command-medallion) .thumb-icon,.thumb-choice:has(.mobile-command-medallion) .thumb-icon{width:82%;height:82%;padding:0;border:0;background:transparent;box-shadow:none}
+.thumb-button:has(.mobile-command-medallion){background:transparent!important;border-color:transparent!important;box-shadow:none!important}
