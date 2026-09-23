@@ -6,6 +6,8 @@ Die noch gemischten Text-, SVG- und Waren-Symbole für Nahrung, Bergbau und Meta
 
 23. September 2026: Die unveränderten vorhandenen Gebäudezeichnungen im Daumen-Baukatalog verwenden nun ebenfalls den einheitlichen elfenbein-/messingfarbenen Doppelring mit vier goldenen Akzenten. Hafen und Werft benutzen für „Seefahrt verwalten“ das bereits erzeugte Seefahrt-Medaillon. Es wurde kein Gebäudeasset verändert oder neu generiert.
 
+Ebenfalls am 23. September wurden die Seefahrt-Untermenüs um neun eigenständige Medaillons für Werft, Schiffstypen, Warenfahrt, Truppenfahrt und Botenboot ergänzt. Als direkte Stilreferenz diente das vom Nutzer erneut angehängte vorhandene 4×4-Medaillonatlas; der Screenshot diente ausschließlich als Beleg für die verzerrte Darstellung. Atlasbelegung und unveränderter Built-in-Imagegen-Prompt stehen in [assets/NAVAL_COMMANDS_PROMPT.md](assets/NAVAL_COMMANDS_PROMPT.md). Die CSS-Darstellung erzwingt nun quadratische Maße, damit Medaillons unabhängig von Dialogbreite und Bildschirmformat kreisrund bleiben.
+
 ## Nachtrag 22. September 2026: römisch inspirierte Seefahrt
 
 Vor der Generierung wurden die statischen Originalbilder der römischen [Hafenanlage](https://www.siedlercommunity.de/media/die-siedler-IV-4/gebaeude/roemer/Hafen.png), [Werft](https://www.siedlercommunity.de/media/die-siedler-IV-4/gebaeude/roemer/Werft.png), des [Handelsschiffs](https://www.siedlercommunity.de/media/die-siedler-IV-4/schiffe/Roemer-Handelsschiff.png) und [Kriegsschiffs](https://www.siedlercommunity.de/media/die-siedler-IV-4/schiffe/Roemer-Kriegsschiff.png) im Browser vollständig betrachtet. Übernommen wurden nur die allgemeine Materialhierarchie, isometrische Leserichtung und deutlich unterschiedlichen Silhouetten.
