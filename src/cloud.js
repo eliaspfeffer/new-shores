@@ -60,7 +60,7 @@ export function initCloud(api){
   q('#cloud-sync').onclick=()=>act(()=>sync(true));q('#cloud-refresh').onclick=()=>act(list);
   handoff.onclick=()=>act(async()=>{api.pause();if(await sync(true)){binding.handedOff=true;remember();feedback('Gesichert und pausiert. Auf dem anderen Gerät dieselbe Insel laden. Vor der Rückkehr hier ebenfalls den aktuellen Serverstand laden.');}});
   q('#cloud-create').onclick=()=>act(async()=>{binding=null;await ensureIsland();await list();});
-  function beginMultiplayer(){requestedMode='login';closeLive();binding=null;conflict=false;lastText='';localStorage.removeItem('new-shores-cloud-binding');sessionStorage.setItem('new-shores-multiplayer-pending','1');dialog.close();document.querySelector('#open-new-settlement')?.click();}
+  function beginMultiplayer(){requestedMode='login';closeLive();binding=null;conflict=false;lastText='';localStorage.removeItem('new-shores-cloud-binding');sessionStorage.setItem('new-shores-multiplayer-pending','1');dialog.close();document.dispatchEvent(new CustomEvent('new-shores-multiplayer-setup'));}
   q('#cloud-new-island').onclick=beginMultiplayer;q('#cloud-import-island').remove();q('#cloud-onboarding').remove();
   q('#cloud-join').onclick=()=>act(async()=>{await request('/join','POST',{code:q('#cloud-code').value});q('#cloud-code').value='';feedback('Einladung angenommen. Du kannst die Insel jetzt laden.');await list();});
   q('#cloud-invite').onclick=()=>act(async()=>{const result=await request('/islands/'+binding.id+'/invite','POST',{permission:q('#cloud-permission').value});q('#cloud-invite-result').value=result.code;feedback('Code erstellt. Markieren und an den gewünschten Mitspieler senden.');});
