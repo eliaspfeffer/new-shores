@@ -13,6 +13,17 @@
 :is(.mobile,.desktop-thumb) .thumb-ui[data-mode=units] .thumb-actions,:is(.mobile,.desktop-thumb) .thumb-ui[data-mode=selected] .thumb-actions{left:auto;right:calc(var(--safe-right) + var(--thumb-size) + 10px)}
 :is(.mobile,.desktop-thumb) .thumb-actions.catalog{display:grid;grid-template-columns:repeat(4,var(--thumb-size));gap:6px 12px;bottom:calc(var(--safe-bottom) + 22px)}
 :is(.mobile,.desktop-thumb) .thumb-actions.catalog .thumb-icon{height:78%}
+:is(.mobile,.desktop-thumb) .thumb-actions.catalog .thumb-button:has(.thumb-building-art){
+  position:relative;border:4px solid #9b7544;background:
+    radial-gradient(circle at 50% 3%,#fff2a8 0 3px,#9a671d 4px 6px,transparent 7px),
+    radial-gradient(circle at 97% 50%,#fff2a8 0 3px,#9a671d 4px 6px,transparent 7px),
+    radial-gradient(circle at 50% 97%,#fff2a8 0 3px,#9a671d 4px 6px,transparent 7px),
+    radial-gradient(circle at 3% 50%,#fff2a8 0 3px,#9a671d 4px 6px,transparent 7px),
+    radial-gradient(circle,#fff9df 0 60%,#d5b873 61% 69%,#6f4828 70% 75%,#f0d78d 76% 80%,#704a2e 81% 100%);
+  box-shadow:inset 0 0 0 3px #f6e6ad,inset 0 0 0 6px #6d4b2e,0 4px 0 #4f3527,0 7px 12px #1b160da8;
+}
+:is(.mobile,.desktop-thumb) .thumb-actions.catalog .thumb-button:has(.thumb-building-art) .thumb-icon{width:82%;height:82%}
+:is(.mobile,.desktop-thumb) .thumb-actions.catalog .thumb-button:has(.thumb-building-art):hover{filter:brightness(1.08)}
 :is(.mobile,.desktop-thumb) .thumb-caption{position:absolute;bottom:0;left:50%;transform:translateX(-50%);max-width:65vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:linear-gradient(#d0bd86,#f3e6ba);color:#493519;border:2px ridge #cbb578;border-radius:13px 13px 0 0;padding:2px 22px;font:bold 13px Georgia,serif}
 :is(.mobile,.desktop-thumb) .thumb-sheet[open]{display:flex;flex-direction:column;position:fixed;inset:48px var(--safe-right) var(--safe-bottom) var(--safe-left);margin:0;width:auto;max-width:none;height:auto;max-height:none;box-sizing:border-box;border:5px ridge #d9c98e;border-radius:18px;background:radial-gradient(at 20% 20%,#f6edcf,#e0d2a7);color:#563b20;padding:10px 18px;z-index:30;overflow:auto}
 :is(.mobile,.desktop-thumb) .thumb-sheet::backdrop{background:#10180955}

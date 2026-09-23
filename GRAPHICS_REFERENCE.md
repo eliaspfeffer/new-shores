@@ -4,6 +4,8 @@
 
 Die noch gemischten Text-, SVG- und Waren-Symbole für Nahrung, Bergbau und Metall, Seefahrt, Grundberufe sowie die mobilen Siedlerbefehle wurden durch eine neue, zusammenhängende 4×4-Familie aus warmen Elfenbein-/Messingmedaillons ersetzt. Grundlage bleiben die in diesem Dokument vollständig betrachteten Original-Screenshots der runden Siedler-IV-Menüknöpfe; die Symbole selbst sind eigenständige Projektgrafiken und keine extrahierten Originalassets. Atlasbelegung, unveränderter Built-in-Imagegen-Prompt und Einschränkung sind in [assets/MOBILE_COMMANDS_PROMPT.md](assets/MOBILE_COMMANDS_PROMPT.md) festgehalten. Bestehende Grafiken wurden nicht überschrieben.
 
+23. September 2026: Die unveränderten vorhandenen Gebäudezeichnungen im Daumen-Baukatalog verwenden nun ebenfalls den einheitlichen elfenbein-/messingfarbenen Doppelring mit vier goldenen Akzenten. Hafen und Werft benutzen für „Seefahrt verwalten“ das bereits erzeugte Seefahrt-Medaillon. Es wurde kein Gebäudeasset verändert oder neu generiert.
+
 ## Nachtrag 22. September 2026: römisch inspirierte Seefahrt
 
 Vor der Generierung wurden die statischen Originalbilder der römischen [Hafenanlage](https://www.siedlercommunity.de/media/die-siedler-IV-4/gebaeude/roemer/Hafen.png), [Werft](https://www.siedlercommunity.de/media/die-siedler-IV-4/gebaeude/roemer/Werft.png), des [Handelsschiffs](https://www.siedlercommunity.de/media/die-siedler-IV-4/schiffe/Roemer-Handelsschiff.png) und [Kriegsschiffs](https://www.siedlercommunity.de/media/die-siedler-IV-4/schiffe/Roemer-Kriegsschiff.png) im Browser vollständig betrachtet. Übernommen wurden nur die allgemeine Materialhierarchie, isometrische Leserichtung und deutlich unterschiedlichen Silhouetten.

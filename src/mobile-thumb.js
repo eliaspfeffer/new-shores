@@ -10,7 +10,7 @@ export function initThumbUI(mobile,api){
   const paths={'⌂':'M2 11 12 2 22 11H19V22H14V15H10V22H5V11Z','♟':'M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8M8 11H16L21 22H3Z','⚒':'M3 3H12V8H9L6 22H2L6 8H3ZM17 3H22V5H20V22H18V5H17Z','⚔':'M4 1 13 12 11 14 2 4ZM3 13 11 21 13 19 5 11ZM20 1 11 12 13 14 22 4ZM21 13 13 21 11 19 19 11Z','anvil':'M2 7H22L18 12H14V17L19 20V22H5V20L10 17V12H6Z','✉':'M2 5H22V19H2ZM3 6 12 13 21 6V8L12 15 3 8Z'};
   const iconHTML=value=>mobileCommandArt(value)||commandArt(value)||(paths[value]?'<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="'+paths[value]+'"/></svg>':value);
   const button=(label,icon,fn,cls='thumb-button')=>{const b=el('button',cls);b.setAttribute('aria-label',label);b.title=label;b.innerHTML='<span class="thumb-icon" aria-hidden="true">'+iconHTML(icon)+'</span>';b.append(el('small','',label));b.onclick=fn;return b;};
-  const art=(type,unit=false)=>'<span class="thumb-art" style=\''+(unit?api.unitArt(type):api.buildArt(type))+'\'></span>';
+  const art=(type,unit=false)=>'<span class="thumb-art'+(unit?'':' thumb-building-art')+'" style=\''+(unit?api.unitArt(type):api.buildArt(type))+'\'></span>';
   let page='map',category='basic',sheetRender=null,sheetKey='',lastContext='',lastRefresh=0;
   const root=el('nav','thumb-ui');root.setAttribute('aria-label','Mobile Spielbefehle');game.append(root);
   const left=button('Bauen','⌂',()=>navigate('build'),'thumb-button thumb-left');left.id='thumb-left';
@@ -104,7 +104,7 @@ export function initThumbUI(mobile,api){
         add('Abriss','✹',()=>invoke('demolish-building'));
         const productive=!['house','largehouse'].includes(b.type);
         if(productive)add(b.stopped?'Fortsetzen':'Anhalten',b.stopped?'▶':'Ⅱ',()=>invoke('production-toggle'));
-        if(['harbor','shipyard'].includes(b.type))add('Seefahrt verwalten','⚓',()=>invoke('building-settings'));
+        if(['harbor','shipyard'].includes(b.type))add('Seefahrt verwalten','naval',()=>invoke('building-settings'));
         else if(b.type==='barracks')add('Krieger rekrutieren','⚔',()=>military(b));
         else if(b.type==='toolsmith')add('Werkzeuge herstellen',api.good('hammer'),()=>tools(b));
         else if(['woodcutter','quarry','forester'].includes(b.type))add('Arbeitsbereich','◎',()=>invoke('area-toggle'));
