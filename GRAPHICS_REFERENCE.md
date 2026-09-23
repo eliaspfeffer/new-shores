@@ -1,5 +1,9 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 23. September 2026: animierte Stadtvorschau
+
+Die Startseite verwendet `assets/title-city-carriers-v1.gif`, eine direkt aus dem laufenden New-Shores-Spiel aufgenommene Sequenz in 720 × 433 Pixeln. Vier sichtbare Träger bewegen Bretter vom Hauptlager über die Karte; Gebäude, Figuren, Gelände und Waren stammen unverändert aus dem aktuellen Spielrenderer. Die Aufnahme ist damit kein nachgezeichnetes oder fremdes Siedler-IV-Asset. Als Vergleichsbasis bleibt der unten dokumentierte, visuell geprüfte Siedler-IV-Screenshot mit sichtbaren Figuren und Warenhaufen maßgeblich. Die GIF-Datei ergänzt die Startseite und überschreibt keine vorhandene Grafik.
+
 ## Nachtrag 23. September 2026: Sprachmedaillons
 
 Deutsch und Englisch werden über zwei neue eigenständige Comic-Medaillons mit deutscher beziehungsweise britischer Flagge umgeschaltet. Die Flaggenfamilie bildet kein Siedler-IV-Asset nach; als Stilreferenz dienen die bereits vorhandenen elfenbein-/messingfarbenen New-Shores-Befehlsmedaillons. Atlas, unveränderter Prompt und Einschränkungen stehen in [assets/LANGUAGE_MEDALLIONS_PROMPT.md](assets/LANGUAGE_MEDALLIONS_PROMPT.md). Bestehende Grafik wurde nicht überschrieben.

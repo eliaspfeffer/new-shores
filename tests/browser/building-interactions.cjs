@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 for(const mobile of [false,true]){
  const page=await browser.newPage({viewport:mobile?{width:844,height:390}:{width:1400,height:900},hasTouch:mobile,isMobile:mobile}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://localhost:5176/?mobile='+(mobile?1:0));
- await page.locator('#open-title-saves').click();await page.locator('#title-import-save').setInputFiles('/Users/eliaspfeffer/Downloads/new-shores-spielstand 2.json');await page.locator('#resume-button').click();
+ await page.locator('#open-new-settlement').click();await page.locator('[data-auth-choice="skip"]').click();await page.locator('#new-settlement-dialog').waitFor({state:'visible'});await page.locator('#new-game').click();await page.locator('#pause-button').click();await page.locator('#open-pause-saves').click();await page.locator('#title-import-save').setInputFiles('/Users/eliaspfeffer/Downloads/new-shores-spielstand 2.json');await page.locator('#resume-button').click();
  if(await page.locator('#dismiss-quest').isVisible())await page.locator('#dismiss-quest').click();
  const clickBuilding=async type=>{const p=await page.evaluate(type=>{const b=__newShores.buildings.find(b=>b.type===type&&(b.owner||1)===1),c=__newShores.camera;c.zoom=1;c.x=innerWidth*.6-(b.x-b.y)*44;c.y=innerHeight*.65-(b.x+b.y+1)*22;return{x:innerWidth*.6,y:innerHeight*.65-35};},type);await page.mouse.click(p.x,p.y);};
  const menu=page.locator('#building-settings-dialog');await clickBuilding('woodcutter');assert.equal(await menu.isVisible(),false);

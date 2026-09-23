@@ -3,6 +3,8 @@ import {createSaveLibrary} from './save-library.js';
 import {playerColors} from './player-colors.js';
 export function initSessionMenu(api){
   const library=createSaveLibrary(localStorage,api.parse);
+  const isIsland=item=>item.key==='new-shores-save'||/^new-shores-slot-[1-3]$/.test(item.key);
+  const savedIslands=()=>library.list().filter(item=>isIsland(item)&&item.data?.mapPreview);
   const dialog=document.createElement('dialog');dialog.id='save-library-dialog';
   dialog.innerHTML='<header><div><small>DEINE SIEDLUNGEN</small><h2>Spielstände</h2></div><button id="close-save-library" aria-label="Spielstände schließen">Schließen ×</button></header><p class="save-library-intro">Nur vorhandene Spielstände mit Kartenbild werden angezeigt.</p><div id="save-library-list"></div><p id="save-library-feedback" role="status" aria-live="polite"></p>';
   document.body.append(dialog);
@@ -14,7 +16,7 @@ export function initSessionMenu(api){
   const run=action=>{try{action();}catch(e){feedback(e.message);}};
   function refresh(){
     const list=dialog.querySelector('#save-library-list');list.replaceChildren();
-    const items=library.list().filter(item=>item.data?.mapPreview);
+    const items=savedIslands();
     if(!items.length){const empty=document.createElement('p');empty.className='save-library-empty';empty.textContent='Noch keine gespeicherten Karten.';list.append(empty);return;}
     for(const item of items){
       const row=document.createElement('article');row.dataset.saveKey=item.key;
@@ -52,9 +54,11 @@ export function initSessionMenu(api){
     const text=api.capture();if(!text)return;
     library.write(key,text,current?.data.saveName);api.refreshSlots();api.notify('Speicherplatz gesichert');
   }catch(e){api.notify('Speicherplatz konnte nicht gesichert werden: '+e.message);}};});
-  for(const [anchor,id,label] of [['#continue-game','open-title-saves','Spielstände & Zwischenspeicher'],['#save-slots','open-pause-saves','Spielstände verwalten']]){
+  for(const [anchor,id,label] of [['#save-slots','open-pause-saves','Spielstände verwalten']]){
     const button=document.createElement('button');button.className='text-button';button.id=id;button.textContent=label;button.onclick=open;document.querySelector(anchor).after(button);
   }
+  const continueGame=document.querySelector('#continue-game'),continueDirect=continueGame.onclick;
+  continueGame.onclick=event=>savedIslands().length>1?open():continueDirect?.call(continueGame,event);
   const home=document.createElement('button');home.id='return-main-menu';home.className='text-button';home.textContent='Speichern & Hauptmenü';home.onclick=()=>{if(!api.leave())api.notify('Hauptmenü nicht geöffnet: Spielstand konnte nicht gesichert werden.');};document.querySelector('#restart-button').before(home);
   function quickSave(){if(!api.hasSession())return;try{const text=api.capture();if(!text)return;library.write('new-shores-quicksave',text,'Zwischenspeicher');api.notify('Zwischenspeicher gesichert');}catch(e){api.notify('Zwischenspeichern fehlgeschlagen: '+e.message);}}
   function quickLoad(){try{const saved=library.read('new-shores-quicksave');if(!saved)return api.notify('Der Zwischenspeicher ist noch leer');if(!confirm('Zwischenspeicher laden? Der aktuelle Stand wird vorher gesichert.'))return;if(api.restore(saved.text))api.resumeLoaded();}catch(e){api.notify('Schnellladen fehlgeschlagen: '+e.message);}}

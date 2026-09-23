@@ -5,7 +5,7 @@ const fs=require('node:fs');
 for(const mobile of [false,true]){
  const context=await browser.newContext({viewport:mobile?{width:844,height:390}:{width:1400,height:900},hasTouch:mobile,isMobile:mobile});const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://localhost:5176/?mobile='+(mobile?1:0));
- if(process.env.NEW_SHORES_SAVE){await page.locator('#open-title-saves').click();await page.locator('#title-import-save').setInputFiles(process.env.NEW_SHORES_SAVE);await page.locator('#game-screen.active').waitFor();await page.locator('#resume-button').click();}
+ if(process.env.NEW_SHORES_SAVE){await page.locator('#open-new-settlement').click();await page.locator('[data-auth-choice="skip"]').click();await page.locator('#new-game').click();await page.locator('#pause-button').click();await page.locator('#open-pause-saves').click();await page.locator('#title-import-save').setInputFiles(process.env.NEW_SHORES_SAVE);await page.locator('#game-screen.active').waitFor();await page.locator('#resume-button').click();}
  else{await page.locator('#open-new-settlement').click();await page.locator('#new-game').click();}
  await page.waitForFunction(()=>window.__newShores?.buildings.length>0);
  if(await page.locator('#quest-panel').isVisible())await page.locator('#dismiss-quest').click();
