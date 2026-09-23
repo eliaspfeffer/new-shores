@@ -36,6 +36,10 @@ export function createNaval(api){
   }
   function idle(type,near){return naval.ships.filter(s=>s.owner===1&&s.type===type&&s.status==='idle').sort((a,b)=>Math.hypot(a.x-near.x,a.y-near.y)-Math.hypot(b.x-near.x,b.y-near.y))[0];}
   function sail(ship,target,status,onArrival){const route=waterRoute(terrain,ship,target);if(!route)return false;Object.assign(ship,{route,routeIndex:0,status,targetStatus:status,onArrival});return true;}
+  function selected(){return naval.ships.find(s=>s.id===naval.selectedShipId&&(s.owner||1)===1);}
+  function select(ship){naval.selectedShipId=ship&&(ship.owner||1)===1?ship.id:null;return selected();}
+  function command(target){const ship=selected();if(!ship||terrain[Math.floor(target.y)]?.[Math.floor(target.x)]!=='water')return false;return sail(ship,{x:Math.floor(target.x)+.5,y:Math.floor(target.y)+.5},'manual');}
+  function embark(ship,w){if(!ship||ship.type!=='transport'||(ship.owner||1)!==1||(ship.passengers?.length||0)>=shipSpecs.transport.capacity)return false;ship.passengers??=[];if(!ship.passengers.includes(w.id))ship.passengers.push(w.id);w.embarkedShip=ship.id;w.phase='embarked';w.route=null;delete w.embarkShipId;return true;}
   function sendCargo(harbor,item,amount=12){
     const from=dock(harbor),ship=from&&idle('merchant',from),target=buildings.filter(b=>b!==harbor&&b.type==='harbor'&&own(b)&&b.progress>=1&&dock(b)).sort((a,b)=>Math.hypot(a.x-harbor.x,a.y-harbor.y)-Math.hypot(b.x-harbor.x,b.y-harbor.y))[0];
     const n=Math.min(shipSpecs.merchant.capacity,Math.max(1,Math.floor(amount)),stock()[item]||0);if(!ship||!target||!n)return false;
@@ -54,8 +58,8 @@ export function createNaval(api){
   }
   function arrive(ship){
     if(ship.targetStatus==='cargo'){const target=buildings[ship.onArrival];if(ship.cargo){if(target&&target.type==='harbor'){target.stored??={};target.stored[ship.cargo.item]=(target.stored[ship.cargo.item]||0)+ship.cargo.amount;notify?.(`${ship.cargo.amount} ${ship.cargo.item} per Warenschiff geliefert`);}else stock()[ship.cargo.item]=(stock()[ship.cargo.item]||0)+ship.cargo.amount;}delete ship.cargo;}
-    if(ship.targetStatus==='transport'){
-      const target=buildings[ship.onArrival],land=target&&nearestLand(terrain,target),base={x:land?.x??(target?target.x+.5:ship.x),y:land?.y??(target?target.y+.5:ship.y)};for(const [i,id] of (ship.passengers||[]).entries()){const w=workers.find(w=>w.id===id);if(!w)continue;delete w.embarkedShip;Object.assign(w,{x:base.x+(i%5)*.14,y:base.y+Math.floor(i/5)*.14,phase:'guard',route:null,order:null});}notify?.(`${ship.passengers?.length||0} Truppen auf der Gegnerinsel angelandet`);ship.passengers=[];
+    if(ship.targetStatus==='transport'||ship.targetStatus==='manual'&&ship.passengers?.length){
+      const target=buildings[ship.onArrival],land=nearestLand(terrain,target||ship),base={x:land?.x??(target?target.x+.5:ship.x),y:land?.y??(target?target.y+.5:ship.y)};for(const [i,id] of (ship.passengers||[]).entries()){const w=workers.find(w=>w.id===id);if(!w)continue;delete w.embarkedShip;Object.assign(w,{x:ship.x+(i%5)*.03,y:ship.y+Math.floor(i/5)*.03,phase:'disembark',disembarkTarget:{x:base.x+(i%5)*.14,y:base.y+Math.floor(i/5)*.14},route:null,order:null});}notify?.(`${ship.passengers?.length||0} Truppen auf der Küste angelandet`);ship.passengers=[];
     }
     if(ship.targetStatus==='courier'){notify?.('Botenboot angekommen: '+ship.message);ship.status='complete';return;}
     ship.status='idle';ship.route=null;ship.routeIndex=0;delete ship.targetStatus;delete ship.onArrival;
@@ -67,7 +71,7 @@ export function createNaval(api){
     }
   }
   function restore(saved=state.naval){if(saved&&saved!==naval){naval.version=saved.version||1;naval.ships=Array.isArray(saved.ships)?saved.ships:[];naval.nextId=Number.isInteger(saved.nextId)?saved.nextId:1;}state.naval=naval;naval.ships=naval.ships.filter(s=>shipSpecs[s.type]||s.type==='courier');}
-  return {state:naval,enqueue,sendCargo,transportTroops,sendCourier,tick,restore,dock};
+  return {state:naval,enqueue,sendCargo,transportTroops,sendCourier,tick,restore,dock,selected,select,command,embark,landing:ship=>nearestLand(terrain,ship,4)};
 }
 
 function nearestLand(terrain,point,radius=4){

@@ -159,6 +159,8 @@ Stand: 22. September 2026
 
 **[x] Umgesetzt:** Die Werft reserviert Bretter und Eisen atomar und baut in einer gespeicherten Warteschlange Warenschiffe (64 Waren), Truppentransporter (40 Einheiten) und Kriegsschiffe. Schiffswerte, Bauzeit, Trefferpunkte, Geschwindigkeit, Reichweite und Schaden liegen zentral in `src/naval.js`. Unterbrochene Fahrten, Ladung und Passagierkennungen bleiben im Spielstand erhalten; Waren werden beim Start abgezogen und erst am Ziel gutgeschrieben.
 
+**[x] Direkte Schiffssteuerung und physischer Personentransport:** Eigene Schiffe sind auf der Karte anklickbar und erhalten anschließend per Klick auf ein Wasserfeld ein gespeichertes Fahrziel. Ausgewählte freie Personen laufen zunächst zur Küste, verschwinden erst dort im Truppentransporter und laufen nach der Ankunft vom Schiff auf das Land. Kapazität, Wegfindung und unterbrochene Fahrten verhindern Doppelungen.
+
 - Werft oder Hafen-Unterfunktion zur Herstellung von Schiffen.
 - **Warenschiff:** transportiert definierte Warenmengen zwischen Häfen.
 - **Truppentransporter:** transportiert Krieger und gegebenenfalls Spezialisten.
@@ -177,6 +179,8 @@ Stand: 22. September 2026
 ### 5.1 Fortschrittsabhängige Gegner-KI
 
 **[~] Teilweise umgesetzt:** Jede entdeckte Insel erhält abhängig von Spielerfortschritt eine etwas schwächere, gespeicherte Siedlung mit Rohstoffen, Wirtschaftsgebäuden, Türmen und Militär. Ausbau und Gefechtsverhalten laufen weiter; eine vollständig physische KI-Warenwirtschaft ohne begrenzte Aufbauhilfen bleibt offen.
+
+**[x] Eroberung umgesetzt:** Größere KI-Inseln besitzen umfangreiche Steinreserven. Sind alle gegnerischen Soldaten und Türme beseitigt, zieht ein eigener Schwertkämpfer am Siedlungsmast nach vier Sekunden die gegnerische Fahne ein und setzt die eigene. Danach wechseln sämtliche Inselgebäude und das Inselgebiet den Besitzer; Gebäude- und KI-Vorräte gehen verlustfrei ins Spielerinventar über. Die eroberte Kaserne rekrutiert keine Gegner mehr.
 
 - Keine reine Attrappe aus Turm und wenigen Soldaten.
 - Beim Erzeugen wird der Fortschritt der eigenen Zivilisation bewertet, unter anderem anhand von:

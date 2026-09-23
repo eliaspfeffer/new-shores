@@ -1,5 +1,11 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 23. September 2026: Flottensteuerung, Eroberungsfahne und goldene Befehlsrahmen
+
+Die vorhandenen, bereits dokumentierten römisch inspirierten Schiffsgrafiken und Gebäudezeichnungen bleiben unverändert. Für Auswahl und Fahrtziel wurde keine neue Rastergrafik benötigt; das Spiel markiert das gewählte Schiff direkt im Renderer. Ein- und Aussteigen verwendet die vorhandenen Personen-Sprites und zeigt deren tatsächlichen Landweg bis beziehungsweise ab der Küste.
+
+Der Flaggenwechsel nach einer vollständigen Eroberung wird als kleine, animierte Mast- und Fahnenebene direkt über der KI-Siedlung gezeichnet: Die gegnerische Farbe sinkt, anschließend steigt die gewählte Spielerfarbe. Das ist ein funktionaler Zustandsindikator und kein behauptetes Originalasset. Die verbliebenen silbergrauen Rahmen der vorhandenen Befehlsmedaillons wurden farblich an die bereits eingeführten warmen Messing-/Goldrahmen angeglichen; Symbolzeichnung und Gebäudeassets wurden nicht verändert. Hauptansicht und Baumenü wurden im laufenden Spiel visuell geprüft.
+
 ## Nachtrag 22. September 2026: mobile Befehlsmedaillons
 
 Die noch gemischten Text-, SVG- und Waren-Symbole für Nahrung, Bergbau und Metall, Seefahrt, Grundberufe sowie die mobilen Siedlerbefehle wurden durch eine neue, zusammenhängende 4×4-Familie aus warmen Elfenbein-/Messingmedaillons ersetzt. Grundlage bleiben die in diesem Dokument vollständig betrachteten Original-Screenshots der runden Siedler-IV-Menüknöpfe; die Symbole selbst sind eigenständige Projektgrafiken und keine extrahierten Originalassets. Atlasbelegung, unveränderter Built-in-Imagegen-Prompt und Einschränkung sind in [assets/MOBILE_COMMANDS_PROMPT.md](assets/MOBILE_COMMANDS_PROMPT.md) festgehalten. Bestehende Grafiken wurden nicht überschrieben.
