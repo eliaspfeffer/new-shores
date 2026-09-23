@@ -4,9 +4,9 @@ import {playerColors} from './player-colors.js';
 export function initSessionMenu(api){
   const library=createSaveLibrary(localStorage,api.parse);
   const dialog=document.createElement('dialog');dialog.id='save-library-dialog';
-  dialog.innerHTML='<header><div><small>DEINE SIEDLUNGEN</small><h2>Spielstände</h2></div><button id="close-save-library" aria-label="Spielstände schließen">Schließen ×</button></header><p>Nur auf diesem Gerät gespeichert. Beim Laden bleibt der vorherige Stand als Sicherung erhalten.</p><div id="save-library-list"></div><p id="save-library-feedback" role="status" aria-live="polite"></p>';
+  dialog.innerHTML='<header><div><small>DEINE SIEDLUNGEN</small><h2>Spielstände</h2></div><button id="close-save-library" aria-label="Spielstände schließen">Schließen ×</button></header><p class="save-library-intro">Nur vorhandene Spielstände mit Kartenbild werden angezeigt.</p><div id="save-library-list"></div><p id="save-library-feedback" role="status" aria-live="polite"></p>';
   document.body.append(dialog);
-  const importLabel=document.createElement('label');importLabel.className='save-import';importLabel.textContent='Spielstand aus JSON-Datei übernehmen ';const file=document.createElement('input');file.type='file';file.accept='.json,application/json';file.id='title-import-save';importLabel.append(file);dialog.querySelector('#save-library-list').before(importLabel);
+  const importLabel=document.createElement('label');importLabel.className='save-import';importLabel.textContent='Spielstand aus JSON-Datei übernehmen ';const file=document.createElement('input');file.type='file';file.accept='.json,application/json';file.id='title-import-save';importLabel.append(file);dialog.querySelector('#save-library-list').after(importLabel);
   file.onchange=async()=>{const selected=file.files?.[0];if(!selected)return;try{if(selected.size>8_000_000)throw new Error('Datei ist zu groß');if(api.restore(await selected.text())){dialog.close();api.resumeLoaded();}else feedback('Spielstand konnte nicht geladen werden.');}catch(e){feedback(e.message);}finally{file.value='';}};
   const feedback=message=>dialog.querySelector('#save-library-feedback').textContent=message;
   dialog.addEventListener('keydown',e=>e.stopPropagation());
@@ -14,23 +14,34 @@ export function initSessionMenu(api){
   const run=action=>{try{action();}catch(e){feedback(e.message);}};
   function refresh(){
     const list=dialog.querySelector('#save-library-list');list.replaceChildren();
-    for(const item of library.list()){
+    const items=library.list().filter(item=>item.data?.mapPreview);
+    if(!items.length){const empty=document.createElement('p');empty.className='save-library-empty';empty.textContent='Noch keine gespeicherten Karten.';list.append(empty);return;}
+    for(const item of items){
       const row=document.createElement('article');row.dataset.saveKey=item.key;
-      if(item.data?.mapPreview){const preview=document.createElement('img');preview.className='save-map-preview';preview.src=item.data.mapPreview;preview.alt='Kartenansicht von '+(item.data.saveName||item.label);preview.width=96;preview.height=96;row.append(preview);}
-      const heading=document.createElement('strong');heading.textContent=item.data?.saveName||item.label;
+      const preview=document.createElement('img');preview.className='save-map-preview';preview.src=item.data.mapPreview;preview.alt='Kartenansicht von '+(item.data.saveName||item.label);preview.width=320;preview.height=220;row.append(preview);
+      const titleRow=document.createElement('div');titleRow.className='save-card-heading';
+      const heading=document.createElement('button');heading.type='button';heading.className='save-card-title';heading.textContent=item.data.saveName||item.label;heading.title='Spielstand umbenennen';
+      const pencil=document.createElement('button');pencil.type='button';pencil.className='save-card-icon';pencil.textContent='✎';pencil.setAttribute('aria-label','Spielstand umbenennen');pencil.title='Spielstand umbenennen';
+      const remove=document.createElement('button');remove.type='button';remove.className='save-card-icon save-card-remove';remove.textContent='×';remove.setAttribute('aria-label','Spielstand löschen');remove.title='Spielstand löschen';
+      titleRow.append(heading,pencil,remove);row.append(titleRow);
       const summary=document.createElement('p');
-      summary.textContent=item.error?'Nicht ladbar: '+item.error:item.empty?'Noch kein Spielstand':item.label+' · '+(Number.isFinite(item.data.savedAt)?new Date(item.data.savedAt).toLocaleString('de-DE'):'Datum unbekannt')+' · '+Math.floor((item.data.elapsed||0)/60)+' Min. · '+item.data.buildings.length+' Gebäude · '+(item.data.resources.people||0)+' Siedler';
-      row.append(heading,summary);
+      summary.textContent=(Number.isFinite(item.data.savedAt)?new Date(item.data.savedAt).toLocaleString('de-DE'):'Datum unbekannt')+' · '+Math.floor((item.data.elapsed||0)/60)+' Min. · '+item.data.buildings.length+' Gebäude · '+(item.data.resources.people||0)+' Siedler';
+      row.append(summary);
       const controls=document.createElement('div');controls.className='save-library-actions';
-      const load=document.createElement('button');load.textContent='Laden';load.disabled=!item.data;load.dataset.loadSave=item.key;
+      const load=document.createElement('button');load.textContent='Laden';load.dataset.loadSave=item.key;
       load.onclick=()=>run(()=>{const snapshot=library.read(item.key);if(!snapshot)throw new Error('Spielstand nicht mehr vorhanden');if(!confirm('Diesen Spielstand laden? Der aktuelle Stand wird vorher gesichert.'))return;if(api.restore(snapshot.text)){dialog.close();api.resumeLoaded();}else feedback('Laden fehlgeschlagen. Dein bisheriger Stand bleibt erhalten.');});
       controls.append(load);
-      if(item.writable){
-        const name=document.createElement('input');name.maxLength=48;name.value=item.data?.saveName||item.label;name.setAttribute('aria-label',item.label+' benennen');
-        const store=document.createElement('button');store.textContent='Hier sichern';store.disabled=!api.hasSession();store.onclick=()=>run(()=>{if(item.data&&!confirm('Diesen Speicherplatz überschreiben?'))return;const text=api.capture();if(!text)throw new Error('Sichern fehlgeschlagen');library.write(item.key,text,name.value);refresh();feedback('Spielstand gesichert');api.refreshSlots();});
-        const rename=document.createElement('button');rename.textContent='Umbenennen';rename.disabled=!item.data;rename.onclick=()=>run(()=>{library.rename(item.key,name.value);refresh();feedback('Name gespeichert');api.refreshSlots();});
-        controls.append(name,store,rename);
-      }
+      const editor=document.createElement('form');editor.className='save-card-editor';editor.hidden=true;
+      const name=document.createElement('input');name.maxLength=48;name.value=item.data.saveName||item.label;name.setAttribute('aria-label','Name des Spielstands');
+      const saveName=document.createElement('button');saveName.type='submit';saveName.textContent='Speichern';saveName.setAttribute('aria-label','Name speichern');
+      const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Abbrechen';cancel.setAttribute('aria-label','Umbenennen abbrechen');
+      editor.append(name,saveName,cancel);
+      const beginRename=()=>{titleRow.hidden=true;editor.hidden=false;name.focus();name.select();};
+      heading.onclick=beginRename;pencil.onclick=beginRename;
+      cancel.onclick=()=>{editor.hidden=true;titleRow.hidden=false;name.value=item.data.saveName||item.label;};
+      editor.onsubmit=e=>{e.preventDefault();run(()=>{library.rename(item.key,name.value);refresh();feedback('Name gespeichert');api.refreshSlots();});};
+      remove.onclick=()=>run(()=>{const title=item.data.saveName||item.label;if(!confirm('„'+title+'“ wirklich löschen?'))return;library.remove(item.key);refresh();feedback('Spielstand gelöscht');api.refreshSlots();});
+      row.append(editor);
       row.append(controls);list.append(row);
     }
   }

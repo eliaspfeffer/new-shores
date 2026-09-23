@@ -21,6 +21,12 @@ export function createSaveLibrary(storage,parse){
     if(key==='new-shores-quicksave'){const previous=storage.getItem(key);if(previous){let valid=false;try{parse(previous);valid=true;}catch{}if(valid)storage.setItem('new-shores-quicksave-backup',previous);}}
     storage.setItem(key,result);return result;
   }
-  const rename=(key,name)=>{const current=read(key);if(!current)throw new Error('Dieser Speicherplatz ist leer');return write(key,current.text,name);};
-  return {read,write,rename,list:()=>saveEntries.map(e=>{try{const saved=read(e.key);return {...e,...saved,empty:!saved};}catch(error){return {...e,error:error.message};}})};
+  const rename=(key,name)=>{
+    const e=entry(key),current=read(key);if(!current)throw new Error('Dieser Speicherplatz ist leer');
+    const clean=String(name??current.data.saveName??e.label).trim().slice(0,48);
+    if(!clean)throw new Error('Bitte einen Namen eingeben');
+    const result=JSON.stringify({...current.data,saveName:clean});parse(result);storage.setItem(key,result);return result;
+  };
+  const remove=key=>{entry(key);storage.removeItem(key);};
+  return {read,write,rename,remove,list:()=>saveEntries.map(e=>{try{const saved=read(e.key);return {...e,...saved,empty:!saved};}catch(error){return {...e,error:error.message};}})};
 }

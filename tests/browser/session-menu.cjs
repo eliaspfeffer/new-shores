@@ -2,13 +2,12 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
 (async()=>{const browser=await chromium.launch({channel:'chrome',headless:true});try{for(const mobile of [false,true]){
  const context=await browser.newContext({viewport:mobile?{width:667,height:375}:{width:1400,height:900},hasTouch:mobile,isMobile:mobile}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
  await page.goto('http://localhost:4176/'+(mobile?'?mobile=1':''));
- await page.click('#open-title-saves');assert(await page.locator('#save-library-dialog').isVisible());assert(await page.locator('[data-load-save="new-shores-quicksave"]').isDisabled());await page.keyboard.press('Escape');
+ await page.click('#open-title-saves');assert(await page.locator('#save-library-dialog').isVisible());assert.equal(await page.locator('#save-library-list article').count(),0);assert(await page.locator('.save-library-empty').isVisible());await page.keyboard.press('Escape');
  await page.selectOption('#new-player-color','green');await page.click('#new-game');await page.click('#dismiss-quest');await page.click('#pause-button');
  await page.click('#quick-save');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('new-shores-quicksave')).playerColor),'green');
  await page.selectOption('#current-player-color','violet');await page.click('#quick-load');assert.equal(await page.locator('#current-player-color').inputValue(),'green');
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('new-shores-before-load')).playerColor),'violet');
- await page.click('#open-pause-saves');const row=page.locator('[data-save-key="new-shores-slot-1"]');await row.locator('input').fill('Hafen <img src=x>');await row.getByRole('button',{name:'Hier sichern'}).click();
- await row.locator('input').fill('Unser grünes Tal');await row.getByRole('button',{name:'Umbenennen'}).click();assert.equal(await row.locator('strong').innerText(),'Unser grünes Tal');
+ await page.evaluate(()=>localStorage.setItem('new-shores-slot-1',localStorage.getItem('new-shores-quicksave')));await page.click('#open-pause-saves');const row=page.locator('[data-save-key="new-shores-slot-1"]');assert(await row.locator('.save-map-preview').isVisible());await row.locator('.save-card-title').click();await row.locator('input').fill('Unser grünes Tal');await row.getByRole('button',{name:'Name speichern'}).click();assert.equal(await row.locator('.save-card-title').innerText(),'Unser grünes Tal');
  await page.screenshot({path:'/tmp/new-shores-session-'+(mobile?'mobile':'desktop')+'.png'});
  await page.click('#close-save-library');await page.click('#return-main-menu');assert(await page.locator('#title-screen.active').isVisible());
  const saved=await page.evaluate(()=>localStorage.getItem('new-shores-save'));await page.click('#open-title-saves');await page.locator('[data-load-save="new-shores-slot-1"]').click();assert(await page.locator('#game-screen.active').isVisible());
