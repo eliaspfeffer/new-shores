@@ -17,7 +17,7 @@ export function initTitleMenu(){
   const multiplayer=document.createElement('button');multiplayer.id='multiplayer-entry';multiplayer.className='wood-button';multiplayer.textContent='Multiplayer · Europa 1';multiplayer.onclick=()=>document.dispatchEvent(new CustomEvent('new-shores-cloud-open',{detail:{mode:'multiplayer'}}));nav.append(multiplayer);
   const authRow=document.createElement('div');authRow.className='title-auth-actions';
   const login=card.querySelector('.account-entry');if(login){login.textContent='Login';authRow.append(login);}
-  const register=document.createElement('button');register.className='text-button register-entry';register.textContent='Registrieren';register.onclick=()=>document.dispatchEvent(new CustomEvent('new-shores-cloud-open',{detail:{mode:'register'}}));authRow.append(register);nav.append(authRow);
+  const register=document.createElement('button');register.className='text-button register-entry';register.textContent='Registrieren';register.hidden=document.documentElement.classList.contains('cloud-authenticated');register.onclick=()=>document.dispatchEvent(new CustomEvent('new-shores-cloud-open',{detail:{mode:'register'}}));authRow.append(register);nav.append(authRow);
   for(const selector of ['#continue-game','#open-title-saves']){const node=card.querySelector(selector);if(node)nav.append(node);}
   card.prepend(intro,nav);card.classList.add('title-hub');
 }
