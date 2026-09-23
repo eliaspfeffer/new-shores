@@ -13,7 +13,11 @@ export function initTitleMenu(){
   const intro=document.createElement('div');intro.className='title-intro';
   for(const selector of ['.eyebrow','h1','.subtitle']){const node=card.querySelector(selector);if(node)intro.append(node);}
   const nav=document.createElement('nav');nav.className='title-actions';nav.setAttribute('aria-label','Hauptmenü');
-  const create=document.createElement('button');create.id='open-new-settlement';create.className='wood-button';create.textContent='Neue Siedlung';create.onclick=()=>setup.showModal();nav.append(create);
-  for(const selector of ['#continue-game','#open-title-saves','.account-entry']){const node=card.querySelector(selector);if(node)nav.append(node);}
+  const create=document.createElement('button');create.id='open-new-settlement';create.className='wood-button';create.textContent='Singleplayer';create.onclick=()=>setup.showModal();nav.append(create);
+  const multiplayer=document.createElement('button');multiplayer.id='multiplayer-entry';multiplayer.className='wood-button';multiplayer.textContent='Multiplayer · Europa 1';multiplayer.onclick=()=>document.dispatchEvent(new CustomEvent('new-shores-cloud-open',{detail:{mode:'multiplayer'}}));nav.append(multiplayer);
+  const authRow=document.createElement('div');authRow.className='title-auth-actions';
+  const login=card.querySelector('.account-entry');if(login){login.textContent='Login';authRow.append(login);}
+  const register=document.createElement('button');register.className='text-button register-entry';register.textContent='Registrieren';register.onclick=()=>document.dispatchEvent(new CustomEvent('new-shores-cloud-open',{detail:{mode:'register'}}));authRow.append(register);nav.append(authRow);
+  for(const selector of ['#continue-game','#open-title-saves']){const node=card.querySelector(selector);if(node)nav.append(node);}
   card.prepend(intro,nav);card.classList.add('title-hub');
 }

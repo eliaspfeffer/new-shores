@@ -1,5 +1,9 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 23. September 2026: bildorientierte Startseite
+
+Die drei vom Nutzer während des laufenden Spiels aufgenommenen New-Shores-Screenshots wurden als unveränderte In-Game-Belege in die Startseite übernommen und lediglich kopiert sowie auf eine webtaugliche Breite verkleinert. Sie zeigen Siedlungswirtschaft, Leuchtturm-Erkundung und Insel-/Seespiel; keine fremden Grafiken oder neuen Gebäudeassets wurden erzeugt. Die zuvor textlastigen drei Marketingkarten sind jetzt eine asymmetrische Bildergalerie mit kurzen Bildunterschriften. Ausführliche Suchmaschinen- und Fanprojekttexte bleiben in einer sekundären, aufklappbaren Ebene. Der über dem Inhaltsbereich liegende dunkle Verlauf wurde entfernt.
+
 ## Nachtrag 23. September 2026: Flottensteuerung, Eroberungsfahne und goldene Befehlsrahmen
 
 Die vorhandenen, bereits dokumentierten römisch inspirierten Schiffsgrafiken und Gebäudezeichnungen bleiben unverändert. Für Auswahl und Fahrtziel wurde keine neue Rastergrafik benötigt; das Spiel markiert das gewählte Schiff direkt im Renderer. Ein- und Aussteigen verwendet die vorhandenen Personen-Sprites und zeigt deren tatsächlichen Landweg bis beziehungsweise ab der Küste.

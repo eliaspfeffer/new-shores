@@ -197,6 +197,8 @@ Stand: 22. September 2026
 
 ## 6. Multiplayer-Leuchtturm und gemeinsame Inselwelt
 
+**[x] Klarer Einstieg auf Europa 1:** Das Hauptmenü trennt Login, Registrierung, Singleplayer und Multiplayer. Nach der Anmeldung zeigt die Sitzung die E-Mail-Adresse und bietet direktes Abmelden. Beim ersten Multiplayer-Start wählen Spieler bewusst zwischen einer neuen Serverinsel und der endgültigen Übertragung ihres vollständigen Singleplayer-Verbunds einschließlich KI-Inseln. Ein übertragener Stand bleibt anschließend an die Multiplayer-Synchronisation gebunden; Login allein importiert keinen lokalen Spielstand mehr stillschweigend.
+
 **[~] Produktionsfähiger Koop-Grundstand:** Konten können Inseln teilen, Einladungen und Rollen vergeben, atomar Waren senden, Anwesenheit live sehen, Nachrichten austauschen und neue Revisionen sofort übernehmen. Eine 45-Sekunden-Steuerlease verhindert widersprüchliche gleichzeitige Befehle von Handy und Laptop. Die globale räumliche MMO-Welt mit mehreren unabhängig gleichzeitig simulierten Völkern bleibt bewusst offen.
 
 - Ein zweiter, größerer und optisch eindeutig anderer **Multiplayer-Leuchtturm** verbindet die eigene Insel mit einer gemeinsamen Welt.

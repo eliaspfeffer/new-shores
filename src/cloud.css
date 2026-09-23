@@ -20,6 +20,7 @@
 #cloud-messages:empty::after{content:'Noch keine Nachrichten.';font-size:12px;color:#80674b}.cloud-message{display:grid;gap:2px;margin:0!important;padding:7px 9px;border-left:4px solid #668556;background:#f4ead1;border-radius:6px}.cloud-message strong{font-size:11px}.cloud-message span{overflow-wrap:anywhere}.cloud-message.trade{border-color:#c28a24}.cloud-message.warning{border-color:#a13d2d}.cloud-message.diplomacy{border-color:#4d6c9d}
 #cloud-message-form{border-top:1px solid #9c835c;padding-top:5px}#cloud-message-form label{margin-bottom:7px}
 #cloud-device-help{padding:10px;border-left:4px solid #6f8d5f;background:#fff5d3}
+#cloud-onboarding{margin:14px 0 20px;padding:16px;border:3px solid #6f8d5f;border-radius:16px;background:linear-gradient(135deg,#fff8df,#dce6bb)}#cloud-onboarding h3{margin:4px 0 8px}.cloud-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cloud-choice button{min-height:62px!important}
 #cloud-members p{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #b28b5844}
 @media(max-height:500px){#cloud-dialog{padding:12px;max-height:96dvh}#cloud-dialog>header{top:-12px}#cloud-auth{max-width:none;display:grid;grid-template-columns:1fr 1fr;gap:0 12px}#cloud-auth .cloud-actions,#cloud-auth p{grid-column:1/-1}#cloud-auth[hidden]{display:none}}
-@media(max-width:520px){#cloud-dialog{padding:12px}#cloud-dialog>header{top:-12px}.cloud-actions>*{flex-basis:100%}.cloud-section-heading{align-items:flex-start;flex-direction:column}}
+@media(max-width:520px){#cloud-dialog{padding:12px}#cloud-dialog>header{top:-12px}.cloud-actions>*{flex-basis:100%}.cloud-section-heading{align-items:flex-start;flex-direction:column}.cloud-choice{grid-template-columns:1fr}}
