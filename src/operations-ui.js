@@ -1,7 +1,6 @@
 import './operations-ui.css';
 import {commandArt} from './command-art.js';
 import {supportsProductionOrder,setProductionOrder} from './production-orders.js';
-import {freeCarrier} from './army-orders.js';
 export function initOperationsUI(api){
   const {strategy,workers,buildings,names}=api;let previous=null,lastList='';
   const defense=document.createElement('button');defense.id='enemy-tactics-toggle';defense.className='text-button';
@@ -23,28 +22,26 @@ export function initOperationsUI(api){
   q('#clear-production-order').onclick=()=>act(()=>setProductionOrder(api.building(),null));
   const reserve=document.createElement('label');reserve.className='carrier-reserve';reserve.innerHTML='Freie Träger bei Ausbildung behalten <input id="carrier-reserve" type="number" min="0" max="50" value="0"><small>Gilt für sofortige Ausbildung und Warteschlangen; beschäftigt keine zusätzlichen Träger.</small>';document.querySelector('#return-specialists').after(reserve);
   const reserveInput=reserve.querySelector('input');reserveInput.onchange=()=>{if(reserveInput.value===''||!strategy.armyOrders.reserve(Number(reserveInput.value)))api.notify('Trägerreserve: ganze Zahl von 0 bis 50');else api.save();reserveInput.value=strategy.state.carrierReserve||0;};
-  const dialog=document.createElement('dialog');dialog.id='operations-dialog';dialog.innerHTML='<header><h2>Siedlungsübersicht</h2><button id="close-operations">Schließen ×</button></header><label>Ansicht<select id="operations-view"><option value="army">Armee</option><option value="idle">Untätige Arbeiter & Spezialisten</option><option value="journal">Meldungsjournal</option></select></label><div id="operations-list"></div>';document.body.append(dialog);
+  const dialog=document.createElement('dialog');dialog.id='operations-dialog';dialog.innerHTML='<header><h2>Siedlungsübersicht</h2><button id="close-operations">Schließen ×</button></header><label>Ansicht<select id="operations-view"><option value="journal">Meldungsjournal</option><option value="economy">Betriebe & Engpässe</option></select></label><div id="operations-list"></div>';document.body.append(dialog);
   dialog.addEventListener('keydown',e=>e.stopPropagation());dialog.querySelector('#close-operations').onclick=()=>dialog.close();
-  const economyOption=document.createElement('option');economyOption.value='economy';economyOption.textContent='Betriebe & Engpässe';dialog.querySelector('#operations-view').append(economyOption);
   dialog.querySelector('#operations-view').onchange=()=>{lastList='';refreshOverview();};
   function open(view){dialog.querySelector('#operations-view').value=view;lastList='';refreshOverview();dialog.showModal();}
-  for(const [id,label,view] of [['open-army','Armeeübersicht','army'],['find-idle','Untätige Siedler finden','idle'],['open-journal','Meldungsjournal','journal']]){
+  for(const [id,label,view] of [['open-journal','Meldungsjournal','journal'],['open-economy','Betriebe & Engpässe','economy']]){
     const button=document.createElement('button');button.id=id;button.textContent=label;button.onclick=()=>open(view);reserve.after(button);
   }
   const journalButton=document.createElement('button');journalButton.className='text-button';journalButton.id='pause-journal';journalButton.textContent='Meldungsjournal';journalButton.onclick=()=>open('journal');document.querySelector('#save-button').after(journalButton);
-  const mail=document.createElement('button');mail.id='desktop-mail';mail.setAttribute('aria-label','Nachrichten');mail.innerHTML=commandArt('✉');mail.onclick=()=>open('journal');document.querySelector('#game-screen').append(mail);
+  const mail=document.createElement('button');mail.id='desktop-mail';mail.setAttribute('aria-label','Nachrichten');mail.innerHTML=commandArt('✉');mail.onclick=()=>document.dispatchEvent(new CustomEvent('new-shores-chat-open'));document.querySelector('#game-screen').append(mail);
   function refreshOverview(){
     const view=dialog.querySelector('#operations-view').value,list=dialog.querySelector('#operations-list');
     if(view==='economy'){
       const entries=buildings.filter(b=>(b.owner||1)===1),signature=JSON.stringify(entries.map(b=>[b.type,b.x,b.y,api.buildingStatus?.(b)]));if(signature===lastList)return;lastList=signature;list.replaceChildren();
       for(const b of entries){const row=document.createElement('div');row.className='operations-row';const button=document.createElement('button');button.textContent=(api.buildingName?.(b)||b.type)+' · '+(api.buildingStatus?.(b)||'');button.onclick=()=>{dialog.close();api.focusBuilding?.(b);};row.append(button);list.append(row);}return;
     }
-    const entries=view==='journal'?api.journal.list().slice().reverse():workers.filter(w=>!w.dead&&(w.owner||1)===1&&(view==='army'?strategy.isMilitary(w):freeCarrier(w)||['geologist','pioneer'].includes(w.unit)&&w.phase==='guard'&&!w.autoWork));
-    const signature=JSON.stringify([view,entries.map(w=>view==='journal'?w:[w.id,w.unit,w.hp,w.phase,w.garrisonIndex])]);if(signature===lastList)return;lastList=signature;list.replaceChildren();
-    if(!entries.length){const p=document.createElement('p');p.textContent=view==='journal'?'Noch keine Meldungen.':'Keine passenden Einheiten.';list.append(p);}
+    const entries=api.journal.list().slice().reverse();
+    const signature=JSON.stringify([view,entries]);if(signature===lastList)return;lastList=signature;list.replaceChildren();
+    if(!entries.length){const p=document.createElement('p');p.textContent='Noch keine Meldungen.';list.append(p);}
     for(const w of entries){const row=document.createElement('div');row.className='operations-row';
-      if(view==='journal'){row.textContent=Math.floor(w.time/60)+':'+String(Math.floor(w.time%60)).padStart(2,'0')+' · '+w.text+(w.count>1?' ×'+w.count:'');}
-      else{const button=document.createElement('button');button.dataset.focusUnit=w.id;button.textContent=(names[w.unit]||'Träger')+' #'+w.id+' · '+(w.garrisonIndex!==undefined?'im Turm':w.phase)+(strategy.isMilitary(w)?' · '+Math.ceil(w.hp)+' LP':'');button.onclick=()=>{dialog.close();api.focus(w);};row.append(button);}
+      row.textContent=Math.floor(w.time/60)+':'+String(Math.floor(w.time%60)).padStart(2,'0')+' · '+w.text+(w.count>1?' ×'+w.count:'');
       list.append(row);
     }
   }

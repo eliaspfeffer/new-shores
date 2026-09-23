@@ -65,7 +65,7 @@ export function initThumbUI(mobile,api){
     const status=el('p','thumb-description');content.append(status);sheetRender=()=>{status.textContent=api.buildStatus(b);};sheetRender();
     if(b.type!=='storehouse')foot.append(button('Gebäudemenü','⌂',()=>{closeSheet();invoke('building-settings');}));
   });}
-  const mail=button('Nachrichten','✉',()=>{const entries=[{text:api.quest()},...api.messages().slice().reverse()];let i=0;const show=()=>openSheet('Nachrichten · '+(i+1)+' / '+entries.length,(content,foot)=>{content.append(el('p','thumb-message',entries[i].text));if(i)foot.prepend(button('Neuere Nachricht','◀',()=>{i--;show();}));if(i+1<entries.length)foot.append(button('Ältere Nachricht','▶',()=>{i++;show();}));});show();},'thumb-button thumb-mail');game.append(mail);
+  const mail=button('Nachrichten','✉',()=>document.dispatchEvent(new CustomEvent('new-shores-chat-open')),'thumb-button thumb-mail');game.append(mail);
   const dropdown=button('Alle Waren anzeigen','▼',goods,'thumb-dropdown');dropdown.id='thumb-goods';$('#mobile-resources .resource-bar').insertBefore(dropdown,$('#speed-button'));
   const help=button('Bedienung','?',()=>{closeSheet();invoke('help-button');});
   $('#resume-button').parentElement.append(help);
@@ -92,7 +92,7 @@ export function initThumbUI(mobile,api){
     root.dataset.mode=mode;actions.replaceChildren();left.hidden=false;right.hidden=false;
     setCorner(left,'Bauen','⌂',()=>navigate('build'));setCorner(right,'Siedler','♟',()=>navigate('units'));caption.textContent='Siedlung';
     const add=(label,icon,fn,disabled=false)=>{const control=button(label,icon,fn);control.disabled=disabled;actions.append(control);return control;};
-    if(mode==='map')add('Siedlungsübersicht','⌂',()=>invoke('open-army'));
+    if(mode==='map')add('Siedlungsübersicht','⌂',()=>invoke('open-economy'));
     if(mode==='build'){caption.textContent='Baumenü';setCorner(left,'Abbrechen','×',clear);for(const [key,icon,label] of categories)add(label,icon,()=>categoryMenu(key));}
     if(mode==='catalog'){caption.textContent=categories.find(c=>c[0]===category)[2];actions.classList.add('catalog');setCorner(left,'Zurück','×',()=>navigate('build'));for(const source of document.querySelectorAll('.building-card:not([hidden])')){const type=source.dataset.tool;add(api.buildName(type),art(type),()=>buildInfo(type));}}
     else actions.classList.remove('catalog');

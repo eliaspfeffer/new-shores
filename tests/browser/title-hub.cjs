@@ -4,7 +4,7 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
   const context=await browser.newContext({viewport:{width,height},hasTouch:mobile,isMobile:mobile});const p=await context.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
   await p.goto((process.env.NEW_SHORES_URL||'http://localhost:5176')+'/?mobile='+(mobile?'0':'1'),{waitUntil:'domcontentloaded'});
   await p.locator('.title-hub').waitFor();assert.equal(await p.locator('html').evaluate(e=>e.classList.contains('mobile')),mobile);
-  await p.locator('#multiplayer-entry').waitFor();assert.equal(await p.locator('.register-entry').textContent(),'Registrieren');assert.equal(await p.locator('.seo-features img').count(),3);
+  await p.locator('#multiplayer-entry').waitFor();assert.equal(await p.locator('#multiplayer-entry').textContent(),'Multiplayer');assert.equal(await p.locator('.register-entry').textContent(),'Registrieren');assert.equal(await p.locator('.seo-features img').count(),3);assert.equal(await p.locator('.seo-links button').count(),3);assert.equal(await p.locator('.seo-more').count(),0);
   assert.ok(await p.locator('.title-hub').evaluate(e=>e.getBoundingClientRect().bottom<=innerHeight+1),'play choices must fit in the first viewport');
   await p.screenshot({path:'/tmp/title-hub-'+width+'.png'});
   await p.locator('#open-new-settlement').click();await p.locator('#new-settlement-dialog').waitFor({state:'visible'});
