@@ -1,3 +1,4 @@
+import './i18n.js';
 import {mobile,initMobile,initOffline} from './mobile.js';
 import './comic-menu.css';
 import './bright-theme.css';

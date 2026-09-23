@@ -1,5 +1,9 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 23. September 2026: Sprachmedaillons
+
+Deutsch und Englisch werden über zwei neue eigenständige Comic-Medaillons mit deutscher beziehungsweise britischer Flagge umgeschaltet. Die Flaggenfamilie bildet kein Siedler-IV-Asset nach; als Stilreferenz dienen die bereits vorhandenen elfenbein-/messingfarbenen New-Shores-Befehlsmedaillons. Atlas, unveränderter Prompt und Einschränkungen stehen in [assets/LANGUAGE_MEDALLIONS_PROMPT.md](assets/LANGUAGE_MEDALLIONS_PROMPT.md). Bestehende Grafik wurde nicht überschrieben.
+
 ## Nachtrag 23. September 2026: bildorientierte Startseite
 
 Die drei vom Nutzer während des laufenden Spiels aufgenommenen New-Shores-Screenshots wurden als unveränderte In-Game-Belege in die Startseite übernommen und lediglich kopiert sowie auf eine webtaugliche Breite verkleinert. Sie zeigen Siedlungswirtschaft, Leuchtturm-Erkundung und Insel-/Seespiel; keine fremden Grafiken oder neuen Gebäudeassets wurden erzeugt. Die zuvor textlastigen drei Marketingkarten sind jetzt eine asymmetrische Bildergalerie mit kurzen Bildunterschriften. Ausführliche Suchmaschinen- und Fanprojekttexte bleiben in einer sekundären, aufklappbaren Ebene. Der über dem Inhaltsbereich liegende dunkle Verlauf wurde entfernt.

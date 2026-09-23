@@ -256,6 +256,7 @@ Stand: 22. September 2026
 
 ## 9. Konten, Auffindbarkeit und heller Menüstil
 
+- [x] Vollständige umschaltbare deutsche und englische Oberfläche für Hauptmenü, Spiel, Bau-/Einheitenbefehle, Hilfen, Spielstände, Konto und Multiplayer; Comic-Flaggen bleiben während des Spiels erreichbar und die Auswahl wird im Browser gespeichert.
 - [x] Registrierung und Anmeldung mit gesalzenem Passwort-Hash und sicheren Sitzungs-Cookies.
 - [x] E-Mail-Verifizierung und Einmal-Link zum Zurücksetzen, sobald `RESEND_API_KEY`, `MAIL_FROM` und `APP_ORIGIN` gesetzt sind; ohne Mailkonfiguration bleibt die bestehende Registrierung kompatibel statt Nutzer auszusperren.
 - [x] Passwortänderung mit aktuellem Passwort, Widerruf anderer Sitzungen und passwortbestätigte Kontolöschung.
