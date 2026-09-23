@@ -151,7 +151,7 @@ export async function createApp({pool,origin,origins=[origin],secure=true,emailS
       if(!['GET','HEAD'].includes(req.method))throw fail(405,'Nicht erlaubt.');
       const relative=decodeURIComponent(path==='/'?'/index.html':path);const file=resolve(root,'.'+relative);if(!file.startsWith(root+'/'))throw fail(404,'Nicht gefunden.');
       let info;try{info=await stat(file);}catch{throw fail(404,'Nicht gefunden.');}if(!info.isFile())throw fail(404,'Nicht gefunden.');
-      const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.mp3':'audio/mpeg'};
+      const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.mp3':'audio/mpeg'};
       // Opt-in framing for the public game only. API responses and ordinary
       // pages retain DENY; no CORS, session-cookie or CSRF policy is relaxed.
       if((path==='/'||path==='/index.html')&&url.searchParams.get('embed')==='whip'){

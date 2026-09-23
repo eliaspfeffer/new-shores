@@ -1,5 +1,9 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 23. September 2026: Social-Share-Vorschau
+
+Für Open Graph, WhatsApp, LinkedIn und X/Twitter wird `public/new-shores-social-share-v1.jpg` in 1200 × 630 Pixeln verwendet. Grundlage ist ausschließlich der vom Nutzer bereitgestellte aktuelle New-Shores-Spielbildschirm. Der Ausschnitt priorisiert die lebendige Siedlung, Holzproduktion, Windmühle, Bäckerei, Wege und sichtbare Siedler; es wurden keine fremden Originalassets ergänzt. Die Built-in-Bildbearbeitung diente der breiten Neuformatierung und wurde anschließend technisch auf das Standardformat 1,91:1 normalisiert. Das bestehende Spielartwork wurde nicht überschrieben.
+
 ## Nachtrag 23. September 2026: animierte Stadtvorschau
 
 Die Startseite verwendet `assets/title-city-carriers-v1.gif`, eine direkt aus dem laufenden New-Shores-Spiel aufgenommene Sequenz in 720 × 433 Pixeln. Vier sichtbare Träger bewegen Bretter vom Hauptlager über die Karte; Gebäude, Figuren, Gelände und Waren stammen unverändert aus dem aktuellen Spielrenderer. Die Aufnahme ist damit kein nachgezeichnetes oder fremdes Siedler-IV-Asset. Als Vergleichsbasis bleibt der unten dokumentierte, visuell geprüfte Siedler-IV-Screenshot mit sichtbaren Figuren und Warenhaufen maßgeblich. Die GIF-Datei ergänzt die Startseite und überschreibt keine vorhandene Grafik.
