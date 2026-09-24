@@ -25,6 +25,7 @@ try{
   const forgot=await request('/forgot-password','POST',{email:'nobody@example.com'});assert.equal(forgot.status,200);assert.equal(forgot.data.emailAvailable,false);
   const snapshot={version:6,resources:{wood:20,planks:20,stone:20},buildings:[{type:'storehouse',x:25,y:25,progress:1}],roads:[],workers:[]};
   const island=await request('/islands','POST',{name:'Test island',snapshot},owner.cookie);assert.equal(island.status,201);const path='/islands/'+island.data.id;
+  const world=await request('/world','GET',undefined,member.cookie);assert.equal(world.status,200);assert.equal(world.data.length,1);assert.equal(world.data[0].name,'Test island');assert.equal(world.data[0].permission,null);assert.match(world.data[0].owner,/^Siedler /);assert.ok(Number.isInteger(world.data[0].x)&&Number.isInteger(world.data[0].y));assert.ok(!JSON.stringify(world.data).includes('test@example.com'));
   assert.equal((await request(path,'GET',undefined,member.cookie)).status,404);
   assert.equal((await request(path,'PUT',{snapshot,revision:1},owner.cookie)).status,200);
   assert.equal((await request(path,'PUT',{snapshot,revision:1},owner.cookie)).status,409);

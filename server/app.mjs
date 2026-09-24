@@ -15,6 +15,7 @@ const root=resolve(fileURLToPath(new URL('../dist',import.meta.url)));
 const uuid=value=>/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value||'');
 const fail=(status,message)=>Object.assign(new Error(message),{status});
 const name=value=>typeof value==='string'&&value.trim()?value.trim().slice(0,48):'Meine Insel';
+const atlasPosition=id=>{let a=2166136261,b=0x9e3779b9;for(const char of id){a=Math.imul(a^char.charCodeAt(0),16777619)>>>0;b=Math.imul(b+char.charCodeAt(0),2246822519)>>>0;}return {x:10+a%81,y:12+b%73};};
 export async function createApp({pool,origin,origins=[origin],secure=true,emailService={enabled:false}}){
   const allowedOrigins=new Set(origins);let authBusy=0,apiBusy=0;
   const authLimit=limiter(20,15*60_000),apiLimit=limiter(240,60_000);
@@ -96,6 +97,13 @@ export async function createApp({pool,origin,origins=[origin],secure=true,emailS
         if(path==='/api/deliveries'&&req.method==='POST')return json(200,await sendDelivery(pool,player,await body(req),validate));
         if(path==='/api/deliveries'&&req.method==='GET')return json(200,(await pool.query('SELECT g.id,g.item,g.amount,g.created_at,g.delivery_x,g.delivery_y,s.name source_name,t.name target_name,CASE WHEN t.owner_id=$1 THEN true ELSE false END incoming FROM goods_transfers g JOIN islands s ON s.id=g.source_id JOIN islands t ON t.id=g.target_id WHERE s.owner_id=$1 OR t.owner_id=$1 ORDER BY g.created_at DESC LIMIT 50',[player.id])).rows);
         if(path==='/api/logout'&&req.method==='POST'){const raw=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('ns_session='))?.slice(11);if(raw)await pool.query('DELETE FROM sessions WHERE hash=$1',[digest(raw)]);cookie(res,'',0);return json(200,{ok:true});}
+        if(path==='/api/world'&&req.method==='GET'){
+          const rows=(await pool.query(`SELECT i.id,i.name,i.updated_at,i.accept_deliveries,i.owner_id,
+            CASE WHEN i.owner_id=$1 THEN 'owner' ELSE m.permission END permission
+            FROM islands i LEFT JOIN island_members m ON m.island_id=i.id AND m.player_id=$1
+            ORDER BY i.updated_at DESC`,[player.id])).rows;
+          return json(200,rows.map(row=>({...atlasPosition(row.id),id:row.id,name:row.name,updated_at:row.updated_at,accept_deliveries:row.accept_deliveries,permission:row.permission||null,owner:row.owner_id===player.id?'Du':'Siedler '+String(row.owner_id).slice(0,6),online:streams.get(row.id)?.size||0})));
+        }
         if(path==='/api/islands'&&req.method==='GET')return json(200,(await pool.query(`SELECT i.id,i.name,i.revision,i.updated_at,i.accept_deliveries,CASE WHEN i.owner_id=$1 THEN 'owner' ELSE m.permission END permission FROM islands i LEFT JOIN island_members m ON m.island_id=i.id AND m.player_id=$1 WHERE i.owner_id=$1 OR m.player_id=$1 ORDER BY i.updated_at DESC`,[player.id])).rows);
         if(path==='/api/islands'&&req.method==='POST'){
           const data=await body(req),snapshot=validate(data.snapshot),id=randomUUID();
