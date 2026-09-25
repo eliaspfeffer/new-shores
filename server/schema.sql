@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS invitations (
  expires_at timestamptz NOT NULL, used_by uuid REFERENCES players(id)
 );
 ALTER TABLE islands ADD COLUMN IF NOT EXISTS accept_deliveries boolean NOT NULL DEFAULT false;
+ALTER TABLE islands ADD COLUMN IF NOT EXISTS world_slot smallint;
+CREATE UNIQUE INDEX IF NOT EXISTS islands_world_slot_unique ON islands(world_slot) WHERE world_slot IS NOT NULL;
 CREATE TABLE IF NOT EXISTS goods_transfers (
  id uuid PRIMARY KEY, sender_id uuid NOT NULL REFERENCES players(id),
  source_id uuid NOT NULL REFERENCES islands(id), target_id uuid NOT NULL REFERENCES islands(id),

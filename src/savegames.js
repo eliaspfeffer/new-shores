@@ -7,9 +7,11 @@ export function parseSave(text,types,width=50,height=50){
   const s=JSON.parse(text);
   function check(value,depth=0){if(depth>16)throw new Error('Ungültige Datenstruktur.');if(value&&typeof value==='object')for(const [k,v] of Object.entries(value)){if(['__proto__','constructor','prototype'].includes(k))throw new Error('Ungültiger Datenschlüssel.');check(v,depth+1);}else if(typeof value==='number'&&!Number.isFinite(value))throw new Error('Ungültiger Zahlenwert.');}
   check(s);if(!s||typeof s!=='object'||!Number.isInteger(s.version)||s.version<1||s.version>9)throw new Error('Diese Spielstandversion wird nicht unterstützt.');
-  if(s.worldSize!==undefined&&(!Number.isInteger(s.worldSize)||![50,72].includes(s.worldSize)))throw new Error('Ungültige Weltgröße.');
+  if(s.worldSize!==undefined&&(!Number.isInteger(s.worldSize)||![50,72,228].includes(s.worldSize)))throw new Error('Ungültige Weltgröße.');
   const savedWidth=s.worldSize||s.terrain?.[0]?.length||width,savedHeight=s.worldSize||s.terrain?.length||height;
-  if(![50,72].includes(savedWidth)||![50,72].includes(savedHeight)||savedWidth!==savedHeight)throw new Error('Ungültige Weltgröße.');
+  if(![50,72,228].includes(savedWidth)||![50,72,228].includes(savedHeight)||savedWidth!==savedHeight)throw new Error('Ungültige Weltgröße.');
+  if(s.mode!==undefined&&!['singleplayer','multiplayer'].includes(s.mode))throw new Error('Ungültiger Spielmodus.');
+  if(s.worldSlot!==undefined&&(!Number.isInteger(s.worldSlot)||s.worldSlot<0||s.worldSlot>8||savedWidth!==228||s.mode!=='multiplayer'))throw new Error('Ungültiger Weltplatz.');
   if(s.playerColor!==undefined&&!['red','blue','green','violet'].includes(s.playerColor))throw new Error('Ungültige Spielerfarbe.');
   if(s.saveName!==undefined&&(typeof s.saveName!=='string'||!s.saveName.trim()||s.saveName.length>48))throw new Error('Ungültiger Spielstandname.');
   if(s.mapPreview!==undefined&&!validSaveThumbnail(s.mapPreview))throw new Error('Ungültige Spielstandvorschau.');

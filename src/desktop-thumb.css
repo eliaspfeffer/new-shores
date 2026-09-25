@@ -10,6 +10,8 @@
 .desktop-thumb #game-screen>.sidebar-map{display:none;position:absolute;z-index:18;}
 .desktop-thumb.mobile-map-open #game-screen>.sidebar-map{display:block;}
 .desktop-thumb #game-screen>.sidebar-map canvas{display:block;width:100%;height:100%;}
+.desktop-thumb #game-screen>.sidebar-map .minimap{position:static;box-sizing:border-box;border:0;box-shadow:none;}
+.desktop-thumb #game-screen>.sidebar-map{width:min(300px,55vw,65dvh);height:auto;aspect-ratio:1;}
 .desktop-thumb .thumb-map-toggle{display:flex;position:absolute;right:16px;top:58px;width:var(--thumb-size);height:var(--thumb-size);z-index:16;}
 .desktop-thumb #mobile-resources .thumb-selection{background:#f1dfb6;color:#593b24;}
 .desktop-thumb .thumb-mail{top:58px!important;left:16px!important;}

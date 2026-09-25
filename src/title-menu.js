@@ -15,6 +15,11 @@ export function initTitleMenu(){
   const authChoice=document.createElement('dialog');authChoice.id='singleplayer-auth-choice';authChoice.className='title-popup compact-popup';authChoice.setAttribute('aria-labelledby','singleplayer-auth-title');authChoice.innerHTML='<header><h2 id="singleplayer-auth-title">Save your city</h2></header><p>Register / login to save your state. Otherwise your city gets lost when deleting cookies.</p><div class="auth-choice-actions"><button type="button" data-auth-choice="skip">Skip</button><button type="button" data-auth-choice="login">Login / Register</button></div>';document.body.append(authChoice);
   const openSetup=multiplayer=>{
     setup.dataset.mode=multiplayer?'multiplayer':'singleplayer';
+    if(multiplayer){
+      const random=crypto.getRandomValues(new Uint32Array(2));
+      const type=setup.querySelector('#map-type');type.value=random[0]%2?'coast':'lake';type.dispatchEvent(new Event('change'));
+      setup.querySelector('#map-seed').value=String(random[1]);
+    }
     setup.querySelector('#new-settlement-title').textContent=multiplayer?'Neue Multiplayer-Insel':'Neue Siedlung';
     setup.querySelector('header button').setAttribute('aria-label',multiplayer?'Multiplayer-Insel schließen':'Neue Siedlung schließen');
     start.textContent=multiplayer?'MULTIPLAYER STARTEN':'SIEDLUNG GRÜNDEN';

@@ -15,7 +15,7 @@ export function nearestWater(terrain,point,radius=4){
 }
 export function waterRoute(terrain,start,end){
   if(!start||!end)return null;const a={x:Math.floor(start.x),y:Math.floor(start.y)},goal={x:Math.floor(end.x),y:Math.floor(end.y)},queue=[a],came=new Map([[key(a),null]]);
-  for(let i=0;i<queue.length&&i<10000;i++){
+  for(let i=0;i<queue.length&&i<terrain.length*(terrain[0]?.length||0);i++){
     const p=queue[i];if(p.x===goal.x&&p.y===goal.y){const route=[];let cursor=p;while(cursor){route.push({x:cursor.x+.5,y:cursor.y+.5});cursor=came.get(key(cursor));}return route.reverse().slice(1);}
     for(const [dx,dy] of cardinal){const n={x:p.x+dx,y:p.y+dy},k=key(n);if(came.has(k)||terrain[n.y]?.[n.x]!=='water')continue;came.set(k,p);queue.push(n);}
   }

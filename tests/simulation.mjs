@@ -52,6 +52,7 @@ Object.assign(context,{lostCivilianBuildings,collapseCivilian});
 context.initMapMenu=()=>({read:()=>({version:1,type:'classic',seed:0}),restore(){},refresh(){}});
 context.createJournal=()=>({add(){},list:()=>[],restore(){}});
 context.restoreCamera=(camera,view)=>{if(!view)return false;Object.assign(camera,view);return true;};
+context.SHARED_WORLD_SIZE=228;context.SHARED_WORLD_CELL_SIZE=72;
 context.colorForOwner=()=>({base:'#518de0',light:'#b0d7ff'});
 context.productionSounds={};
 Object.assign(context,{productionInputs,minePreferences,meals});

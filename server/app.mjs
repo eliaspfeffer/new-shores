@@ -9,6 +9,7 @@ import {parseSave} from '../src/savegames.js';
 import {extraBuildings} from '../src/strategy.js';
 import {sendDelivery} from './deliveries.mjs';
 import {createEmailService} from './email.mjs';
+import {promoteIslandToWorld,visibleIslandState,worldSlotOrigin,SHARED_WORLD_CAPACITY} from '../src/shared-world.js';
 
 export const saveTypes=['largehouse','storehouse','woodcutter','forester','sawmill','house','quarry','farm','mill','bakery','fisher','warehouse','tower','hospital',...Object.keys(extraBuildings)];
 const root=resolve(fileURLToPath(new URL('../dist',import.meta.url)));
@@ -19,7 +20,7 @@ const atlasPosition=index=>({x:14+(index%4)*24,y:12+Math.floor(index/4)*19});
 export async function createApp({pool,origin,origins=[origin],secure=true,emailService={enabled:false}}){
   const allowedOrigins=new Set(origins);let authBusy=0,apiBusy=0;
   const authLimit=limiter(20,15*60_000),apiLimit=limiter(240,60_000);
-  const messageLimit=limiter(8,60_000),streams=new Map(),leases=new Map();
+  const messageLimit=limiter(8,60_000),streams=new Map(),worldStreams=new Set(),leases=new Map();
   const dummy=await passwordHash(token());
   async function body(req,max=8_100_000){let data='';for await(const chunk of req){data+=chunk;if(Buffer.byteLength(data)>max)throw fail(413,'Anfrage zu groß.');}try{return JSON.parse(data||'{}');}catch{throw fail(400,'Ungültige Anfrage.');}}
   const cookie=(res,value,age)=>res.setHeader('Set-Cookie',`ns_session=${value}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${age}${secure?'; Secure':''}`);
@@ -28,6 +29,25 @@ export async function createApp({pool,origin,origins=[origin],secure=true,emailS
   async function access(player,id){if(!uuid(id))throw fail(404,'Insel nicht gefunden.');const result=await pool.query(`SELECT i.*,CASE WHEN i.owner_id=$2 THEN 'owner' ELSE m.permission END permission FROM islands i LEFT JOIN island_members m ON m.island_id=i.id AND m.player_id=$2 WHERE i.id=$1 AND (i.owner_id=$2 OR m.player_id=$2)`,[id,player.id]);if(!result.rows.length)throw fail(404,'Insel nicht gefunden.');return result.rows[0];}
   const validate=s=>{try{return parseSave(JSON.stringify(s),saveTypes);}catch(e){throw fail(400,e.message);}};
   const publish=(islandId,event)=>{for(const res of streams.get(islandId)||[]){if(res.destroyed)continue;res.write(`event: ${event.type||'update'}\ndata: ${JSON.stringify(event)}\n\n`);}};
+  const publishWorld=event=>{for(const res of worldStreams)if(!res.destroyed)res.write(`event: ${event.type||'update'}\ndata: ${JSON.stringify(event)}\n\n`);};
+  async function claimWorldIsland(player,preferredId=null){
+    const client=await pool.connect();try{
+      await client.query('BEGIN');await client.query('SELECT pg_advisory_xact_lock(442817)');
+      let row=(await client.query('SELECT * FROM islands WHERE owner_id=$1 AND world_slot IS NOT NULL ORDER BY updated_at DESC LIMIT 1 FOR UPDATE',[player.id])).rows[0];
+      if(!row){
+        row=(await client.query("SELECT * FROM islands WHERE owner_id=$1 AND snapshot->>'mode'='multiplayer' AND ($2::uuid IS NULL OR id=$2) ORDER BY updated_at DESC LIMIT 1 FOR UPDATE",[player.id,uuid(preferredId)?preferredId:null])).rows[0];
+        if(!row){await client.query('COMMIT');return null;}
+        const used=new Set((await client.query('SELECT world_slot FROM islands WHERE world_slot IS NOT NULL')).rows.map(r=>r.world_slot));
+        const slot=Array.from({length:SHARED_WORLD_CAPACITY},(_,i)=>i).find(i=>!used.has(i));
+        if(slot===undefined)throw fail(409,'Europa 1 ist voll. Für weitere Inseln muss die Welt erweitert werden.');
+        const snapshot=validate(promoteIslandToWorld(row.snapshot,slot));
+        await client.query('INSERT INTO island_history(island_id,revision,snapshot) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[row.id,row.revision,row.snapshot]);
+        row=(await client.query('UPDATE islands SET snapshot=$2,world_slot=$3,revision=revision+1,updated_at=now() WHERE id=$1 RETURNING *',[row.id,snapshot,slot])).rows[0];
+      }
+      await client.query('COMMIT');publishWorld({type:'island',id:row.id,revision:row.revision});
+      return {id:row.id,name:row.name,revision:row.revision,snapshot:row.snapshot,permission:'owner',worldSlot:row.world_slot};
+    }catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
+  }
   async function issueAccountToken(player,purpose){
     const raw=token(),minutes=purpose==='reset'?30:1440;
     await pool.query('DELETE FROM account_tokens WHERE player_id=$1 AND purpose=$2',[player.id,purpose]);
@@ -44,7 +64,7 @@ export async function createApp({pool,origin,origins=[origin],secure=true,emailS
     try{
       const url=new URL(req.url,origin),path=url.pathname;
       if(path.startsWith('/api/')){
-        const streaming=req.method==='GET'&&/^\/api\/islands\/[^/]+\/events$/.test(path);
+        const streaming=req.method==='GET'&&(path==='/api/world/events'||/^\/api\/islands\/[^/]+\/events$/.test(path));
         if(!streaming){if(apiBusy>=8)throw fail(429,'Server ausgelastet. Kurz warten.');apiBusy++;let released=false;const release=()=>{if(!released){released=true;apiBusy--;}};res.once('finish',release);res.once('close',release);}
         if(!apiLimit(req.socket.remoteAddress))throw fail(429,'Zu viele Anfragen. Kurz warten.');
         if(!['GET','HEAD'].includes(req.method)&&(!allowedOrigins.has(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json')))throw fail(403,'Anfrage nur aus dem Spiel erlaubt.');
@@ -97,18 +117,35 @@ export async function createApp({pool,origin,origins=[origin],secure=true,emailS
         if(path==='/api/deliveries'&&req.method==='POST')return json(200,await sendDelivery(pool,player,await body(req),validate));
         if(path==='/api/deliveries'&&req.method==='GET')return json(200,(await pool.query('SELECT g.id,g.item,g.amount,g.created_at,g.delivery_x,g.delivery_y,s.name source_name,t.name target_name,CASE WHEN t.owner_id=$1 THEN true ELSE false END incoming FROM goods_transfers g JOIN islands s ON s.id=g.source_id JOIN islands t ON t.id=g.target_id WHERE s.owner_id=$1 OR t.owner_id=$1 ORDER BY g.created_at DESC LIMIT 50',[player.id])).rows);
         if(path==='/api/logout'&&req.method==='POST'){const raw=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('ns_session='))?.slice(11);if(raw)await pool.query('DELETE FROM sessions WHERE hash=$1',[digest(raw)]);cookie(res,'',0);return json(200,{ok:true});}
+        if(path==='/api/world/claim'&&req.method==='POST')return json(200,await claimWorldIsland(player,(await body(req,1024)).islandId));
+        if(path==='/api/world/state'&&req.method==='GET'){
+          const rows=(await pool.query('SELECT id,name,revision,world_slot,snapshot FROM islands WHERE world_slot IS NOT NULL ORDER BY world_slot LIMIT 9')).rows;
+          return json(200,rows.map(visibleIslandState));
+        }
+        if(path==='/api/world/events'&&req.method==='GET'){
+          if(worldStreams.size>=64)throw fail(429,'Zu viele Weltverbindungen.');
+          res.writeHead(200,{'Content-Type':'text/event-stream; charset=utf-8','Cache-Control':'no-store','Connection':'keep-alive','X-Accel-Buffering':'no'});
+          res.write('event: ready\ndata: {}\n\n');worldStreams.add(res);
+          const ping=setInterval(()=>res.write(': heartbeat\n\n'),20000);req.on('close',()=>{clearInterval(ping);worldStreams.delete(res);});return;
+        }
         if(path==='/api/world'&&req.method==='GET'){
-          const rows=(await pool.query(`SELECT i.id,i.name,i.updated_at,i.accept_deliveries,i.owner_id,
+          const rows=(await pool.query(`SELECT i.id,i.name,i.updated_at,i.accept_deliveries,i.owner_id,i.world_slot,
             CASE WHEN i.owner_id=$1 THEN 'owner' ELSE m.permission END permission
             FROM islands i LEFT JOIN island_members m ON m.island_id=i.id AND m.player_id=$1
             ORDER BY i.id LIMIT 20`,[player.id])).rows;
-          return json(200,rows.map((row,index)=>({...atlasPosition(index),id:row.id,name:row.name,updated_at:row.updated_at,accept_deliveries:row.accept_deliveries,permission:row.permission||null,owner:row.owner_id===player.id?'Du':'Siedler '+String(row.owner_id).slice(0,6),online:streams.get(row.id)?.size||0})));
+          return json(200,rows.map((row,index)=>({...row.world_slot!=null?{x:Math.round((worldSlotOrigin(row.world_slot).x+36)/228*100),y:Math.round((worldSlotOrigin(row.world_slot).y+36)/228*100)}:atlasPosition(index),id:row.id,name:row.name,updated_at:row.updated_at,accept_deliveries:row.accept_deliveries,permission:row.permission||null,owner:row.owner_id===player.id?'Du':'Siedler '+String(row.owner_id).slice(0,6),online:streams.get(row.id)?.size||0})));
         }
         if(path==='/api/islands'&&req.method==='GET')return json(200,(await pool.query(`SELECT i.id,i.name,i.revision,i.updated_at,i.accept_deliveries,CASE WHEN i.owner_id=$1 THEN 'owner' ELSE m.permission END permission FROM islands i LEFT JOIN island_members m ON m.island_id=i.id AND m.player_id=$1 WHERE i.owner_id=$1 OR m.player_id=$1 ORDER BY i.updated_at DESC`,[player.id])).rows);
         if(path==='/api/islands'&&req.method==='POST'){
           const data=await body(req),snapshot=validate(data.snapshot),id=randomUUID();
+          if(snapshot.mode==='multiplayer'){
+            const existing=await claimWorldIsland(player);
+            if(existing)return json(200,existing);
+          }
           if(Number((await pool.query('SELECT count(*) FROM islands WHERE owner_id=$1',[player.id])).rows[0].count)>=20)throw fail(409,'Maximal 20 Inseln pro Konto.');
-          await pool.query('INSERT INTO islands(id,owner_id,name,snapshot) VALUES($1,$2,$3,$4)',[id,player.id,name(data.name),snapshot]);return json(201,{id,revision:1,permission:'owner'});
+          await pool.query('INSERT INTO islands(id,owner_id,name,snapshot) VALUES($1,$2,$3,$4)',[id,player.id,name(data.name),snapshot]);
+          if(snapshot.mode==='multiplayer'){const world=await claimWorldIsland(player,id);return json(201,world);}
+          return json(201,{id,revision:1,permission:'owner'});
         }
         if(path==='/api/join'&&req.method==='POST'){
           const data=await body(req);if(typeof data.code!=='string'||data.code.length>100)throw fail(400,'Ungültiger Einladungscode.');
@@ -141,10 +178,11 @@ export async function createApp({pool,origin,origins=[origin],secure=true,emailS
             const lease=leases.get(island.id),leaseKey=player.id+':'+player.session_hash;if(lease&&lease.until>Date.now()&&lease.key!==leaseKey)throw fail(423,'Ein anderer Mitspieler steuert diese Insel gerade.');if(lease?.key===leaseKey)lease.until=Date.now()+45000;
             const data=await body(req),snapshot=validate(data.snapshot);if(!Number.isInteger(data.revision))throw fail(400,'Spielstandversion fehlt.');
             const client=await pool.connect();try{await client.query('BEGIN');const current=(await client.query('SELECT * FROM islands WHERE id=$1 FOR UPDATE',[island.id])).rows[0];
+              if(current.world_slot!==null&&(snapshot.mode!=='multiplayer'||snapshot.worldSize!==228||snapshot.worldSlot!==current.world_slot))throw fail(400,'Ungültige Multiplayer-Weltzuordnung.');
               if(current.revision!==data.revision)throw fail(409,'Die Insel wurde auf einem anderen Gerät geändert. Dein Stand bleibt lokal erhalten. Bitte Serverstand laden oder lokale Insel als neue Kopie sichern.');
               await client.query('INSERT INTO island_history(island_id,revision,snapshot) VALUES($1,$2,$3)',[island.id,current.revision,current.snapshot]);
               await client.query('UPDATE islands SET snapshot=$2,revision=revision+1,updated_at=now() WHERE id=$1',[island.id,snapshot]);
-              await client.query('DELETE FROM island_history WHERE island_id=$1 AND revision<$2',[island.id,Math.max(1,current.revision-4)]);await client.query('COMMIT');publish(island.id,{type:'snapshot',revision:current.revision+1});return json(200,{revision:current.revision+1});
+              await client.query('DELETE FROM island_history WHERE island_id=$1 AND revision<$2',[island.id,Math.max(1,current.revision-4)]);await client.query('COMMIT');publish(island.id,{type:'snapshot',revision:current.revision+1});if(current.world_slot!==null)publishWorld({type:'island',id:island.id,revision:current.revision+1});return json(200,{revision:current.revision+1});
             }catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
           }
           if(action==='invite'&&req.method==='POST'){

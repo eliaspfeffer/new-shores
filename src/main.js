@@ -57,6 +57,7 @@ import {initRouteControls,drawPatrolRoutes} from './route-controls.js';
 let routeControls=null;
 import {parseSave} from './savegames.js';
 import {createSaveThumbnail} from './save-thumbnail.js';
+import {SHARED_WORLD_SIZE,SHARED_WORLD_CELL_SIZE} from './shared-world.js';
 import {initOperationsUI} from './operations-ui.js';
 import {createJournal} from './command-journal.js';
 import {restoreCamera} from './camera-save.js';
@@ -140,13 +141,23 @@ const title = document.querySelector('#title-screen');
 const game = document.querySelector('#game-screen');
 const minimap = document.querySelector('#minimap');
 const miniCtx = minimap.getContext('2d');
-const TILE_W=88,TILE_H=44, LEGACY_MAP_SIZE=50,MAP_W=72,MAP_H=72;
+const TILE_W=88,TILE_H=44, LEGACY_MAP_SIZE=50;
+const savedWorldSize=(()=>{try{return JSON.parse(localStorage.getItem('new-shores-save')||'null')?.worldSize;}catch{return null;}})();
+const MAP_W=savedWorldSize===SHARED_WORLD_SIZE?SHARED_WORLD_SIZE:72,MAP_H=MAP_W;
+let foreignIslands=[];
 let dpr=1, camera={x:0,y:0,zoom:1}, drag=null, selectedTool='inspect', hovered=null, paused=false, speed=1, last=0, autosave=0, renderCount=0, ecoMode=true;
 let resources={wood:24,stone:20,food:18,people:8,beds:12,planks:24,grain:0,flour:0,tools:0,axe:2,hammer:3,shovel:2,sickle:1,pickaxe:2,saw:1,rod:1};
 let productionClock=0, hungerClock=0, elapsed=0;
 let priorityOrder=['food','wood','stone','grain','planks','flour'];
 document.querySelector('#clear-selection').innerHTML=commandArt('×');
 const terrain=[], buildings=[], roads=[], particles=[], workers=[];
+document.addEventListener('new-shores-world-state',event=>{
+  if(MAP_W!==SHARED_WORLD_SIZE||!multiplayerMode)return;
+  const binding=(()=>{try{return JSON.parse(localStorage.getItem('new-shores-cloud-binding')||'null');}catch{return null;}})();
+  foreignIslands=(event.detail||[]).filter(island=>island.id!==binding?.id);
+  for(const island of foreignIslands){const {x,y}=island.origin;for(let dy=0;dy<SHARED_WORLD_CELL_SIZE;dy++)for(let dx=0;dx<SHARED_WORLD_CELL_SIZE;dx++)if(island.terrain?.[dy]?.[dx])terrain[y+dy][x+dx]=island.terrain[dy][dx];}
+  terrainRevision++;groundCacheKey='';strategy.recalculate();exploration.update(buildings,workers);
+});
 const exploration=createExploration(MAP_W,MAP_H);
 const toolsAtlasURL=new URL('../assets/tools-specialized-v1.png',import.meta.url).href;
 const goodsArt=createGoodsArt(new URL('../assets/goods-atlas-keyed-v3.png',import.meta.url).href,url=>{document.documentElement.style.setProperty('--goods-atlas',`url("${url}")`);},toolsAtlasURL);
@@ -270,7 +281,7 @@ function coastDirection(x,y){
 function drawTerrainTile(x,y,type,noise){
   if(type==='void'||type==='water'||type==='bridge'||type==='ferry'){diamond(x,y,waterPattern||'#479b9d',waterPattern||'#479b9d');return;}
   if(type==='grass'){diamond(x,y,grassPattern||'#719e32',grassPattern||'#719e32');return;}
-  if(type==='shore'){if(mapConfig.type!=='classic')diamond(x,y,grassPattern||'#719e32',grassPattern||'#719e32');return;}
+  if(type==='shore'){if(mapConfig.type!=='classic'||MAP_W===SHARED_WORLD_SIZE)diamond(x,y,grassPattern||'#719e32',grassPattern||'#719e32');return;}
   const p=iso(x+.5,y+.5);
   if(type==='shore'&&atlasCell(coastAtlas,coastDirection(x,y),p,103,103,.5,.5))return;
   const index=type==='water'?4:noise>.86?7:noise>.58?1:noise>.3?0:2;
@@ -290,7 +301,7 @@ function drawCachedGround(){
   }else ctx.drawImage(groundCache,0,0,canvas.width/dpr,canvas.height/dpr);
 }
 function drawCoastline(){
-  if(mapConfig.type!=='classic'){
+  if(mapConfig.type!=='classic'||MAP_W===SHARED_WORLD_SIZE){
     const edges=shoreEdges(terrain);ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
     for(const [color,width] of [['#b8ae67',14],['#d1c78c',9],['#deead7',2]]){
       ctx.beginPath();for(const [a,b] of edges){const p=iso(...a),q=iso(...b);ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);}ctx.strokeStyle=color;ctx.lineWidth=width*camera.zoom;ctx.stroke();
@@ -520,7 +531,7 @@ function render(){if(multiplayerMode&&!exploration.sees(0,0)){exploration.reveal
     ctx.fillStyle=colorForOwner(marker.owner,playerColor).light;ctx.beginPath();ctx.ellipse(p.x-r*.2,p.y-1-r*.35,r*.55,r*.32,0,0,Math.PI*2);ctx.fill();
   }
   for(const d of strategy.state.deposits){if(!d.discovered||!exploration.seen(d.x,d.y))continue;const p=iso(d.x+.5,d.y+.5),z=camera.zoom;ctx.fillStyle='#735333';ctx.fillRect(p.x-2*z,p.y-20*z,3*z,22*z);ctx.fillStyle='#e5cd8c';ctx.fillRect(p.x-13*z,p.y-37*z,26*z,22*z);goodsArt.draw(ctx,d.type,p.x,p.y-27*z,22*z);ctx.fillStyle='#231e13';ctx.font='bold '+Math.max(9,11*z)+'px sans-serif';ctx.textAlign='center';ctx.fillText(String(d.amount),p.x,p.y-40*z);ctx.textAlign='start';}
-  drawSpecialistArea();drawPatrolRoutes(ctx,workers,selectedWorkers,iso);drawConquestFlags();drawFog();
+  drawSpecialistArea();drawPatrolRoutes(ctx,workers,selectedWorkers,iso);drawConquestFlags();drawForeignLayer();drawFog();
 }
 function drawConquestFlags(){for(const ai of [strategy.state.enemySettlement,...(strategy.state.enemySettlements||[])].filter(Boolean)){if(!exploration.seen(ai.center.x,ai.center.y))continue;const p=iso(ai.center.x+.5,ai.center.y+.5),z=camera.zoom,progress=Math.min(1,(ai.captureProgress||0)/4),mast=58*z;ctx.save();ctx.strokeStyle='#5b3a20';ctx.lineWidth=4*z;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x,p.y-mast);ctx.stroke();ctx.fillStyle='#d1b16c';ctx.beginPath();ctx.arc(p.x,p.y-mast,4*z,0,Math.PI*2);ctx.fill();const flag=(owner,height)=>{const y=p.y-mast+height*42*z;ctx.fillStyle=colorForOwner(owner,playerColor).base;ctx.strokeStyle='#49301d';ctx.lineWidth=1.5*z;ctx.beginPath();ctx.moveTo(p.x+2*z,y);ctx.lineTo(p.x+28*z,y+5*z);ctx.lineTo(p.x+2*z,y+14*z);ctx.closePath();ctx.fill();ctx.stroke();};if(!ai.conquered&&progress<1)flag(2,progress);if(ai.conquered||progress>0)flag(1,1-progress);ctx.restore();}}
 function selectBox(box,add=false){const hits=workers.filter(w=>!w.dead&&(w.owner||1)===1&&w.garrisonIndex===undefined&&exploration.sees(w.x,w.y)).filter(w=>{const p=iso(w.x,w.y);return p.x>=Math.min(box.a.x,box.b.x)&&p.x<=Math.max(box.a.x,box.b.x)&&p.y>=Math.min(box.a.y,box.b.y)&&p.y<=Math.max(box.a.y,box.b.y);});naval.select(null);if(!add)selectedWorkers.clear();for(const w of hits)selectedWorkers.add(w.id);inspectedBuilding=null;toast(`${selectedWorkers.size} Siedler ausgewählt`);updateUnitStatus();}
@@ -618,7 +629,7 @@ document.querySelector('#priority-toggle').onclick=()=>{if(inspectedBuilding){in
 document.querySelector('#area-toggle').onclick=()=>{if(inspectedBuilding&&['forester','woodcutter','quarry'].includes(inspectedBuilding.type)){settingArea=true;selectedTool='inspect';toast('Choose a work area inside your territory (within 8 tiles of this building)');}};
 minimap.addEventListener('click',e=>{const r=minimap.getBoundingClientRect(),x=Math.max(0,Math.min(MAP_W-1,Math.floor((e.clientX-r.left)/r.width*MAP_W))),y=Math.max(0,Math.min(MAP_H-1,Math.floor((e.clientY-r.top)/r.height*MAP_H)));camera.x=innerWidth/2-(x-y)*TILE_W/2*camera.zoom;camera.y=innerHeight/2-(x+y)*TILE_H/2*camera.zoom});
 document.querySelector('.inventory-panel').addEventListener('click',e=>{const item=e.target.closest('[data-priority]')?.dataset.priority;if(!item)return;priorityOrder=[item,...priorityOrder.filter(k=>k!==item)];toast(`${item} transport prioritized`);updateHud();save()});
-function save(){try{const explored=exploration.save(),visible=[];for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++)if(exploration.sees(x,y))visible.push(y*MAP_W+x);const mapPreview=createSaveThumbnail({terrain,explored,visible,buildings,trees,rocks,details,width:MAP_W,height:MAP_H,playerColor});const snapshot={version:9,mode:multiplayerMode?'multiplayer':'singleplayer',worldSize:MAP_W,mapConfig,details,playerColor,journal:journal.list(),scenario,savedAt:Date.now(),camera,controlGroups,exploration:explored,mapPreview,strategy:strategy.state,terrain,resources,buildings,roads,trees,rocks,traffic:[...traffic],trailEdges:[...trailEdges],trafficLastUsed:[...trafficLastUsed],workers:workers.map(w=>({...w,taskIndex:w.task?buildings.indexOf(w.task):-1,task:undefined})),priorityOrder,quest,elapsed,ecoMode};const previous=localStorage.getItem('new-shores-save');if(previous){let valid=false;try{const prior=parseSave(previous,['storehouse',...Object.keys(buildDefs)]);if(JSON.stringify({...snapshot,savedAt:prior.savedAt})===previous)return true;valid=true;}catch{}if(valid)localStorage.setItem('new-shores-autosave-backup',previous);}localStorage.setItem('new-shores-save',JSON.stringify(snapshot));return true;}catch(error){toast('Speichern fehlgeschlagen: Browserspeicher nicht verfügbar oder voll');return false;}}
+function save(){try{const explored=exploration.save(),visible=[];for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++)if(exploration.sees(x,y))visible.push(y*MAP_W+x);const mapPreview=createSaveThumbnail({terrain,explored,visible,buildings,trees,rocks,details,width:MAP_W,height:MAP_H,playerColor});const currentSlot=(()=>{try{return JSON.parse(localStorage.getItem('new-shores-save')||'null')?.worldSlot;}catch{return undefined;}})();const snapshot={version:9,mode:multiplayerMode?'multiplayer':'singleplayer',worldSize:MAP_W,...(MAP_W===SHARED_WORLD_SIZE&&Number.isInteger(currentSlot)?{worldSlot:currentSlot}:{}),mapConfig,details,playerColor,journal:journal.list(),scenario,savedAt:Date.now(),camera,controlGroups,exploration:explored,mapPreview,strategy:strategy.state,terrain,resources,buildings,roads,trees,rocks,traffic:[...traffic],trailEdges:[...trailEdges],trafficLastUsed:[...trafficLastUsed],workers:workers.map(w=>({...w,taskIndex:w.task?buildings.indexOf(w.task):-1,task:undefined})),priorityOrder,quest,elapsed,ecoMode};const previous=localStorage.getItem('new-shores-save');if(previous){let valid=false;try{const prior=parseSave(previous,['storehouse',...Object.keys(buildDefs)]);if(JSON.stringify({...snapshot,savedAt:prior.savedAt})===previous)return true;valid=true;}catch{}if(valid)localStorage.setItem('new-shores-autosave-backup',previous);}localStorage.setItem('new-shores-save',JSON.stringify(snapshot));return true;}catch(error){toast('Speichern fehlgeschlagen: Browserspeicher nicht verfügbar oder voll');return false;}}
 function expandLegacyWorld(s){
   const oldSize=s.worldSize||s.terrain?.length||LEGACY_MAP_SIZE;if(oldSize===MAP_W)return s;
   if(s.terrain){for(const row of s.terrain)row.push(...Array(MAP_W-row.length).fill('water'));while(s.terrain.length<MAP_H)s.terrain.push(Array(MAP_W).fill('water'));}
@@ -650,6 +661,26 @@ addEventListener('keydown',e=>{if(!active)return;if(scenario.status!=='active'&&
 
 function drawBuildingGoods(b){const p=iso(b.x+.5,b.y+.5),items=Object.entries(['warehouse','harbor'].includes(b.type)?b.stored||{}:b.buffer||{}).filter(([,n])=>n>0).map(([k,n])=>[k,Math.min(n,3)]);if(b.ready&&!b.outputInTransit)items.push([b.ready,Math.min(b.outputAmount||2,3)]);let offset=0;for(const [item,n] of items.slice(0,5))for(let i=0;i<n;i++){goodsArt.draw(ctx,item,p.x+(-24+(offset%5)*11)*camera.zoom,p.y+(5+Math.floor(offset/5)*7)*camera.zoom,17*camera.zoom);offset++;}}
 const fogCanvas=document.createElement('canvas');let fogKey='';
+function drawForeignLayer(){
+  if(!foreignIslands.length)return;
+  const visible=p=>{const q=iso(p.x+.5,p.y+.5);return q.x>-150&&q.x<innerWidth+150&&q.y>-170&&q.y<innerHeight+120;};
+  ctx.save();
+  foreignIslands.forEach((island,index)=>{
+    const items=[
+      ...island.roads.map(p=>({kind:'road',p})),
+      ...island.details.map(p=>({kind:'detail',p})),
+      ...island.rocks.map(p=>({kind:'rock',p})),
+      ...island.trees.map(p=>({kind:'tree',p})),
+      ...island.buildings.map(p=>({kind:'building',p:{...p,owner:2}})),
+      ...island.workers.map(p=>({kind:'worker',p:{...p,id:-(index+1)*100000-p.id,owner:2}}))
+    ].filter(({p})=>visible(p)).sort((a,b)=>(a.p.x+a.p.y)-(b.p.x+b.p.y));
+    for(const {kind,p} of items){if(kind==='road')drawRoad(p);else if(kind==='detail')drawDetail(p);else if(kind==='rock')drawRock(p);else if(kind==='tree')drawTree(p);else if(kind==='building')buildingShape(p);else drawWorker(p);}
+    for(const ship of island.ships)if(visible(ship))drawShip({...ship,id:-(index+1)*100000-ship.id,owner:2});
+    const home=island.buildings.find(b=>b.type==='storehouse')||island.buildings[0];
+    if(home){const px=home.x*minimap.width/MAP_W,py=home.y*minimap.height/MAP_H;miniCtx.beginPath();miniCtx.fillStyle='#e15d43';miniCtx.strokeStyle='#fff6d7';miniCtx.lineWidth=1.5;miniCtx.arc(px,py,3.5,0,Math.PI*2);miniCtx.fill();miniCtx.stroke();}
+  });
+  ctx.restore();
+}
 function drawFog(){const key=[camera.x,camera.y,camera.zoom,innerWidth,innerHeight,exploration.revision].join(',');if(fogKey!==key){const scale=mobile.enabled?1/12:1;fogCanvas.width=Math.ceil((innerWidth+64)*scale);fogCanvas.height=Math.ceil((innerHeight+64)*scale);const c=fogCanvas.getContext('2d');c.scale(scale,scale);c.translate(32,32);
   // Start with opaque fog across the entire viewport. This deliberately also
   // covers pixels beyond the finite local map, where the ground renderer has
