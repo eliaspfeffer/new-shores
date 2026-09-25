@@ -16,7 +16,6 @@ const root=resolve(fileURLToPath(new URL('../dist',import.meta.url)));
 const uuid=value=>/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value||'');
 const fail=(status,message)=>Object.assign(new Error(message),{status});
 const name=value=>typeof value==='string'&&value.trim()?value.trim().slice(0,48):'Meine Insel';
-const atlasPosition=index=>({x:14+(index%4)*24,y:12+Math.floor(index/4)*19});
 export async function createApp({pool,origin,origins=[origin],secure=true,emailService={enabled:false}}){
   const allowedOrigins=new Set(origins);let authBusy=0,apiBusy=0;
   const authLimit=limiter(20,15*60_000),apiLimit=limiter(240,60_000);
@@ -143,11 +142,12 @@ export async function createApp({pool,origin,origins=[origin],secure=true,emailS
           const ping=setInterval(()=>res.write(': heartbeat\n\n'),20000);req.on('close',()=>{clearInterval(ping);worldStreams.delete(res);});return;
         }
         if(path==='/api/world'&&req.method==='GET'){
-          const rows=(await pool.query(`SELECT i.id,i.name,i.updated_at,i.accept_deliveries,i.owner_id,i.world_slot,
+          const rows=(await pool.query(`SELECT i.id,i.updated_at,i.accept_deliveries,i.owner_id,i.world_slot,p.email AS owner_email,
             CASE WHEN i.owner_id=$1 THEN 'owner' ELSE m.permission END permission
             FROM islands i LEFT JOIN island_members m ON m.island_id=i.id AND m.player_id=$1
-            ORDER BY i.id LIMIT 20`,[player.id])).rows;
-          return json(200,rows.map((row,index)=>({...row.world_slot!=null?{x:Math.round((worldSlotOrigin(row.world_slot).x+SHARED_WORLD_CELL_SIZE/2)/SHARED_WORLD_SIZE*100),y:Math.round((worldSlotOrigin(row.world_slot).y+SHARED_WORLD_CELL_SIZE/2)/SHARED_WORLD_SIZE*100)}:atlasPosition(index),id:row.id,name:row.name,updated_at:row.updated_at,accept_deliveries:row.accept_deliveries,permission:row.permission||null,owner:row.owner_id===player.id?'Du':'Siedler '+String(row.owner_id).slice(0,6),online:streams.get(row.id)?.size||0})));
+            JOIN players p ON p.id=i.owner_id WHERE i.world_slot IS NOT NULL
+            ORDER BY i.world_slot LIMIT $2`,[player.id,SHARED_WORLD_CAPACITY])).rows;
+          return json(200,rows.map(row=>({x:Math.round((worldSlotOrigin(row.world_slot).x+SHARED_WORLD_CELL_SIZE/2)/SHARED_WORLD_SIZE*100),y:Math.round((worldSlotOrigin(row.world_slot).y+SHARED_WORLD_CELL_SIZE/2)/SHARED_WORLD_SIZE*100),id:row.id,name:row.owner_email,updated_at:row.updated_at,accept_deliveries:row.accept_deliveries,permission:row.permission||null,owner:row.owner_email,online:streams.get(row.id)?.size||0})));
         }
         if(path==='/api/islands'&&req.method==='GET')return json(200,(await pool.query(`SELECT i.id,i.name,i.revision,i.updated_at,i.accept_deliveries,CASE WHEN i.owner_id=$1 THEN 'owner' ELSE m.permission END permission FROM islands i LEFT JOIN island_members m ON m.island_id=i.id AND m.player_id=$1 WHERE i.owner_id=$1 OR m.player_id=$1 ORDER BY i.updated_at DESC`,[player.id])).rows);
         if(path==='/api/islands'&&req.method==='POST'){

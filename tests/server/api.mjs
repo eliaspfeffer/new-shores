@@ -25,13 +25,14 @@ try{
   const forgot=await request('/forgot-password','POST',{email:'nobody@example.com'});assert.equal(forgot.status,200);assert.equal(forgot.data.emailAvailable,false);
   const snapshot={version:6,resources:{wood:20,planks:20,stone:20},buildings:[{type:'storehouse',x:25,y:25,progress:1}],roads:[],workers:[]};
   const island=await request('/islands','POST',{name:'Test island',snapshot},owner.cookie);assert.equal(island.status,201);const path='/islands/'+island.data.id;
-  const world=await request('/world','GET',undefined,member.cookie);assert.equal(world.status,200);assert.equal(world.data.length,1);assert.equal(world.data[0].name,'Test island');assert.equal(world.data[0].permission,null);assert.match(world.data[0].owner,/^Siedler /);assert.ok(Number.isInteger(world.data[0].x)&&Number.isInteger(world.data[0].y));assert.ok(!JSON.stringify(world.data).includes('test@example.com'));
+  const world=await request('/world','GET',undefined,member.cookie);assert.equal(world.status,200);assert.equal(world.data.length,0,'unslotted saves are not player islands');
   const terrain=Array.from({length:72},(_,y)=>Array.from({length:72},(_,x)=>x>=3&&x<69&&y>=3&&y<69?'grass':'water'));
   const multiplayerSave=stone=>({version:9,mode:'multiplayer',worldSize:72,terrain,resources:{wood:20,planks:20,stone},buildings:[{type:'storehouse',x:25,y:25,progress:1}],roads:[],workers:[{id:1,x:25.5,y:26.5,role:'carrier'}],exploration:[25*72+25]});
   const first=await request('/islands','POST',{name:'First multiplayer island',snapshot:multiplayerSave(50)},owner.cookie);
   const second=await request('/islands','POST',{name:'Second multiplayer island',snapshot:multiplayerSave(70)},member.cookie);
   assert.equal(first.status,201);assert.equal(second.status,201);
   assert.notEqual(first.data.worldSlot,second.data.worldSlot);
+  const playerIslands=await request('/world','GET',undefined,member.cookie);assert.equal(playerIslands.status,200);assert.equal(playerIslands.data.length,2);assert.deepEqual(playerIslands.data.map(entry=>entry.owner),['test@example.com','friend@example.com']);assert.deepEqual(playerIslands.data.map(entry=>entry.name),playerIslands.data.map(entry=>entry.owner));assert.ok(playerIslands.data.every(entry=>Number.isInteger(entry.x)&&Number.isInteger(entry.y)));
   assert.notEqual(first.data.snapshot.buildings[0].x,second.data.snapshot.buildings[0].x);
   assert.equal(first.data.snapshot.resources.stone,50);assert.equal(second.data.snapshot.resources.stone,70);
   const joined=await request('/world/claim','POST',{},owner.cookie);assert.equal(joined.data.id,first.data.id);assert.equal(joined.data.worldSlot,first.data.worldSlot);

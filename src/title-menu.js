@@ -41,6 +41,7 @@ export function initTitleMenu(){
   const multiplayer=document.createElement('button');multiplayer.id='multiplayer-entry';multiplayer.className='wood-button';multiplayer.textContent='Multiplayer';multiplayer.onclick=()=>document.dispatchEvent(new CustomEvent('new-shores-cloud-open',{detail:{mode:'multiplayer'}}));nav.append(multiplayer);
   card.querySelector('.account-entry')?.remove();
   const register=card.querySelector('.register-entry');register?.remove();
+  const logout=document.createElement('button');logout.id='title-logout';logout.className='wood-button';logout.hidden=true;logout.onclick=()=>document.dispatchEvent(new CustomEvent('new-shores-cloud-logout'));nav.append(logout);
   const continueGame=card.querySelector('#continue-game');if(continueGame)nav.append(continueGame);
   card.prepend(intro,nav);card.classList.add('title-hub');
   const info=document.querySelector('#seo-info-dialog');
