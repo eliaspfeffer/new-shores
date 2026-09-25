@@ -9,7 +9,7 @@ import {parseSave} from '../src/savegames.js';
 import {extraBuildings} from '../src/strategy.js';
 import {sendDelivery} from './deliveries.mjs';
 import {createEmailService} from './email.mjs';
-import {promoteIslandToWorld,visibleIslandState,worldSlotOrigin,SHARED_WORLD_CAPACITY} from '../src/shared-world.js';
+import {promoteIslandToWorld,repackWorld,visibleIslandState,worldSlotOrigin,SHARED_WORLD_CAPACITY,SHARED_WORLD_SIZE,SHARED_WORLD_CELL_SIZE} from '../src/shared-world.js';
 
 export const saveTypes=['largehouse','storehouse','woodcutter','forester','sawmill','house','quarry','farm','mill','bakery','fisher','warehouse','tower','hospital',...Object.keys(extraBuildings)];
 const root=resolve(fileURLToPath(new URL('../dist',import.meta.url)));
@@ -34,8 +34,13 @@ export async function createApp({pool,origin,origins=[origin],secure=true,emailS
     const client=await pool.connect();try{
       await client.query('BEGIN');await client.query('SELECT pg_advisory_xact_lock(442817)');
       let row=(await client.query('SELECT * FROM islands WHERE owner_id=$1 AND world_slot IS NOT NULL ORDER BY updated_at DESC LIMIT 1 FOR UPDATE',[player.id])).rows[0];
+      if(row&&row.snapshot.worldSize!==SHARED_WORLD_SIZE){
+        const snapshot=validate(repackWorld(row.snapshot,row.world_slot));
+        await client.query('INSERT INTO island_history(island_id,revision,snapshot) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[row.id,row.revision,row.snapshot]);
+        row=(await client.query('UPDATE islands SET snapshot=$2,revision=revision+1,updated_at=now() WHERE id=$1 RETURNING *',[row.id,snapshot])).rows[0];
+      }
       if(!row){
-        row=(await client.query("SELECT * FROM islands WHERE owner_id=$1 AND snapshot->>'mode'='multiplayer' AND ($2::uuid IS NULL OR id=$2) ORDER BY updated_at DESC LIMIT 1 FOR UPDATE",[player.id,uuid(preferredId)?preferredId:null])).rows[0];
+        row=(await client.query("SELECT * FROM islands WHERE owner_id=$1 AND (snapshot->>'mode'='multiplayer' OR snapshot->>'mode' IS NULL) AND ($2::uuid IS NULL OR id=$2) ORDER BY (snapshot->>'mode'='multiplayer') DESC,updated_at DESC LIMIT 1 FOR UPDATE",[player.id,uuid(preferredId)?preferredId:null])).rows[0];
         if(!row){await client.query('COMMIT');return null;}
         const used=new Set((await client.query('SELECT world_slot FROM islands WHERE world_slot IS NOT NULL')).rows.map(r=>r.world_slot));
         const slot=Array.from({length:SHARED_WORLD_CAPACITY},(_,i)=>i).find(i=>!used.has(i));
@@ -121,7 +126,7 @@ export async function createApp({pool,origin,origins=[origin],secure=true,emailS
         if(path==='/api/world/positions'&&req.method==='POST'){
           const data=await body(req,262144),island=await access(player,data.islandId);
           if(island.world_slot===null||island.permission==='view')throw fail(403,'Keine steuerbare Multiplayer-Insel.');
-          const validPoint=p=>p&&Number.isInteger(p.id)&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.y>=0&&p.x<228&&p.y<228;
+          const validPoint=p=>p&&Number.isInteger(p.id)&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.y>=0&&p.x<SHARED_WORLD_SIZE&&p.y<SHARED_WORLD_SIZE;
           if(!Array.isArray(data.workers)||data.workers.length>5000||data.workers.some(p=>!validPoint(p))||!Array.isArray(data.ships)||data.ships.length>100||data.ships.some(p=>!validPoint(p)))throw fail(400,'Ungültige Live-Positionen.');
           const workers=data.workers.map(({id,x,y,unit,role,phase,t,direction,hp,maxHp,rank,carry})=>({id,x,y,unit,role,phase,t,direction,hp,maxHp,rank,carry}));
           const ships=data.ships.map(({id,x,y,type,status,hp})=>({id,x,y,type,status,hp}));
@@ -142,14 +147,14 @@ export async function createApp({pool,origin,origins=[origin],secure=true,emailS
             CASE WHEN i.owner_id=$1 THEN 'owner' ELSE m.permission END permission
             FROM islands i LEFT JOIN island_members m ON m.island_id=i.id AND m.player_id=$1
             ORDER BY i.id LIMIT 20`,[player.id])).rows;
-          return json(200,rows.map((row,index)=>({...row.world_slot!=null?{x:Math.round((worldSlotOrigin(row.world_slot).x+36)/228*100),y:Math.round((worldSlotOrigin(row.world_slot).y+36)/228*100)}:atlasPosition(index),id:row.id,name:row.name,updated_at:row.updated_at,accept_deliveries:row.accept_deliveries,permission:row.permission||null,owner:row.owner_id===player.id?'Du':'Siedler '+String(row.owner_id).slice(0,6),online:streams.get(row.id)?.size||0})));
+          return json(200,rows.map((row,index)=>({...row.world_slot!=null?{x:Math.round((worldSlotOrigin(row.world_slot).x+SHARED_WORLD_CELL_SIZE/2)/SHARED_WORLD_SIZE*100),y:Math.round((worldSlotOrigin(row.world_slot).y+SHARED_WORLD_CELL_SIZE/2)/SHARED_WORLD_SIZE*100)}:atlasPosition(index),id:row.id,name:row.name,updated_at:row.updated_at,accept_deliveries:row.accept_deliveries,permission:row.permission||null,owner:row.owner_id===player.id?'Du':'Siedler '+String(row.owner_id).slice(0,6),online:streams.get(row.id)?.size||0})));
         }
         if(path==='/api/islands'&&req.method==='GET')return json(200,(await pool.query(`SELECT i.id,i.name,i.revision,i.updated_at,i.accept_deliveries,CASE WHEN i.owner_id=$1 THEN 'owner' ELSE m.permission END permission FROM islands i LEFT JOIN island_members m ON m.island_id=i.id AND m.player_id=$1 WHERE i.owner_id=$1 OR m.player_id=$1 ORDER BY i.updated_at DESC`,[player.id])).rows);
         if(path==='/api/islands'&&req.method==='POST'){
           const data=await body(req),snapshot=validate(data.snapshot),id=randomUUID();
           if(snapshot.mode==='multiplayer'){
-            const existing=await claimWorldIsland(player);
-            if(existing)return json(200,existing);
+            const existing=(await pool.query('SELECT id FROM islands WHERE owner_id=$1 AND world_slot IS NOT NULL LIMIT 1',[player.id])).rows[0];
+            if(existing)return json(200,await claimWorldIsland(player,existing.id));
           }
           if(Number((await pool.query('SELECT count(*) FROM islands WHERE owner_id=$1',[player.id])).rows[0].count)>=20)throw fail(409,'Maximal 20 Inseln pro Konto.');
           await pool.query('INSERT INTO islands(id,owner_id,name,snapshot) VALUES($1,$2,$3,$4)',[id,player.id,name(data.name),snapshot]);
@@ -187,7 +192,7 @@ export async function createApp({pool,origin,origins=[origin],secure=true,emailS
             const lease=leases.get(island.id),leaseKey=player.id+':'+player.session_hash;if(lease&&lease.until>Date.now()&&lease.key!==leaseKey)throw fail(423,'Ein anderer Mitspieler steuert diese Insel gerade.');if(lease?.key===leaseKey)lease.until=Date.now()+45000;
             const data=await body(req),snapshot=validate(data.snapshot);if(!Number.isInteger(data.revision))throw fail(400,'Spielstandversion fehlt.');
             const client=await pool.connect();try{await client.query('BEGIN');const current=(await client.query('SELECT * FROM islands WHERE id=$1 FOR UPDATE',[island.id])).rows[0];
-              if(current.world_slot!==null&&(snapshot.mode!=='multiplayer'||snapshot.worldSize!==228||snapshot.worldSlot!==current.world_slot))throw fail(400,'Ungültige Multiplayer-Weltzuordnung.');
+              if(current.world_slot!==null&&(snapshot.mode!=='multiplayer'||snapshot.worldSize!==SHARED_WORLD_SIZE||snapshot.worldSlot!==current.world_slot))throw fail(400,'Ungültige Multiplayer-Weltzuordnung.');
               if(current.revision!==data.revision)throw fail(409,'Die Insel wurde auf einem anderen Gerät geändert. Dein Stand bleibt lokal erhalten. Bitte Serverstand laden oder lokale Insel als neue Kopie sichern.');
               await client.query('INSERT INTO island_history(island_id,revision,snapshot) VALUES($1,$2,$3)',[island.id,current.revision,current.snapshot]);
               await client.query('UPDATE islands SET snapshot=$2,revision=revision+1,updated_at=now() WHERE id=$1',[island.id,snapshot]);

@@ -1,6 +1,7 @@
 import './cloud.css';
 import {canLoadRemote} from './cloud-checkpoint.js';
 import {initDeliveriesUI} from './deliveries-ui.js';
+import {SHARED_WORLD_SIZE} from './shared-world.js';
 // Consume a deliberate transfer before main.js initializes or autosaves the world.
 try{const pending=sessionStorage.getItem('new-shores-cloud-transfer');if(pending){localStorage.setItem('new-shores-save',pending);sessionStorage.removeItem('new-shores-cloud-transfer');}}catch{}
 export function initCloud(api){
@@ -29,7 +30,7 @@ export function initCloud(api){
     const world=await request('/world/claim','POST',{islandId:binding?.userId===user.id?binding.id:null});
     if(!world)return false;
     let local=null;try{local=JSON.parse(localStorage.getItem('new-shores-save')||'null');}catch{}
-    if(binding?.id!==world.id||binding?.userId!==user.id||local?.worldSize!==228){await loadRemote(world);return 'reloading';}
+    if(binding?.id!==world.id||binding?.userId!==user.id||local?.worldSize!==SHARED_WORLD_SIZE){await loadRemote(world);return 'reloading';}
     binding.worldSlot=world.worldSlot;remember();return 'ready';
   }
   async function refreshSharedWorld(){if(!binding||!user)return;const entries=await request('/world/state');document.dispatchEvent(new CustomEvent('new-shores-world-state',{detail:entries}));}

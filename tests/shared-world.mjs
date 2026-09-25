@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
-import {promoteIslandToWorld,visibleIslandState,worldSlotOrigin,SHARED_WORLD_SIZE} from '../src/shared-world.js';
+import {promoteIslandToWorld,repackWorld,visibleIslandState,worldSlotOrigin,SHARED_WORLD_SIZE,SHARED_WORLD_CELL_SIZE} from '../src/shared-world.js';
 import {waterRoute} from '../src/naval.js';
 
-const local=seed=>({version:9,worldSize:72,mode:'multiplayer',terrain:Array.from({length:72},(_,y)=>Array.from({length:72},(_,x)=>x>=2&&x<70&&y>=2&&y<70?'grass':'water')),exploration:[2*72+2],buildings:[{type:'storehouse',x:8,y:8,progress:1}],roads:[],trees:[{x:9,y:9}],rocks:[],details:[],workers:[{id:1,x:8.5,y:9.5,owner:1}],strategy:{naval:{ships:[{id:1,x:1.5,y:8.5,owner:1,type:'transport',status:'idle'}]}},camera:{x:0,y:0,zoom:1},resources:{stone:seed}});
+const local=seed=>({version:9,worldSize:72,mode:'multiplayer',terrain:Array.from({length:72},(_,y)=>Array.from({length:72},(_,x)=>x>=2&&x<44&&y>=2&&y<48?'grass':'water')),exploration:[2*72+2],buildings:[{type:'storehouse',x:8,y:8,progress:1}],roads:[],trees:[{x:9,y:9}],rocks:[],details:[],workers:[{id:1,x:8.5,y:9.5,owner:1}],strategy:{naval:{ships:[{id:1,x:1.5,y:8.5,owner:1,type:'transport',status:'idle'}]}},camera:{x:0,y:0,zoom:1},resources:{stone:seed}});
 const a=promoteIslandToWorld(local(30),0),b=promoteIslandToWorld(local(50),1);
 assert.equal(a.worldSize,SHARED_WORLD_SIZE);
 assert.equal(a.worldSlot,0);
 assert.equal(b.worldSlot,1);
 assert.notDeepEqual(worldSlotOrigin(0),worldSlotOrigin(1));
 assert.equal(a.buildings[0].x,10);
-assert.equal(b.buildings[0].x,86);
+assert.equal(b.buildings[0].x,64);
 assert.equal(a.resources.stone,30);
 assert.equal(b.resources.stone,50);
 assert.equal(a.terrain[b.buildings[0].y][b.buildings[0].x],'water');
@@ -17,9 +17,14 @@ const remote=visibleIslandState({id:'other',name:'Other',revision:2,world_slot:1
 assert.equal(remote.buildings[0].x,b.buildings[0].x);
 assert.equal(remote.workers[0].x,b.workers[0].x);
 assert.equal(remote.resources,undefined,'private inventory is not broadcast');
-assert.equal(remote.terrain.length,72);
-for(let y=0;y<72;y++)for(let x=0;x<72;x++)a.terrain[y+worldSlotOrigin(1).y][x+worldSlotOrigin(1).x]=remote.terrain[y][x];
-const route=waterRoute(a.terrain,{x:1.5,y:8.5},{x:77.5,y:8.5});
+assert.equal(remote.terrain.length,SHARED_WORLD_CELL_SIZE);
+for(let y=0;y<SHARED_WORLD_CELL_SIZE;y++)for(let x=0;x<SHARED_WORLD_CELL_SIZE;x++)a.terrain[y+worldSlotOrigin(1).y][x+worldSlotOrigin(1).x]=remote.terrain[y][x];
+const route=waterRoute(a.terrain,{x:1.5,y:8.5},{x:55.5,y:8.5});
 assert.ok(route?.length,'a ship can route between both islands on the shared ocean');
-assert.equal(route.at(-1).x,77.5);
+assert.equal(route.at(-1).x,55.5);
+const legacy=structuredClone(a),source=local(30);legacy.worldSize=228;legacy.terrain=Array.from({length:228},()=>Array(228).fill('water'));
+for(let y=0;y<SHARED_WORLD_CELL_SIZE;y++)for(let x=0;x<SHARED_WORLD_CELL_SIZE;x++)legacy.terrain[y+2][x+2]=source.terrain[y][x];
+const repacked=repackWorld(legacy,0);
+assert.equal(repacked.worldSize,SHARED_WORLD_SIZE);
+assert.deepEqual(repacked.buildings[0],a.buildings[0]);
 console.log('Shared world layout, privacy and cross-island sailing passed.');

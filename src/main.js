@@ -143,7 +143,7 @@ const minimap = document.querySelector('#minimap');
 const miniCtx = minimap.getContext('2d');
 const TILE_W=88,TILE_H=44, LEGACY_MAP_SIZE=50;
 const savedWorldSize=(()=>{try{return JSON.parse(localStorage.getItem('new-shores-save')||'null')?.worldSize;}catch{return null;}})();
-const MAP_W=savedWorldSize===SHARED_WORLD_SIZE?SHARED_WORLD_SIZE:72,MAP_H=MAP_W;
+const MAP_W=[SHARED_WORLD_SIZE,228].includes(savedWorldSize)?savedWorldSize:72,MAP_H=MAP_W;
 let foreignIslands=[];
 let dpr=1, camera={x:0,y:0,zoom:1}, drag=null, selectedTool='inspect', hovered=null, paused=false, speed=1, last=0, autosave=0, renderCount=0, ecoMode=true;
 let resources={wood:24,stone:20,food:18,people:8,beds:12,planks:24,grain:0,flour:0,tools:0,axe:2,hammer:3,shovel:2,sickle:1,pickaxe:2,saw:1,rod:1};
