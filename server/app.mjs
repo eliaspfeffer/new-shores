@@ -118,6 +118,15 @@ export async function createApp({pool,origin,origins=[origin],secure=true,emailS
         if(path==='/api/deliveries'&&req.method==='GET')return json(200,(await pool.query('SELECT g.id,g.item,g.amount,g.created_at,g.delivery_x,g.delivery_y,s.name source_name,t.name target_name,CASE WHEN t.owner_id=$1 THEN true ELSE false END incoming FROM goods_transfers g JOIN islands s ON s.id=g.source_id JOIN islands t ON t.id=g.target_id WHERE s.owner_id=$1 OR t.owner_id=$1 ORDER BY g.created_at DESC LIMIT 50',[player.id])).rows);
         if(path==='/api/logout'&&req.method==='POST'){const raw=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('ns_session='))?.slice(11);if(raw)await pool.query('DELETE FROM sessions WHERE hash=$1',[digest(raw)]);cookie(res,'',0);return json(200,{ok:true});}
         if(path==='/api/world/claim'&&req.method==='POST')return json(200,await claimWorldIsland(player,(await body(req,1024)).islandId));
+        if(path==='/api/world/positions'&&req.method==='POST'){
+          const data=await body(req,262144),island=await access(player,data.islandId);
+          if(island.world_slot===null||island.permission==='view')throw fail(403,'Keine steuerbare Multiplayer-Insel.');
+          const validPoint=p=>p&&Number.isInteger(p.id)&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.y>=0&&p.x<228&&p.y<228;
+          if(!Array.isArray(data.workers)||data.workers.length>5000||data.workers.some(p=>!validPoint(p))||!Array.isArray(data.ships)||data.ships.length>100||data.ships.some(p=>!validPoint(p)))throw fail(400,'Ungültige Live-Positionen.');
+          const workers=data.workers.map(({id,x,y,unit,role,phase,t,direction,hp,maxHp,rank,carry})=>({id,x,y,unit,role,phase,t,direction,hp,maxHp,rank,carry}));
+          const ships=data.ships.map(({id,x,y,type,status,hp})=>({id,x,y,type,status,hp}));
+          publishWorld({type:'positions',id:island.id,workers,ships});return json(200,{ok:true});
+        }
         if(path==='/api/world/state'&&req.method==='GET'){
           const rows=(await pool.query('SELECT id,name,revision,world_slot,snapshot FROM islands WHERE world_slot IS NOT NULL ORDER BY world_slot LIMIT 9')).rows;
           return json(200,rows.map(visibleIslandState));

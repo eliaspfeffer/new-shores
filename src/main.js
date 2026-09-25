@@ -158,6 +158,10 @@ document.addEventListener('new-shores-world-state',event=>{
   for(const island of foreignIslands){const {x,y}=island.origin;for(let dy=0;dy<SHARED_WORLD_CELL_SIZE;dy++)for(let dx=0;dx<SHARED_WORLD_CELL_SIZE;dx++)if(island.terrain?.[dy]?.[dx])terrain[y+dy][x+dx]=island.terrain[dy][dx];}
   terrainRevision++;groundCacheKey='';strategy.recalculate();exploration.update(buildings,workers);
 });
+document.addEventListener('new-shores-world-positions',event=>{
+  const island=foreignIslands.find(entry=>entry.id===event.detail?.id);
+  if(island){island.workers=event.detail.workers;island.ships=event.detail.ships;}
+});
 const exploration=createExploration(MAP_W,MAP_H);
 const toolsAtlasURL=new URL('../assets/tools-specialized-v1.png',import.meta.url).href;
 const goodsArt=createGoodsArt(new URL('../assets/goods-atlas-keyed-v3.png',import.meta.url).href,url=>{document.documentElement.style.setProperty('--goods-atlas',`url("${url}")`);},toolsAtlasURL);
@@ -908,6 +912,6 @@ unitMenu=initUnitMenu({workers,selected:selectedWorkers,names:unitNames,art:unit
   const b=w.garrisonIndex!==undefined?buildings[w.garrisonIndex]:null,p=iso(b?b.x+.5:w.x,b?b.y+.5:w.y);
   camera.x+=innerWidth/2-p.x;camera.y+=innerHeight/2-p.y;document.documentElement.classList.remove('mobile-panel');updateHud();
 },focusGroup:group=>{selectedWorkers.clear();for(const w of group)selectedWorkers.add(w.id);inspectedWorker=null;inspectedBuilding=null;settingArea=false;commandMode=false;selectedTool='inspect';const minX=Math.min(...group.map(w=>w.x)),maxX=Math.max(...group.map(w=>w.x)),minY=Math.min(...group.map(w=>w.y)),maxY=Math.max(...group.map(w=>w.y)),p=iso((minX+maxX)/2,(minY+maxY)/2);camera.x+=innerWidth/2-p.x;camera.y+=innerHeight/2-p.y;document.documentElement.classList.remove('mobile-panel');updateHud();}});
-initCloud({capture:()=>hasSession&&save(),freeze:()=>{const wasPaused=paused;paused=true;return ()=>{paused=wasPaused;last=0;};},validate:s=>parseSave(JSON.stringify(s),['storehouse',...Object.keys(buildDefs)]),notify:toast,pause:()=>{if(active){paused=true;document.querySelector('#pause-modal').classList.remove('hidden');}},resume:()=>{if(active){paused=false;last=0;document.querySelector('#pause-modal').classList.add('hidden');}}});
+initCloud({capture:()=>hasSession&&save(),positions:()=>active&&multiplayerMode?{workers:workers.filter(w=>!w.dead&&(w.owner||1)===1).map(({id,x,y,unit,role,phase,t,direction,hp,maxHp,rank,carry})=>({id,x,y,unit,role,phase,t,direction,hp,maxHp,rank,carry})),ships:naval.state.ships.filter(ship=>(ship.owner||1)===1).map(({id,x,y,type,status,hp})=>({id,x,y,type,status,hp}))}:null,freeze:()=>{const wasPaused=paused;paused=true;return ()=>{paused=wasPaused;last=0;};},validate:s=>parseSave(JSON.stringify(s),['storehouse',...Object.keys(buildDefs)]),notify:toast,pause:()=>{if(active){paused=true;document.querySelector('#pause-modal').classList.remove('hidden');}},resume:()=>{if(active){paused=false;last=0;document.querySelector('#pause-modal').classList.add('hidden');}}});
 initTitleMenu();
 initPauseMenu();

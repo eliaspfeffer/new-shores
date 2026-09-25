@@ -43,6 +43,9 @@ try{
   assert.equal((await request('/islands/'+first.data.id,'PUT',{snapshot:moved,revision:first.data.revision},owner.cookie)).status,200);
   const live=await request('/world/state','GET',undefined,member.cookie);
   assert.equal(live.data.find(entry=>entry.id===first.data.id).workers[0].x,moved.workers[0].x,'other accounts see the moved unit');
+  assert.equal((await request('/world/positions','POST',{islandId:first.data.id,workers:[{id:1,x:30.5,y:28.5}],ships:[]},owner.cookie)).status,200);
+  assert.equal((await request('/world/positions','POST',{islandId:first.data.id,workers:[{id:1,x:999,y:28.5}],ships:[]},owner.cookie)).status,400);
+  assert.equal((await request('/world/positions','POST',{islandId:first.data.id,workers:[],ships:[]},member.cookie)).status,404);
   assert.equal((await request(path,'GET',undefined,member.cookie)).status,404);
   assert.equal((await request(path,'PUT',{snapshot,revision:1},owner.cookie)).status,200);
   assert.equal((await request(path,'PUT',{snapshot,revision:1},owner.cookie)).status,409);
