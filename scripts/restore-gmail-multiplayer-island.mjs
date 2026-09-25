@@ -27,10 +27,12 @@ try{
   if(old.length!==14)throw new Error('Anzahl alter Kopien verändert; keine Änderung.');
   if(apply){
     await client.query('CREATE TABLE IF NOT EXISTS multiplayer_cleanup_backup_20260925 (id uuid PRIMARY KEY,owner_id uuid NOT NULL,name text NOT NULL,revision integer NOT NULL,world_slot smallint,snapshot jsonb NOT NULL,updated_at timestamptz NOT NULL,backed_up_at timestamptz NOT NULL DEFAULT now())');
+    await client.query('CREATE TABLE IF NOT EXISTS multiplayer_cleanup_messages_backup_20260925 AS SELECT * FROM island_messages WHERE false');
     for(const row of [target,...old])await client.query('INSERT INTO multiplayer_cleanup_backup_20260925(id,owner_id,name,revision,world_slot,snapshot,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING',[row.id,row.owner_id,row.name,row.revision,row.world_slot,row.snapshot,row.updated_at]);
     await client.query('INSERT INTO island_history(island_id,revision,snapshot) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[target.id,target.revision,target.snapshot]);
     await client.query('UPDATE islands SET snapshot=$2,revision=revision+1,updated_at=now() WHERE id=$1',[target.id,restored]);
     const ids=old.map(row=>row.id);
+    await client.query('INSERT INTO multiplayer_cleanup_messages_backup_20260925 SELECT * FROM island_messages WHERE island_id=ANY($1::uuid[])',[ids]);
     await client.query('DELETE FROM island_messages WHERE island_id=ANY($1::uuid[])',[ids]);
     await client.query('DELETE FROM island_history WHERE island_id=ANY($1::uuid[])',[ids]);
     await client.query('DELETE FROM invitations WHERE island_id=ANY($1::uuid[])',[ids]);
