@@ -1,5 +1,5 @@
 import './title-menu.css';
-import titleCityAnimation from '../assets/title-city-carriers-v1.gif';
+import titleCityImage from '../assets/gameplay-islands.png';
 export function initTitleMenu(){
   const card=document.querySelector('.title-card');
   const setup=document.createElement('dialog');setup.id='new-settlement-dialog';setup.className='title-popup';setup.setAttribute('aria-labelledby','new-settlement-title');
@@ -24,7 +24,7 @@ export function initTitleMenu(){
   const intro=document.createElement('div');intro.className='title-intro';
   card.querySelector('.eyebrow')?.remove();
   for(const selector of ['h1','.subtitle']){const node=card.querySelector(selector);if(node)intro.append(node);}
-  const cityAnimation=document.createElement('img');cityAnimation.className='title-city-animation';cityAnimation.src=titleCityAnimation;cityAnimation.alt='Siedler transportieren Baumaterial zu einer Holzhütte';cityAnimation.width=720;cityAnimation.height=405;intro.append(cityAnimation);
+  const cityAnimation=document.createElement('img');cityAnimation.className='title-city-animation';cityAnimation.src=titleCityImage;cityAnimation.alt='Mehrere Inseln und Siedlungen in der Multiplayer-Welt von New Shores';cityAnimation.width=720;cityAnimation.height=405;intro.append(cityAnimation);
   const nav=document.createElement('nav');nav.className='title-actions';nav.setAttribute('aria-label','Hauptmenü');
   const openSingleplayer=()=>{sessionStorage.removeItem('new-shores-multiplayer-pending');openSetup(false);};
   document.addEventListener('new-shores-singleplayer-setup',openSingleplayer);
@@ -32,6 +32,7 @@ export function initTitleMenu(){
   authChoice.querySelector('[data-auth-choice="login"]').onclick=()=>{authChoice.close();document.dispatchEvent(new CustomEvent('new-shores-cloud-open',{detail:{mode:'singleplayer'}}));};
   const create=document.createElement('button');create.id='open-new-settlement';create.className='wood-button';create.textContent='Singleplayer';create.onclick=()=>document.documentElement.classList.contains('cloud-authenticated')?openSingleplayer():authChoice.showModal();nav.append(create);
   document.addEventListener('new-shores-multiplayer-setup',()=>openSetup(true));
+  document.addEventListener('new-shores-multiplayer-continue',()=>document.querySelector('#continue-game').click());
   const multiplayer=document.createElement('button');multiplayer.id='multiplayer-entry';multiplayer.className='wood-button';multiplayer.textContent='Multiplayer';multiplayer.onclick=()=>document.dispatchEvent(new CustomEvent('new-shores-cloud-open',{detail:{mode:'multiplayer'}}));nav.append(multiplayer);
   card.querySelector('.account-entry')?.remove();
   const register=card.querySelector('.register-entry');register?.remove();

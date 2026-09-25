@@ -1,5 +1,9 @@
 # Grafikreferenzen und aktueller Abgleich
 
+## Nachtrag 25. September 2026: statisches Multiplayer-Titelbild
+
+Die animierte Stadtvorschau im Hauptmenü wurde auf Nutzerwunsch durch das bereits vorhandene New-Shores-Spielbild `assets/gameplay-islands.png` ersetzt, das zuvor in der Karte „Gemeinsam online“ eingesetzt war. Das Bild zeigt die tatsächliche eigene Spielgrafik mit mehreren Inselbereichen und wird unverändert lediglich im vorhandenen 16:9-Rahmen zugeschnitten. Es wurde kein fremdes Artwork ergänzt und kein bestehendes Gebäude- oder Geländedesign verändert. Die frühere GIF-Datei bleibt im Repository erhalten, wird auf der Hero-Fläche aber nicht mehr geladen.
+
 ## Nachtrag 23. September 2026: Social-Share-Vorschau
 
 Für Open Graph, WhatsApp, LinkedIn und X/Twitter wird `public/new-shores-social-share-v1.jpg` in 1200 × 630 Pixeln verwendet. Grundlage ist ausschließlich der vom Nutzer bereitgestellte aktuelle New-Shores-Spielbildschirm. Der Ausschnitt priorisiert die lebendige Siedlung, Holzproduktion, Windmühle, Bäckerei, Wege und sichtbare Siedler; es wurden keine fremden Originalassets ergänzt. Die Built-in-Bildbearbeitung diente der breiten Neuformatierung und wurde anschließend technisch auf das Standardformat 1,91:1 normalisiert. Das bestehende Spielartwork wurde nicht überschrieben.
